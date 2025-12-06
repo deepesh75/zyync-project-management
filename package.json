@@ -1,0 +1,38 @@
+{
+  "name": "zyync",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "typecheck": "tsc --noEmit",
+    "start": "next start",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev --name init",
+    "seed": "node prisma/seed.js",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@prisma/client": "5",
+    "@types/formidable": "^3.4.6",
+    "bcryptjs": "^2.4.3",
+    "formidable": "^3.5.4",
+    "next": "14",
+    "next-auth": "^4.22.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "resend": "^6.5.2"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/react": "^14.0.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "20",
+    "@types/react": "18.2.0",
+    "jsdom": "^23.0.0",
+    "playwright": "^1.42.0",
+    "prisma": "5",
+    "typescript": "5",
+    "vitest": "^0.34.1"
+  }
+}

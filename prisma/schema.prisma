@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  members   OrganizationMember[]
+  projects  Project[]
+  invitations Invitation[]
+}
+
+model OrganizationMember {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String
+  role           String   @default("member") // "admin" or "member"
+  joinedAt       DateTime @default(now())
+  
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([organizationId, userId])
+}
+
+model Invitation {
+  id             String   @id @default(cuid())
+  email          String
+  organizationId String
+  role           String   @default("member")
+  token          String   @unique
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  createdAt      DateTime @default(now())
+  invitedById    String?
+  
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invitedBy    User?        @relation(fields: [invitedById], references: [id])
+  
+  @@index([email])
+  @@index([token])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  /// hashed password for Credentials auth
+  passwordHash String?
+  name      String?
+  createdAt DateTime @default(now())
+  projects  Project[]
+  assignedTasks Task[] @relation("UserAssignedTasks")
+  taskMembers TaskMember[]
+  comments Comment[]
+  organizationMemberships OrganizationMember[]
+  sentInvitations Invitation[]
+  notifications Notification[]
+  attachments Attachment[]
+}
+
+model Project {
+  id        String   @id @default(cuid())
+  name      String
+  ownerId   String?
+  owner     User?    @relation(fields: [ownerId], references: [id])
+  organizationId String?
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  createdAt DateTime @default(now())
+  archived  Boolean  @default(false)
+  archivedAt DateTime?
+  columns   String?  @default("[{\"id\":\"todo\",\"name\":\"Todo\"},{\"id\":\"in-progress\",\"name\":\"In Progress\"},{\"id\":\"done\",\"name\":\"Done\"}]")
+  tasks     Task[]
+  labels    Label[]
+}
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  status      String   @default("todo")
+  priority    String?  @default("medium") // "low", "medium", "high"
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  assigneeId  String?
+  assignee    User?    @relation("UserAssignedTasks", fields: [assigneeId], references: [id])
+  members     TaskMember[]
+  dueDate     DateTime?
+  createdAt   DateTime @default(now())
+  labels      TaskLabel[]
+  comments    Comment[]
+  subtasks    Subtask[]
+  attachments Attachment[]
+}
+
+model Label {
+  id    String   @id @default(cuid())
+  name  String
+  color String?  
+  taskLinks TaskLabel[]
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  body      String
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id])
+  authorId  String?
+  author    User?    @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+}
+/// Many-to-many join table for Task <-> Label
+model TaskLabel {
+  taskId  String
+  labelId String
+
+  task  Task  @relation(fields: [taskId], references: [id])
+  label Label @relation(fields: [labelId], references: [id])
+
+  @@id([taskId, labelId])
+  @@map("_TaskToLabel")
+}
+
+/// Many-to-many join table for Task <-> User (members)
+model TaskMember {
+  taskId String
+  userId String
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, userId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // "task_assigned", "mentioned", "comment", "due_soon", "task_updated"
+  title     String
+  message   String
+  link      String?  // URL to navigate to
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  @@index([userId, read])
+  @@index([createdAt])
+}
+
+model Subtask {
+  id          String   @id @default(cuid())
+  title       String
+  completed   Boolean  @default(false)
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  order       Int      @default(0)
+  
+  @@index([taskId])
+}
+
+model Attachment {
+  id          String   @id @default(cuid())
+  filename    String
+  originalName String
+  mimeType    String
+  size        Int      // File size in bytes
+  url         String   // Path or URL to the file
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  uploadedById String?
+  uploadedBy  User?    @relation(fields: [uploadedById], references: [id])
+  createdAt   DateTime @default(now())
+  
+  @@index([taskId])
+}

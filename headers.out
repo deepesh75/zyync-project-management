@@ -1,0 +1,359 @@
+HTTP/1.1 302 Found
+Set-Cookie: next-auth.csrf-token=304044bf56493a4be55b9ad5c2702a104aa86145522763b86c9f36a931da91be%7C54108553c40929c41e729f94d9a3240819abc2b7c7fc7b1c58850c64c1b38171; Path=/; HttpOnly; SameSite=Lax
+Set-Cookie: next-auth.callback-url=http%3A%2F%2Flocalhost%3A3000%2F; Path=/; HttpOnly; SameSite=Lax
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+HTTP/1.1 302 Found
+Location: http://localhost:3000/api/auth/signin?csrf=true
+Date: Mon, 01 Dec 2025 13:32:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
