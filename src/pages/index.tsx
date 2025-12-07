@@ -7,6 +7,8 @@ type Project = {
   name: string
   archived?: boolean
   archivedAt?: string
+  tasks?: any[]
+  owner?: any
 }
 
 type Organization = {

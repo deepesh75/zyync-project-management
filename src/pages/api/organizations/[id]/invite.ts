@@ -101,7 +101,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await sendInvitationEmail({
         to: email,
         organizationName: invitation.organization.name,
-        inviterName: invitation.invitedBy.name || invitation.invitedBy.email,
+        inviterName: invitation.invitedBy?.name || invitation.invitedBy?.email || 'Unknown',
         inviteLink
       })
     } else {

@@ -1829,8 +1829,8 @@ export default function ProjectPage() {
                   </React.Fragment>
                 ))}
 
-                {draggingTaskId && dragOverColumn === col && !dragOverTaskId && (
-                  <li key={`placeholder-end-${col}`} style={{ background: '#fafafa', padding: 12, marginBottom: 8, borderRadius: 4, border: '2px dashed #ddd', minHeight: 48 }} />
+                {draggingTaskId && dragOverColumn === col.id && !dragOverTaskId && (
+                  <li key={`placeholder-end-${col.id}`} style={{ background: '#fafafa', padding: 12, marginBottom: 8, borderRadius: 4, border: '2px dashed #ddd', minHeight: 48 }} />
                 )}
               </ul>
               
