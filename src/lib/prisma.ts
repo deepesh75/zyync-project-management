@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { PrismaLibSQL } from '@prisma/adapter-libsql'
+import { PrismaLibSql } from '@prisma/adapter-libsql'
 import { createClient } from '@libsql/client'
 
 declare global {
@@ -13,7 +13,7 @@ function createPrismaClient() {
   // Check if using Turso (libsql)
   if (databaseUrl.startsWith('libsql://')) {
     const libsql = createClient({ url: databaseUrl })
-    const adapter = new PrismaLibSQL(libsql)
+    const adapter = new PrismaLibSql(libsql)
     return new PrismaClient({ adapter })
   }
   
