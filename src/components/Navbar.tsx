@@ -28,7 +28,7 @@ export default function Navbar() {
 
   const markAsRead = async (id: string) => {
     // Optimistic update
-    const optimisticNotifications = notifications.map(n => 
+    const optimisticNotifications = notifications.map((n: any) => 
       n.id === id ? { ...n, read: true } : n
     )
     mutate(optimisticNotifications, false)
@@ -44,7 +44,7 @@ export default function Navbar() {
 
   const markAllAsRead = async () => {
     // Optimistic update
-    const optimisticNotifications = notifications.map(n => ({ ...n, read: true }))
+    const optimisticNotifications = notifications.map((n: any) => ({ ...n, read: true }))
     mutate(optimisticNotifications, false)
     
     try {
