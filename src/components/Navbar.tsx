@@ -12,8 +12,8 @@ export default function Navbar() {
   const [showNotifications, setShowNotifications] = useState(false)
   const notifRef = useRef<HTMLDivElement>(null)
 
-  // Use SWR hook for notifications with auto-polling
-  const { notifications, unreadCount, mutate } = useNotifications()
+  // Use SWR hook for notifications with auto-polling - only when authenticated
+  const { notifications, unreadCount, mutate } = useNotifications(!!session)
 
   // Close dropdown when clicking outside
   useEffect(() => {

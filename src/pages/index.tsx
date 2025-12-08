@@ -25,9 +25,10 @@ export default function Home() {
   const [selectedOrgId, setSelectedOrgId] = useState<string>('')
   const [showArchived, setShowArchived] = useState(false)
 
-  // Use SWR hooks for caching
-  const { projects, mutate: mutateProjects } = useProjects(showArchived)
-  const { organizations, mutate: mutateOrgs } = useOrganizations()
+  // Use SWR hooks for caching - only when authenticated
+  const shouldFetch = status === 'authenticated'
+  const { projects, mutate: mutateProjects } = useProjects(showArchived, shouldFetch)
+  const { organizations, mutate: mutateOrgs } = useOrganizations(shouldFetch)
 
   useEffect(() => {
     if (organizations && organizations.length > 0 && !selectedOrgId) {

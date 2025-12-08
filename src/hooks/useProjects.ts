@@ -2,9 +2,9 @@ import useSWR from 'swr'
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
-export function useProjects(showArchived = false) {
+export function useProjects(showArchived = false, shouldFetch = true) {
   const { data, error, mutate } = useSWR(
-    `/api/projects?showArchived=${showArchived}`,
+    shouldFetch ? `/api/projects?showArchived=${showArchived}` : null,
     fetcher,
     {
       revalidateOnFocus: false,
@@ -20,11 +20,15 @@ export function useProjects(showArchived = false) {
   }
 }
 
-export function useOrganizations() {
-  const { data, error, mutate } = useSWR('/api/organizations', fetcher, {
-    revalidateOnFocus: false,
-    dedupingInterval: 2000,
-  })
+export function useOrganizations(shouldFetch = true) {
+  const { data, error, mutate } = useSWR(
+    shouldFetch ? '/api/organizations' : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 2000,
+    }
+  )
 
   return {
     organizations: data || [],
