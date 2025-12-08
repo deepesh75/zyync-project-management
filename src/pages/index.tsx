@@ -63,7 +63,7 @@ export default function Home() {
     
     // Optimistic update
     if (projects) {
-      const optimisticProjects = projects.map(p => 
+      const optimisticProjects = projects.map((p: any) => 
         p.id === projectId ? { ...p, archived: !currentlyArchived } : p
       )
       mutateProjects(optimisticProjects, false)
@@ -92,7 +92,7 @@ export default function Home() {
 
     // Optimistic update
     if (projects) {
-      mutateProjects(projects.filter(p => p.id !== projectId), false)
+      mutateProjects(projects.filter((p: any) => p.id !== projectId), false)
     }
 
     try {
