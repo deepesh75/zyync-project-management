@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { useSession, signIn } from 'next-auth/react'
+import useSWR from 'swr'
 import matchesFilter from '../../lib/filter'
 import Navbar from '../../components/Navbar'
+
+const fetcher = (url: string) => fetch(url).then(r => r.json())
 
 type Task = {
   id: string
@@ -18,9 +21,18 @@ type Task = {
 export default function ProjectPage() {
   const router = useRouter()
   const { id } = router.query
-  const [project, setProject] = useState<any | null>(null)
-  const [loading, setLoading] = useState(true)
   const { data: session } = useSession()
+  
+  // Replace useState with SWR for caching and optimistic updates
+  const { data: project, error, mutate } = useSWR(
+    id ? `/api/projects/${id}` : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 2000,
+    }
+  )
+  const loading = !error && !project
 
   // form state for creating a task
   const [newTitle, setNewTitle] = useState('')
@@ -48,57 +60,64 @@ export default function ProjectPage() {
   const [columnTaskInputs, setColumnTaskInputs] = useState<Record<string, string>>({})
   const [subtasks, setSubtasks] = useState<Array<any>>([])
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('')
-  const [attachments, setAttachments] = useState<Array<any>>([])
-  const [uploading, setUploading] = useState(false)
-  const [assigneeFilter, setAssigneeFilter] = useState<string>('')
-  const [priorityFilter, setPriorityFilter] = useState<string>('')
-  const [labelFilter, setLabelFilter] = useState<string>('')
-  const [quickFilter, setQuickFilter] = useState<string>('')
+  
+  // Filter states
+  const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null)
+  const [priorityFilter, setPriorityFilter] = useState<string | null>(null)
+  const [labelFilter, setLabelFilter] = useState<string | null>(null)
+  const [quickFilter, setQuickFilter] = useState<string | null>(null)
   const [showFilters, setShowFilters] = useState(false)
+  const [showLabelManager, setShowLabelManager] = useState(false)
   const [showLabelsModal, setShowLabelsModal] = useState(false)
+  
+  useEffect(() => {
+    if (!project) return
+    // Parse columns from project or use defaults
+    if (project.columns) {
+      try {
+        setColumns(JSON.parse(project.columns))
+      } catch {
+        setColumns([{ id: 'todo', name: 'Todo' }, { id: 'in-progress', name: 'In Progress' }, { id: 'done', name: 'Done' }])
+      }
+    } else {
+      setColumns([{ id: 'todo', name: 'Todo' }, { id: 'in-progress', name: 'In Progress' }, { id: 'done', name: 'Done' }])
+    }
+  }, [project])
 
   useEffect(() => {
-    if (!id) return
-    setLoading(true)
-    fetch(`/api/projects/${id}`)
-      .then((r) => r.json())
-      .then((p) => {
-        setProject(p)
-        // Parse columns from project or use defaults
-        if (p.columns) {
-          try {
-            setColumns(JSON.parse(p.columns))
-          } catch {
-            setColumns([{ id: 'todo', name: 'Todo' }, { id: 'in-progress', name: 'In Progress' }, { id: 'done', name: 'Done' }])
-          }
-        } else {
-          setColumns([{ id: 'todo', name: 'Todo' }, { id: 'in-progress', name: 'In Progress' }, { id: 'done', name: 'Done' }])
-        }
-      })
-      .catch(() => setProject(null))
-      .finally(() => setLoading(false))
     // fetch users for assignee selection on the board
     fetch('/api/users')
       .then((r) => r.json())
       .then((u) => setBoardUsers(u))
       .catch(() => setBoardUsers([]))
-  }, [id])
+  }, [])
 
   async function moveTask(taskId: string, toStatus: string) {
+    if (!project) return
+    
+    // Optimistic update - instant UI
+    const optimisticProject = {
+      ...project,
+      tasks: project.tasks.map((t: any) =>
+        t.id === taskId ? { ...t, status: toStatus } : t
+      ),
+    }
+    mutate(optimisticProject, false)
+    
+    // Update server in background
     try {
-      const res = await fetch(`/api/tasks/${taskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: toStatus }) })
-      const txt = await res.text().catch(() => '')
-      console.debug('moveTask response', res.status, txt)
-      if (!res.ok) {
-        console.warn('moveTask failed', res.status, txt)
-      }
+      await fetch(`/api/tasks/${taskId}`, { 
+        method: 'PATCH', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ status: toStatus }) 
+      })
+      // Revalidate to sync with server
+      mutate()
     } catch (err) {
       console.error('moveTask error', err)
+      // Revert on error
+      mutate()
     }
-    // refresh
-    const res = await fetch(`/api/projects/${id}`)
-    const p = await res.json()
-    setProject(p)
   }
 
   // Drag-and-drop state and handlers (with preview + placeholder)
@@ -185,10 +204,24 @@ export default function ProjectPage() {
   async function createTask(e?: React.FormEvent, columnId?: string) {
     if (e) e.preventDefault()
     const taskTitle = columnId ? (columnTaskInputs[columnId] || '') : newTitle
-    if (!taskTitle.trim()) return
+    if (!taskTitle.trim() || !project) return
     setCreating(true)
     const status = columnId || columns[0]?.id
-    await fetch('/api/tasks', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: taskTitle, description: newDescription, projectId: id, status }) })
+    
+    const res = await fetch('/api/tasks', { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify({ title: taskTitle, description: newDescription, projectId: id, status }) 
+    })
+    
+    if (res.ok) {
+      const newTask = await res.json()
+      // Optimistic update - add task to cache
+      mutate({
+        ...project,
+        tasks: [...project.tasks, newTask]
+      }, false)
+    }
     
     if (columnId) {
       setColumnTaskInputs({ ...columnTaskInputs, [columnId]: '' })
@@ -197,11 +230,9 @@ export default function ProjectPage() {
       setNewDescription('')
     }
     
-    // refresh
-    const res = await fetch(`/api/projects/${id}`)
-    const p = await res.json()
-    setProject(p)
     setCreating(false)
+    // Revalidate in background
+    mutate()
   }
 
   async function openTask(t: Task) {
@@ -427,10 +458,14 @@ export default function ProjectPage() {
   }
 
   async function saveColumns() {
+    if (!project) return
     try {
       console.log('Saving columns:', columns)
       const payload = { columns: JSON.stringify(columns) }
       console.log('Payload:', payload)
+      
+      // Optimistic update
+      mutate({ ...project, columns: JSON.stringify(columns) }, false)
       
       const res = await fetch(`/api/projects/${id}`, {
         method: 'PATCH',
@@ -441,19 +476,22 @@ export default function ProjectPage() {
       console.log('Response status:', res.status)
       
       if (res.ok) {
-        const updatedProject = await res.json()
-        console.log('Updated project:', updatedProject)
-        setProject(updatedProject)
         setEditingColumns(false)
         alert('Columns saved successfully!')
+        // Revalidate in background
+        mutate()
       } else {
         const errorText = await res.text()
         console.error('Failed to save columns. Status:', res.status, 'Error:', errorText)
         alert(`Failed to save columns (${res.status}). Check console for details.`)
+        // Revert on error
+        mutate()
       }
     } catch (err) {
       console.error('Failed to save columns', err)
       alert('Failed to save columns. Please try again.')
+      // Revert on error
+      mutate()
     }
   }
 
@@ -475,15 +513,29 @@ export default function ProjectPage() {
   }
 
   async function changeAssignee(taskId: string, assigneeId: string | null) {
-    await fetch(`/api/tasks/${taskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ assigneeId }) })
-    // refresh project and selected task
-    const res = await fetch(`/api/projects/${id}`)
-    const p = await res.json()
-    setProject(p)
-    if (selectedTask) {
-      const updated = p.tasks.find((x: Task) => x.id === selectedTask.id)
-      setSelectedTask(updated || null)
+    if (!project) return
+    
+    // Optimistic update
+    const optimisticProject = {
+      ...project,
+      tasks: project.tasks.map((t: any) =>
+        t.id === taskId ? { ...t, assigneeId } : t
+      ),
     }
+    mutate(optimisticProject, false)
+    
+    if (selectedTask && selectedTask.id === taskId) {
+      setSelectedTask({ ...selectedTask, assigneeId } as any)
+    }
+    
+    await fetch(`/api/tasks/${taskId}`, { 
+      method: 'PATCH', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify({ assigneeId }) 
+    })
+    
+    // Revalidate in background
+    mutate()
   }
 
   async function inviteNewMember(e?: React.FormEvent) {
@@ -519,23 +571,22 @@ export default function ProjectPage() {
   }
 
   async function removeMemberFromTask(taskId: string, userId: string) {
+    if (!project) return
     const task = project.tasks.find((t: any) => t.id === taskId)
     if (!task) return
     const currentMembers = (task as any).members || []
     const nextIds = currentMembers.filter((m: any) => m.userId !== userId).map((m: any) => m.userId)
+    
     try {
       const res = await fetch(`/api/tasks/${taskId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ memberIds: nextIds })
       })
+      
       if (res.ok) {
-        const pRes = await fetch(`/api/projects/${id}`)
-        const p = await pRes.json()
-        setProject(p)
-        if (selectedTask && selectedTask.id === taskId) {
-          setSelectedTask(p.tasks.find((x: any) => x.id === taskId) || null)
-        }
+        // Revalidate to get updated data
+        mutate()
       }
     } catch (err) {
       console.error('Failed to remove member', err)
@@ -954,10 +1005,8 @@ export default function ProjectPage() {
                     if (res.ok) {
                       setNewLabelName('')
                       setNewLabelColor('#6b7280')
-                      // Refresh project
-                      const pRes = await fetch(`/api/projects/${id}`)
-                      const p = await pRes.json()
-                      setProject(p)
+                      // Revalidate project data
+                      mutate()
                     }
                   } catch (err) {
                     console.error('Failed to create label', err)
@@ -1092,10 +1141,8 @@ export default function ProjectPage() {
                                 try {
                                   const res = await fetch(`/api/labels/${label.id}`, { method: 'DELETE' })
                                   if (res.ok) {
-                                    // Refresh project
-                                    const pRes = await fetch(`/api/projects/${id}`)
-                                    const p = await pRes.json()
-                                    setProject(p)
+                                    // Revalidate project data
+                                    mutate()
                                   }
                                 } catch (err) {
                                   console.error('Failed to delete label', err)
@@ -2062,13 +2109,12 @@ export default function ProjectPage() {
                     return
                   }
                   
-                  // refresh project
-                  const res = await fetch(`/api/projects/${id}`)
-                  const p = await res.json()
-                  setProject(p)
-                  // update selectedTask from refreshed data
-                  const updated = p.tasks.find((x: Task) => x.id === selectedTask.id)
-                  setSelectedTask(updated || null)
+                  // Revalidate project and update selected task
+                  await mutate()
+                  if (project) {
+                    const updated = project.tasks.find((x: Task) => x.id === selectedTask.id)
+                    setSelectedTask(updated || null)
+                  }
                   alert('Task saved successfully!')
                 }}
                   style={{
@@ -2299,12 +2345,13 @@ export default function ProjectPage() {
                               const updatedTask = await res.json()
                               console.log('Updated task:', updatedTask)
                               
-                              const pRes = await fetch(`/api/projects/${id}`)
-                              const p = await pRes.json()
-                              setProject(p)
-                              const newSelectedTask = p.tasks.find((x: any) => x.id === (selectedTask as any).id)
-                              setSelectedTask(newSelectedTask || null)
-                              console.log('Task after refresh:', newSelectedTask)
+                              // Revalidate project and update selected task
+                              await mutate()
+                              if (project) {
+                                const newSelectedTask = project.tasks.find((x: any) => x.id === (selectedTask as any).id)
+                                setSelectedTask(newSelectedTask || null)
+                                console.log('Task after refresh:', newSelectedTask)
+                              }
                             } else {
                               const errorText = await res.text()
                               console.error('Failed to add member:', errorText)
@@ -2721,11 +2768,11 @@ export default function ProjectPage() {
                                 const res = await fetch(`/api/tasks/${(selectedTask as any).id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ labelIds: nextIds }) })
                                 if (res.ok) {
                                   const updated = await res.json()
-                                  // update project and selectedTask
-                                  const pRes = await fetch(`/api/projects/${id}`)
-                                  const p = await pRes.json()
-                                  setProject(p)
-                                  setSelectedTask(p.tasks.find((x: any) => x.id === (selectedTask as any).id) || null)
+                                  // Revalidate project and update selected task
+                                  await mutate()
+                                  if (project) {
+                                    setSelectedTask(project.tasks.find((x: any) => x.id === (selectedTask as any).id) || null)
+                                  }
                                 }
                               } catch (err) {
                                 console.error('Failed to toggle label', err)
@@ -2757,11 +2804,11 @@ export default function ProjectPage() {
                         if (res.ok) {
                           setNewLabelName('')
                           setNewLabelColor('#6366f1')
-                          // refresh project and selected task
-                          const pRes = await fetch(`/api/projects/${id}`)
-                          const p = await pRes.json()
-                          setProject(p)
-                          setSelectedTask(p.tasks.find((x: any) => x.id === (selectedTask as any).id) || null)
+                          // Revalidate project and update selected task
+                          await mutate()
+                          if (project && selectedTask) {
+                            setSelectedTask(project.tasks.find((x: any) => x.id === (selectedTask as any).id) || null)
+                          }
                         }
                       } catch (err) {
                         console.error('Failed to create label', err)

@@ -70,7 +70,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     ])
   } else if (organizationName) {
     // Create new organization if provided
-    const slug = organizationName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    let slug = organizationName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    
+    // Ensure slug is unique by adding a random suffix if needed
+    const existingOrg = await prisma.organization.findUnique({ where: { slug } })
+    if (existingOrg) {
+      slug = `${slug}-${Math.random().toString(36).substring(2, 8)}`
+    }
     
     await prisma.organization.create({
       data: {
