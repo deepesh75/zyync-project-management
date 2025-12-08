@@ -60,6 +60,7 @@ export default function ProjectPage() {
   const [columnTaskInputs, setColumnTaskInputs] = useState<Record<string, string>>({})
   const [subtasks, setSubtasks] = useState<Array<any>>([])
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('')
+  const [attachments, setAttachments] = useState<Array<any>>([])
   
   // Filter states
   const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null)
