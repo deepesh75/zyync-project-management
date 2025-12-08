@@ -2,39 +2,17 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import { useTheme } from '../contexts/ThemeContext'
+import { useNotifications } from '../hooks/useNotifications'
 
 export default function Navbar() {
   const { data: session } = useSession()
   const router = useRouter()
   const { theme, toggleTheme } = useTheme()
-  const [notifications, setNotifications] = useState<any[]>([])
-  const [unreadCount, setUnreadCount] = useState(0)
   const [showNotifications, setShowNotifications] = useState(false)
   const notifRef = useRef<HTMLDivElement>(null)
 
-  // Fetch notifications
-  useEffect(() => {
-    if (!session) return
-
-    const fetchNotifications = async () => {
-      try {
-        const res = await fetch('/api/notifications')
-        if (res.ok) {
-          const data = await res.json()
-          setNotifications(data)
-          setUnreadCount(data.filter((n: any) => !n.read).length)
-        }
-      } catch (error) {
-        console.error('Failed to fetch notifications:', error)
-      }
-    }
-
-    fetchNotifications()
-    
-    // Poll for new notifications every 30 seconds
-    const interval = setInterval(fetchNotifications, 30000)
-    return () => clearInterval(interval)
-  }, [session])
+  // Use SWR hook for notifications with auto-polling
+  const { notifications, unreadCount, mutate } = useNotifications()
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -49,22 +27,32 @@ export default function Navbar() {
   }, [])
 
   const markAsRead = async (id: string) => {
+    // Optimistic update
+    const optimisticNotifications = notifications.map(n => 
+      n.id === id ? { ...n, read: true } : n
+    )
+    mutate(optimisticNotifications, false)
+    
     try {
       await fetch(`/api/notifications/${id}`, { method: 'PATCH' })
-      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))
-      setUnreadCount(prev => Math.max(0, prev - 1))
+      mutate()
     } catch (error) {
       console.error('Failed to mark notification as read:', error)
+      mutate()
     }
   }
 
   const markAllAsRead = async () => {
+    // Optimistic update
+    const optimisticNotifications = notifications.map(n => ({ ...n, read: true }))
+    mutate(optimisticNotifications, false)
+    
     try {
       await fetch('/api/notifications', { method: 'PATCH' })
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })))
-      setUnreadCount(0)
+      mutate()
     } catch (error) {
       console.error('Failed to mark all as read:', error)
+      mutate()
     }
   }
 

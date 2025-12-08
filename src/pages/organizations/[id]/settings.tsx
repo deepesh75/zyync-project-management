@@ -2,29 +2,19 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { useSession } from 'next-auth/react'
 import Navbar from '../../../components/Navbar'
+import { useOrganization } from '../../../hooks/useOrganization'
 
 export default function OrganizationSettings() {
   const router = useRouter()
   const { id } = router.query
   const { data: session } = useSession()
-  const [organization, setOrganization] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole, setInviteRole] = useState('member')
   const [inviting, setInviting] = useState(false)
   const [inviteLink, setInviteLink] = useState('')
 
-  useEffect(() => {
-    if (!id) return
-    
-    fetch(`/api/organizations/${id}`)
-      .then(r => r.json())
-      .then(data => {
-        setOrganization(data)
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [id])
+  // Use SWR hook for caching
+  const { organization, isLoading, mutate } = useOrganization(id as string)
 
   async function handleInvite(e: React.FormEvent) {
     e.preventDefault()
@@ -49,10 +39,8 @@ export default function OrganizationSettings() {
       setInviteLink(data.inviteLink)
       setInviteEmail('')
       
-      // Refresh organization data
-      const orgRes = await fetch(`/api/organizations/${id}`)
-      const orgData = await orgRes.json()
-      setOrganization(orgData)
+      // Revalidate organization data
+      mutate()
     } catch (err) {
       alert('Failed to send invitation')
     } finally {
@@ -60,7 +48,7 @@ export default function OrganizationSettings() {
     }
   }
 
-  if (loading) return <div style={{ padding: 24 }}>Loading...</div>
+  if (isLoading) return <div style={{ padding: 24 }}>Loading...</div>
 
   if (!organization) {
     return (

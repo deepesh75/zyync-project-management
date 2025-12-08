@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSession, signIn } from 'next-auth/react'
 import Navbar from '../components/Navbar'
+import { useProjects, useOrganizations } from '../hooks/useProjects'
 
 type Project = {
   id: string
@@ -19,39 +20,19 @@ type Organization = {
 
 export default function Home() {
   const { data: session, status } = useSession()
-  const [projects, setProjects] = useState<Project[]>([])
-  const [organizations, setOrganizations] = useState<Organization[]>([])
   const [name, setName] = useState('')
   const [selectedOrgId, setSelectedOrgId] = useState<string>('')
   const [showArchived, setShowArchived] = useState(false)
 
+  // Use SWR hooks for caching
+  const { projects, mutate: mutateProjects } = useProjects(showArchived)
+  const { organizations, mutate: mutateOrgs } = useOrganizations()
+
   useEffect(() => {
-    if (status === 'authenticated') {
-      // Fetch organizations
-      fetch('/api/organizations')
-        .then((r) => r.json())
-        .then((orgs) => {
-          setOrganizations(orgs)
-          if (orgs.length > 0 && !selectedOrgId) {
-            setSelectedOrgId(orgs[0].id)
-          }
-        })
-        .catch(() => setOrganizations([]))
-
-      // Fetch projects
-      fetchProjects()
+    if (organizations && organizations.length > 0 && !selectedOrgId) {
+      setSelectedOrgId(organizations[0].id)
     }
-  }, [status, showArchived])
-
-  async function fetchProjects() {
-    try {
-      const res = await fetch(`/api/projects?showArchived=${showArchived}`)
-      const data = await res.json()
-      setProjects(data)
-    } catch {
-      setProjects([])
-    }
-  }
+  }, [organizations])
 
   async function create() {
     if (!name) return
@@ -59,19 +40,34 @@ export default function Home() {
     if (selectedOrgId) {
       body.organizationId = selectedOrgId
     }
+    
+    // Optimistic update
+    const tempProject = { id: 'temp', name, archived: false, tasks: [] }
+    mutateProjects(projects ? [tempProject, ...projects] : [tempProject], false)
+    
     const res = await fetch('/api/projects', { 
       method: 'POST', 
       headers: { 'Content-Type': 'application/json' }, 
       body: JSON.stringify(body) 
     })
     const project = await res.json()
-    setProjects((p) => [project, ...p])
     setName('')
+    
+    // Revalidate
+    mutateProjects()
   }
 
   async function toggleArchive(projectId: string, currentlyArchived: boolean, e: React.MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
+    
+    // Optimistic update
+    if (projects) {
+      const optimisticProjects = projects.map(p => 
+        p.id === projectId ? { ...p, archived: !currentlyArchived } : p
+      )
+      mutateProjects(optimisticProjects, false)
+    }
     
     try {
       await fetch(`/api/projects/${projectId}`, {
@@ -79,9 +75,10 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ archived: !currentlyArchived })
       })
-      fetchProjects()
+      mutateProjects()
     } catch (err) {
       alert('Failed to update project')
+      mutateProjects()
     }
   }
 
@@ -93,9 +90,14 @@ export default function Home() {
       return
     }
 
+    // Optimistic update
+    if (projects) {
+      mutateProjects(projects.filter(p => p.id !== projectId), false)
+    }
+
     try {
       await fetch(`/api/projects/${projectId}`, { method: 'DELETE' })
-      setProjects((p) => p.filter((proj) => proj.id !== projectId))
+      mutateProjects()
     } catch (err) {
       alert('Failed to delete project')
     }
