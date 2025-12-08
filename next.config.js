@@ -19,7 +19,6 @@ const nextConfig = {
   
   // Experimental features for better performance
   experimental: {
-    optimizeCss: true, // Enable CSS optimization
     optimizePackageImports: ['react', 'react-dom'], // Tree-shake common packages
   },
   
