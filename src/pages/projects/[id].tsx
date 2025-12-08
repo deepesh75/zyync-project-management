@@ -61,6 +61,7 @@ export default function ProjectPage() {
   const [subtasks, setSubtasks] = useState<Array<any>>([])
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('')
   const [attachments, setAttachments] = useState<Array<any>>([])
+  const [uploading, setUploading] = useState(false)
   
   // Filter states
   const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null)
