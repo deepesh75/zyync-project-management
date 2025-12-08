@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/router'
+import Link from 'next/link'
 import { useTheme } from '../contexts/ThemeContext'
 import { useNotifications } from '../hooks/useNotifications'
 
@@ -78,7 +79,7 @@ export default function Navbar() {
       backdropFilter: 'blur(12px)'
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 40 }}>
-        <a href="/" style={{ 
+        <Link href="/" style={{ 
           fontSize: 24, 
           fontWeight: 800, 
           color: 'white', 
@@ -87,10 +88,10 @@ export default function Navbar() {
           textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
         }}>
           Zyync
-        </a>
+        </Link>
         {session && (
           <div style={{ display: 'flex', gap: 28 }}>
-            <a href="/" style={{ 
+            <Link href="/" prefetch={true} style={{ 
               color: 'white', 
               textDecoration: 'none', 
               fontSize: 15, 
@@ -109,7 +110,7 @@ export default function Navbar() {
                 e.currentTarget.style.borderBottomColor = 'transparent'
               }}>
               Projects
-            </a>
+            </Link>
           </div>
         )}
       </div>

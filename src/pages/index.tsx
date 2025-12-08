@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useSession, signIn } from 'next-auth/react'
+import Link from 'next/link'
 import Navbar from '../components/Navbar'
 import { useProjects, useOrganizations } from '../hooks/useProjects'
 
@@ -381,9 +382,10 @@ export default function Home() {
             const uniqueUsers = Array.from(projectUsers.values())
             
             return (
-              <a 
+              <Link 
                 key={p.id} 
                 href={`/projects/${p.id}`}
+                prefetch={true}
                 style={{ 
                   padding: 20, 
                   background: 'var(--surface)', 
@@ -592,7 +594,7 @@ export default function Home() {
                     </div>
                   </div>
                 )}
-              </a>
+              </Link>
             )
           })}
         </div>
