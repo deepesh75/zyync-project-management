@@ -253,7 +253,7 @@ export default function Navbar() {
                       No notifications yet
                     </div>
                   ) : (
-                    notifications.map(notif => (
+                    notifications.map((notif: any) => (
                       <div
                         key={notif.id}
                         onClick={() => handleNotificationClick(notif)}
