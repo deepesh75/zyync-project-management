@@ -9,10 +9,11 @@ export function useNotifications() {
     dedupingInterval: 2000,
   })
 
-  const unreadCount = data ? data.filter((n: any) => !n.read).length : 0
+  const notifications = data || []
+  const unreadCount = notifications.filter((n: any) => !n.read).length
 
   return {
-    notifications: data || [],
+    notifications,
     unreadCount,
     isLoading: !error && !data,
     isError: error,

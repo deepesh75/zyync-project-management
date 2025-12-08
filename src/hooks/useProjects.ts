@@ -13,7 +13,7 @@ export function useProjects(showArchived = false) {
   )
 
   return {
-    projects: data,
+    projects: data || [],
     isLoading: !error && !data,
     isError: error,
     mutate,
@@ -27,7 +27,7 @@ export function useOrganizations() {
   })
 
   return {
-    organizations: data,
+    organizations: data || [],
     isLoading: !error && !data,
     isError: error,
     mutate,
