@@ -210,7 +210,7 @@ export default function Home() {
               letterSpacing: '-0.02em'
             }}>Your Organizations</h2>
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-              {organizations.map((org) => (
+              {organizations.map((org: any) => (
                 <a
                   key={org.id}
                   href={`/organizations/${org.id}/settings`}
@@ -318,7 +318,7 @@ export default function Home() {
               }}
             >
               <option value="">📁 Personal Project</option>
-              {organizations.map((org) => (
+              {organizations.map((org: any) => (
                 <option key={org.id} value={org.id}>🏢 {org.name}</option>
               ))}
             </select>
@@ -364,7 +364,7 @@ export default function Home() {
           </button>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
-          {projects.map((p) => {
+          {projects.map((p: any) => {
             // Get unique users from project tasks
             const projectUsers = new Map()
             p.tasks?.forEach((task: any) => {
