@@ -32,7 +32,7 @@ export default function Home() {
     if (organizations && organizations.length > 0 && !selectedOrgId) {
       setSelectedOrgId(organizations[0].id)
     }
-  }, [organizations])
+  }, [organizations, selectedOrgId])
 
   async function create() {
     if (!name) return
@@ -199,7 +199,7 @@ export default function Home() {
       }}>
         
         {/* Organizations Section */}
-        {organizations.length > 0 && (
+        {organizations && organizations.length > 0 && (
           <section style={{ marginBottom: 40 }}>
             <h2 style={{ 
               margin: 0, 
@@ -302,7 +302,7 @@ export default function Home() {
           border: '2px solid var(--border)',
           boxShadow: 'var(--shadow-sm)'
         }}>
-          {organizations.length > 0 && (
+          {organizations && organizations.length > 0 && (
             <select
               value={selectedOrgId}
               onChange={(e) => setSelectedOrgId(e.target.value)}
@@ -364,7 +364,7 @@ export default function Home() {
           </button>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
-          {projects.map((p: any) => {
+          {projects && projects.map((p: any) => {
             // Get unique users from project tasks
             const projectUsers = new Map()
             p.tasks?.forEach((task: any) => {
