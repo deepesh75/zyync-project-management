@@ -96,6 +96,10 @@ model Task {
   comments    Comment[]
   subtasks    Subtask[]
   attachments Attachment[]
+  
+  @@index([projectId])
+  @@index([assigneeId])
+  @@index([status])
 }
 
 model Label {
@@ -105,6 +109,8 @@ model Label {
   taskLinks TaskLabel[]
   projectId String
   project   Project @relation(fields: [projectId], references: [id])
+  
+  @@index([projectId])
 }
 
 model Comment {
@@ -115,6 +121,8 @@ model Comment {
   authorId  String?
   author    User?    @relation(fields: [authorId], references: [id])
   createdAt DateTime @default(now())
+  
+  @@index([taskId])
 }
 /// Many-to-many join table for Task <-> Label
 model TaskLabel {
@@ -125,6 +133,8 @@ model TaskLabel {
   label Label @relation(fields: [labelId], references: [id])
 
   @@id([taskId, labelId])
+  @@index([taskId])
+  @@index([labelId])
   @@map("_TaskToLabel")
 }
 
@@ -137,6 +147,8 @@ model TaskMember {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([taskId, userId])
+  @@index([taskId])
+  @@index([userId])
 }
 
 model Notification {
