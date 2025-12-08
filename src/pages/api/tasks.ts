@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '../../lib/prisma'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from './auth/[...nextauth]'
+import { invalidateCacheKeys } from '../../lib/redis'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
@@ -27,6 +28,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         status: status ?? 'todo'
       }
     })
+    
+    // Invalidate project cache since tasks are included in project data
+    await invalidateCacheKeys([`project:${projectId}`])
+    
     return res.status(201).json(task)
   }
 

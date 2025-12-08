@@ -2,10 +2,18 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '../../lib/prisma'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from './auth/[...nextauth]'
+import { getCached, setCached, invalidateCache } from '../../lib/redis'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     const { showArchived } = req.query
+    const cacheKey = `projects:list:${showArchived || 'active'}`
+    
+    // Try to get from cache
+    const cached = await getCached(cacheKey)
+    if (cached) {
+      return res.status(200).json(cached)
+    }
     
     const projects = await prisma.project.findMany({ 
       where: showArchived === 'true' ? {} : { archived: false },
@@ -23,6 +31,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
       orderBy: { createdAt: 'desc' }
     })
+    
+    // Cache for 30 seconds
+    await setCached(cacheKey, projects, 30)
     return res.status(200).json(projects)
   }
 
@@ -55,6 +66,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         organizationId: organizationId || null
       } 
     })
+    
+    // Invalidate projects list cache
+    await invalidateCache('projects:list:*')
+    
     return res.status(201).json(project)
   }
 

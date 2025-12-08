@@ -2,12 +2,21 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '../../../lib/prisma'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '../auth/[...nextauth]'
+import { getCached, setCached, invalidateCacheKeys, invalidateCache } from '../../../lib/redis'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query
   if (!id || Array.isArray(id)) return res.status(400).json({ error: 'invalid id' })
 
   if (req.method === 'GET') {
+    const cacheKey = `project:${id}`
+    
+    // Try to get from cache
+    const cached = await getCached(cacheKey)
+    if (cached) {
+      return res.status(200).json(cached)
+    }
+    
     const project = await prisma.project.findUnique({
       where: { id: String(id) },
       include: {
@@ -35,6 +44,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     })
     if (!project) return res.status(404).json({ error: 'Not found' })
+    
+    // Cache for 60 seconds
+    await setCached(cacheKey, project, 60)
     return res.status(200).json(project)
   }
 
@@ -88,6 +100,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       })
       
+      // Invalidate cache for this project and projects list
+      await invalidateCacheKeys([`project:${id}`])
+      await invalidateCache('projects:list:*')
+      
       console.log('PATCH /api/projects/[id]: Project updated successfully')
       return res.status(200).json(project)
     } catch (err) {
@@ -107,6 +123,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await prisma.project.delete({
         where: { id: String(id) }
       })
+
+      // Invalidate cache for this project and projects list
+      await invalidateCacheKeys([`project:${id}`])
+      await invalidateCache('projects:list:*')
 
       return res.status(200).json({ message: 'Project deleted successfully' })
     } catch (err) {

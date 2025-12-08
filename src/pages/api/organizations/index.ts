@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '../../../lib/prisma'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '../auth/[...nextauth]'
+import { getCached, setCached, invalidateCache } from '../../../lib/redis'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions)
@@ -12,7 +13,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'GET') {
     // Get user's organizations
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email: session.user.email }
+    })
+    
+    if (!user) return res.status(404).json({ error: 'User not found' })
+    
+    const cacheKey = `organizations:user:${user.id}`
+    
+    // Try to get from cache
+    const cached = await getCached(cacheKey)
+    if (cached) {
+      return res.status(200).json(cached)
+    }
+    
+    const userWithOrgs = await prisma.user.findUnique({
+      where: { id: user.id },
       include: {
         organizationMemberships: {
           include: {
@@ -22,12 +37,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     })
 
-    if (!user) return res.status(404).json({ error: 'User not found' })
+    if (!userWithOrgs) return res.status(404).json({ error: 'User not found' })
 
-    const organizations = user.organizationMemberships.map(m => ({
+    const organizations = userWithOrgs.organizationMemberships.map(m => ({
       ...m.organization,
       role: m.role
     }))
+    
+    // Cache for 60 seconds
+    await setCached(cacheKey, organizations, 60)
 
     return res.status(200).json(organizations)
   }
@@ -72,6 +90,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       }
     })
+    
+    // Invalidate organizations cache for this user
+    await invalidateCache(`organizations:user:${user.id}`)
 
     return res.status(201).json(organization)
   }
