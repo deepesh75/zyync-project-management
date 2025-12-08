@@ -813,8 +813,8 @@ export default function ProjectPage() {
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
               {/* Assignee Filter */}
               <select
-                value={assigneeFilter}
-                onChange={(e) => setAssigneeFilter(e.target.value)}
+                value={assigneeFilter || ''}
+                onChange={(e) => setAssigneeFilter(e.target.value || null)}
                 style={{
                   padding: '8px 12px',
                   borderRadius: 8,
@@ -834,8 +834,8 @@ export default function ProjectPage() {
 
               {/* Priority Filter */}
               <select
-                value={priorityFilter}
-                onChange={(e) => setPriorityFilter(e.target.value)}
+                value={priorityFilter || ''}
+                onChange={(e) => setPriorityFilter(e.target.value || null)}
                 style={{
                   padding: '8px 12px',
                   borderRadius: 8,
@@ -854,8 +854,8 @@ export default function ProjectPage() {
 
               {/* Label Filter */}
               <select
-                value={labelFilter}
-                onChange={(e) => setLabelFilter(e.target.value)}
+                value={labelFilter || ''}
+                onChange={(e) => setLabelFilter(e.target.value || null)}
                 style={{
                   padding: '8px 12px',
                   borderRadius: 8,
