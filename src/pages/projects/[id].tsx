@@ -302,8 +302,8 @@ export default function ProjectPage() {
   }
 
   function renderCommentBody(body: string) {
-    // Highlight @mentions in comments
-    const parts = body.split(/(@[\w\s]+)/g)
+    // Highlight @mentions in comments (matches @Name or @FirstName LastName)
+    const parts = body.split(/(@\w+(?:\s+\w+)?)/g)
     return parts.map((part, i) => {
       if (part.startsWith('@')) {
         return <span key={i} style={{ color: '#6366f1', fontWeight: 600 }}>{part}</span>
