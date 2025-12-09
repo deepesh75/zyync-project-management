@@ -1,6 +1,9 @@
 import useSWR from 'swr'
 
-const fetcher = (url: string) => fetch(url).then(r => r.json())
+const fetcher = (url: string) => fetch(url).then(r => {
+  if (!r.ok) return []
+  return r.json()
+})
 
 export function useProjects(showArchived = false, shouldFetch = true) {
   const { data, error, mutate } = useSWR(
@@ -13,7 +16,7 @@ export function useProjects(showArchived = false, shouldFetch = true) {
   )
 
   return {
-    projects: data || [],
+    projects: Array.isArray(data) ? data : [],
     isLoading: !error && !data,
     isError: error,
     mutate,
@@ -31,7 +34,7 @@ export function useOrganizations(shouldFetch = true) {
   )
 
   return {
-    organizations: data || [],
+    organizations: Array.isArray(data) ? data : [],
     isLoading: !error && !data,
     isError: error,
     mutate,
