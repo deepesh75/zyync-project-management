@@ -3001,7 +3001,7 @@ export default function ProjectPage() {
                   Activity
                 </h4>
               
-                {activities.length === 0 ? (
+                {!activities || activities.length === 0 ? (
                   <div style={{ 
                     padding: 20, 
                     textAlign: 'center', 
@@ -3026,8 +3026,8 @@ export default function ProjectPage() {
                       opacity: 0.3
                     }} />
                     
-                    {activities.map((activity, index) => {
-                      const isLast = index === activities.length - 1
+                    {(activities || []).map((activity, index) => {
+                      const isLast = index === (activities || []).length - 1
                       return (
                         <div 
                           key={activity.id} 
