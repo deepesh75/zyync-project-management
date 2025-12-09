@@ -4,6 +4,7 @@ import { useSession, signIn } from 'next-auth/react'
 import useSWR from 'swr'
 import matchesFilter from '../../lib/filter'
 import Navbar from '../../components/Navbar'
+import { formatActivityMessage } from '../../lib/activity'
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
@@ -62,6 +63,7 @@ export default function ProjectPage() {
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('')
   const [attachments, setAttachments] = useState<Array<any>>([])
   const [uploading, setUploading] = useState(false)
+  const [activities, setActivities] = useState<Array<any>>([])
   
   // Filter states
   const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null)
@@ -239,21 +241,24 @@ export default function ProjectPage() {
 
   async function openTask(t: Task) {
     setSelectedTask(t)
-    // fetch comments, users, subtasks, and attachments
-    const [cRes, uRes, sRes, aRes] = await Promise.all([
+    // fetch comments, users, subtasks, attachments, and activities
+    const [cRes, uRes, sRes, aRes, actRes] = await Promise.all([
       fetch(`/api/tasks/${t.id}/comments`), 
       fetch('/api/users'),
       fetch(`/api/tasks/${t.id}/subtasks`),
-      fetch(`/api/tasks/${t.id}/attachments`)
+      fetch(`/api/tasks/${t.id}/attachments`),
+      fetch(`/api/tasks/${t.id}/activities`)
     ])
     const cJson = await cRes.json().catch(() => [])
     const uJson = await uRes.json().catch(() => [])
     const sJson = await sRes.json().catch(() => [])
     const aJson = await aRes.json().catch(() => [])
+    const actJson = await actRes.json().catch(() => [])
     setComments(cJson)
     setUsers(uJson)
     setSubtasks(sJson)
     setAttachments(aJson)
+    setActivities(actJson)
   }
 
   function handleCommentInput(e: React.ChangeEvent<HTMLInputElement>) {
@@ -2984,6 +2989,97 @@ export default function ProjectPage() {
                   )}
                 </div>
               </form>
+
+              {/* Activity Timeline */}
+              <div style={{ marginTop: 32, paddingTop: 24, borderTop: '2px solid var(--border)' }}>
+                <h4 style={{ marginTop: 0, marginBottom: 16, fontSize: 16, fontWeight: 600, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                  </svg>
+                  Activity
+                </h4>
+              
+                {activities.length === 0 ? (
+                  <div style={{ 
+                    padding: 20, 
+                    textAlign: 'center', 
+                    color: 'var(--text-secondary)', 
+                    fontSize: 13,
+                    background: 'var(--bg-secondary)',
+                    borderRadius: 8,
+                    fontStyle: 'italic'
+                  }}>
+                    No activity yet
+                  </div>
+                ) : (
+                  <div style={{ position: 'relative', paddingLeft: 24 }}>
+                    {/* Timeline line */}
+                    <div style={{
+                      position: 'absolute',
+                      left: 7,
+                      top: 8,
+                      bottom: 8,
+                      width: 2,
+                      background: 'linear-gradient(to bottom, var(--primary), transparent)',
+                      opacity: 0.3
+                    }} />
+                    
+                    {activities.map((activity, index) => {
+                      const isLast = index === activities.length - 1
+                      return (
+                        <div 
+                          key={activity.id} 
+                          style={{ 
+                            position: 'relative',
+                            paddingBottom: isLast ? 0 : 16,
+                            marginBottom: isLast ? 0 : 8
+                          }}
+                        >
+                          {/* Timeline dot */}
+                          <div style={{
+                            position: 'absolute',
+                            left: -20,
+                            top: 4,
+                            width: 10,
+                            height: 10,
+                            borderRadius: '50%',
+                            background: activity.action === 'created' ? 'var(--primary)' : 'var(--surface)',
+                            border: `2px solid ${activity.action === 'created' ? 'var(--primary)' : 'var(--border)'}`,
+                            boxShadow: '0 0 0 3px var(--card-bg)'
+                          }} />
+                          
+                          <div style={{
+                            background: 'var(--bg-secondary)',
+                            padding: '10px 12px',
+                            borderRadius: 8,
+                            fontSize: 13,
+                            lineHeight: 1.5
+                          }}>
+                            <div style={{ color: 'var(--text)' }}>
+                              {formatActivityMessage(activity)}
+                            </div>
+                            <div style={{ 
+                              color: 'var(--text-secondary)', 
+                              fontSize: 11, 
+                              marginTop: 4,
+                              fontWeight: 500
+                            }}>
+                              {new Date(activity.createdAt).toLocaleString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric',
+                                year: 'numeric',
+                                hour: 'numeric', 
+                                minute: '2-digit',
+                                hour12: true
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
               </div>
             </div>
           </div>
