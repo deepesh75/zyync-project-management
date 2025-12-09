@@ -1464,7 +1464,7 @@ export default function ProjectPage() {
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
         <div className="kanban" style={{ gap: 16, height: '100%', display: 'flex', overflowX: 'auto', paddingBottom: 16 }}>
           {columns.map((col) => {
-            const allColumnTasks = project.tasks.filter((t: Task) => t.status === col.id)
+            const allColumnTasks = project?.tasks?.filter((t: Task) => t.status === col.id) || []
             const columnTasks = filterTasks(allColumnTasks)
             return (
               <section 
