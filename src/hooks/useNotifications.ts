@@ -1,9 +1,6 @@
 import useSWR from 'swr'
 
-const fetcher = (url: string) => fetch(url).then(r => {
-  if (!r.ok) return []
-  return r.json()
-})
+const fetcher = (url: string) => fetch(url).then(r => r.json())
 
 export function useNotifications(shouldFetch = true) {
   const { data, error, mutate } = useSWR(
@@ -16,7 +13,7 @@ export function useNotifications(shouldFetch = true) {
     }
   )
 
-  const notifications = Array.isArray(data) ? data : []
+  const notifications = data || []
   const unreadCount = notifications.filter((n: any) => !n.read).length
 
   return {

@@ -3,7 +3,6 @@ import { prisma } from '../../../lib/prisma'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '../auth/[...nextauth]'
 import { notifyTaskAssignment, notifyMemberAdded } from '../../../lib/notifications'
-import { logActivity } from '../../../lib/activity'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query
@@ -36,68 +35,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (updates.assigneeId) allowed.assigneeId = updates.assigneeId
     if (updates.dueDate) allowed.dueDate = new Date(updates.dueDate)
 
-    // Log activities for changes
-    if (currentTask && currentUser) {
-      // Title change
-      if (updates.title && updates.title !== currentTask.title) {
-        await logActivity({
-          taskId: String(id),
-          userId: currentUser.id,
-          action: 'updated_title',
-          oldValue: currentTask.title,
-          newValue: updates.title
-        })
-      }
-      
-      // Description change
-      if (updates.description !== undefined && updates.description !== currentTask.description) {
-        await logActivity({
-          taskId: String(id),
-          userId: currentUser.id,
-          action: 'updated_description',
-          oldValue: currentTask.description || undefined,
-          newValue: updates.description || undefined
-        })
-      }
-      
-      // Status/moved change
-      if (updates.status && updates.status !== currentTask.status) {
-        await logActivity({
-          taskId: String(id),
-          userId: currentUser.id,
-          action: 'moved',
-          oldValue: currentTask.status,
-          newValue: updates.status
-        })
-      }
-      
-      // Priority change
-      if (updates.priority !== undefined && updates.priority !== currentTask.priority) {
-        await logActivity({
-          taskId: String(id),
-          userId: currentUser.id,
-          action: 'updated_priority',
-          oldValue: currentTask.priority || undefined,
-          newValue: updates.priority || undefined
-        })
-      }
-      
-      // Due date change
-      if (updates.dueDate !== undefined) {
-        const oldDate = currentTask.dueDate?.toISOString()
-        const newDate = updates.dueDate ? new Date(updates.dueDate).toISOString() : null
-        if (oldDate !== newDate) {
-          await logActivity({
-            taskId: String(id),
-            userId: currentUser.id,
-            action: 'updated_due_date',
-            oldValue: oldDate || undefined,
-            newValue: newDate || undefined
-          })
-        }
-      }
-    }
-
     // Notify on task assignment
     if (updates.assigneeId && currentTask && updates.assigneeId !== currentTask.assigneeId && currentUser) {
       await notifyTaskAssignment(
@@ -110,17 +47,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // handle labels (expects an array of label IDs)
     if (Array.isArray(updates.labelIds)) {
-      // Get current labels for activity logging
-      const currentLabels = await prisma.taskLabel.findMany({
-        where: { taskId: String(id) },
-        include: { label: true }
-      })
-      const currentLabelIds = currentLabels.map(tl => tl.labelId)
-      
-      // Find added and removed labels
-      const addedLabelIds = updates.labelIds.filter((lid: string) => !currentLabelIds.includes(lid))
-      const removedLabelIds = currentLabelIds.filter(lid => !updates.labelIds.includes(lid))
-      
       // For explicit many-to-many with join table, we need to delete old and create new
       // First, delete existing labels for this task
       await prisma.taskLabel.deleteMany({
@@ -135,40 +61,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }))
         })
       }
-      
-      // Log label activities
-      if (currentUser) {
-        for (const labelId of addedLabelIds) {
-          const label = await prisma.label.findUnique({ where: { id: labelId } })
-          if (label) {
-            await logActivity({
-              taskId: String(id),
-              userId: currentUser.id,
-              action: 'added_label',
-              newValue: label.name
-            })
-          }
-        }
-        
-        for (const labelId of removedLabelIds) {
-          const label = currentLabels.find(tl => tl.labelId === labelId)?.label
-          if (label) {
-            await logActivity({
-              taskId: String(id),
-              userId: currentUser.id,
-              action: 'removed_label',
-              oldValue: label.name
-            })
-          }
-        }
-      }
     }
 
     // handle members (expects an array of user IDs)
     if (Array.isArray(updates.memberIds) && currentTask && currentUser) {
       const currentMemberIds = currentTask.members.map(m => m.userId)
       const newMemberIds = updates.memberIds.filter((uid: string) => !currentMemberIds.includes(uid))
-      const removedMemberIds = currentMemberIds.filter(uid => !updates.memberIds.includes(uid))
       
       // Delete existing members and create new ones
       await prisma.taskMember.deleteMany({
@@ -182,31 +80,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             userId: String(uid)
           }))
         })
-      }
-      
-      // Log member activities
-      for (const memberId of newMemberIds) {
-        const member = await prisma.user.findUnique({ where: { id: memberId } })
-        if (member) {
-          await logActivity({
-            taskId: String(id),
-            userId: currentUser.id,
-            action: 'added_member',
-            newValue: member.name || member.email
-          })
-        }
-      }
-      
-      for (const memberId of removedMemberIds) {
-        const member = await prisma.user.findUnique({ where: { id: memberId } })
-        if (member) {
-          await logActivity({
-            taskId: String(id),
-            userId: currentUser.id,
-            action: 'removed_member',
-            oldValue: member.name || member.email
-          })
-        }
       }
       
       // Notify newly added members

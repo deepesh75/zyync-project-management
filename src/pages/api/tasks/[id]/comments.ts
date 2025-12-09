@@ -3,7 +3,6 @@ import { prisma } from '../../../../lib/prisma'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '../../auth/[...nextauth]'
 import { notifyMention, notifyComment } from '../../../../lib/notifications'
-import { logActivity } from '../../../../lib/activity'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query
@@ -41,13 +40,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const comment = await prisma.comment.create({ 
       data: { body, taskId: String(id), authorId: user.id },
       include: { author: true }
-    })
-    
-    // Log comment activity
-    await logActivity({
-      taskId: String(id),
-      userId: user.id,
-      action: 'commented'
     })
     
     if (task) {

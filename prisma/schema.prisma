@@ -63,7 +63,6 @@ model User {
   sentInvitations Invitation[]
   notifications Notification[]
   attachments Attachment[]
-  activities Activity[]
 }
 
 model Project {
@@ -97,7 +96,6 @@ model Task {
   comments    Comment[]
   subtasks    Subtask[]
   attachments Attachment[]
-  activities  Activity[]
   
   @@index([projectId])
   @@index([assigneeId])
@@ -194,21 +192,4 @@ model Attachment {
   createdAt   DateTime @default(now())
   
   @@index([taskId])
-}
-
-model Activity {
-  id        String   @id @default(cuid())
-  taskId    String
-  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  action    String   // e.g., 'created', 'moved', 'updated', 'commented', 'added_member', etc.
-  field     String?  // Which field changed (e.g., 'status', 'title', 'priority')
-  oldValue  String?  // Previous value
-  newValue  String?  // New value
-  metadata  String?  // JSON string for additional data
-  createdAt DateTime @default(now())
-  
-  @@index([taskId])
-  @@index([createdAt])
 }
