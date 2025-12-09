@@ -28,14 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       select: { 
         id: true, 
         title: true, 
-        projectId: true, 
-        members: { 
-          select: { 
-            id: true, 
-            name: true, 
-            email: true 
-          } 
-        } 
+        projectId: true
       }
     })
     
