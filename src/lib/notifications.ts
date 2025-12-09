@@ -60,12 +60,17 @@ export async function notifyMention(userId: string, taskId: string, taskTitle: s
       
       if (user?.email) {
         console.log(`Sending mention email to ${user.email} for task ${taskTitle}`)
+        // Use production URL for task links - never use localhost
+        const baseUrl = process.env.VERCEL_ENV === 'production' 
+          ? 'https://zyync.com' 
+          : (process.env.NEXTAUTH_URL || 'http://localhost:3000')
+        
         const result = await sendMentionEmail({
           to: user.email,
           toName: user.name || user.email.split('@')[0],
           mentionedBy,
           taskTitle,
-          taskLink: `${process.env.NEXTAUTH_URL || 'https://zyync.com'}/projects/${taskId}`,
+          taskLink: `${baseUrl}/projects/${taskId}`,
           commentBody: commentBody || 'Click to view the comment'
         })
         console.log('Email send result:', result)
