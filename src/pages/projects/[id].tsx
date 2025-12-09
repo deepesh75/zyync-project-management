@@ -249,16 +249,18 @@ export default function ProjectPage() {
       fetch(`/api/tasks/${t.id}/attachments`),
       fetch(`/api/tasks/${t.id}/activities`)
     ])
-    const cJson = await cRes.json().catch(() => [])
-    const uJson = await uRes.json().catch(() => [])
-    const sJson = await sRes.json().catch(() => [])
-    const aJson = await aRes.json().catch(() => [])
-    const actJson = await actRes.json().catch(() => [])
-    setComments(cJson)
-    setUsers(uJson)
-    setSubtasks(sJson)
-    setAttachments(aJson)
-    setActivities(actJson)
+    
+    const cJson = cRes.ok ? await cRes.json().catch(() => []) : []
+    const uJson = uRes.ok ? await uRes.json().catch(() => []) : []
+    const sJson = sRes.ok ? await sRes.json().catch(() => []) : []
+    const aJson = aRes.ok ? await aRes.json().catch(() => []) : []
+    const actJson = actRes.ok ? await actRes.json().catch(() => []) : []
+    
+    setComments(Array.isArray(cJson) ? cJson : [])
+    setUsers(Array.isArray(uJson) ? uJson : [])
+    setSubtasks(Array.isArray(sJson) ? sJson : [])
+    setAttachments(Array.isArray(aJson) ? aJson : [])
+    setActivities(Array.isArray(actJson) ? actJson : [])
   }
 
   function handleCommentInput(e: React.ChangeEvent<HTMLInputElement>) {
