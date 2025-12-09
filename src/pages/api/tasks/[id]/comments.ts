@@ -34,8 +34,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     })
     
     if (task) {
-      // Extract mentions from comment body
-      const mentionRegex = /@([\w\s]+)/g
+      // Extract mentions from comment body (matches @Name or @FirstName LastName)
+      const mentionRegex = /@(\w+(?:\s+\w+)?)/g
       const mentions = body.match(mentionRegex)
       
       if (mentions) {
@@ -48,7 +48,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             (u.email && u.email.toLowerCase() === mentionedName.toLowerCase())
           )
           
-          if (mentionedUser && mentionedUser.id !== user.id) {
+          // Send notification (allow self-mention for testing)
+          if (mentionedUser) {
             await notifyMention(
               mentionedUser.id,
               String(id),

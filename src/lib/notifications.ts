@@ -59,7 +59,8 @@ export async function notifyMention(userId: string, taskId: string, taskTitle: s
       })
       
       if (user?.email) {
-        await sendMentionEmail({
+        console.log(`Sending mention email to ${user.email} for task ${taskTitle}`)
+        const result = await sendMentionEmail({
           to: user.email,
           toName: user.name || user.email.split('@')[0],
           mentionedBy,
@@ -67,9 +68,16 @@ export async function notifyMention(userId: string, taskId: string, taskTitle: s
           taskLink: `${process.env.NEXTAUTH_URL || 'https://zyync.com'}/projects/${taskId}`,
           commentBody: commentBody || 'Click to view the comment'
         })
+        console.log('Email send result:', result)
+      } else {
+        console.log(`No email found for user ${userId}`)
       }
     } catch (error) {
       console.error('Failed to send mention email:', error)
+    }
+  } else {
+    if (!process.env.RESEND_API_KEY) {
+      console.log('RESEND_API_KEY not configured - mention email not sent')
     }
   }
   
