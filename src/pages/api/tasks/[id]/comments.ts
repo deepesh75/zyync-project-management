@@ -53,7 +53,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               mentionedUser.id,
               String(id),
               task.title,
-              user.name || user.email
+              user.name || user.email,
+              body
             )
           }
         }

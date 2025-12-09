@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import { sendMentionEmail } from './email'
 
 const prisma = new PrismaClient()
 
@@ -40,14 +41,39 @@ export async function notifyTaskAssignment(taskId: string, taskTitle: string, as
   })
 }
 
-export async function notifyMention(userId: string, taskId: string, taskTitle: string, mentionedBy: string) {
-  return createNotification({
+export async function notifyMention(userId: string, taskId: string, taskTitle: string, mentionedBy: string, commentBody?: string) {
+  const notification = await createNotification({
     userId,
     type: 'mentioned',
     title: 'You were mentioned',
     message: `${mentionedBy} mentioned you in "${taskTitle}"`,
     link: `/tasks/${taskId}`
   })
+  
+  // Send email notification if RESEND_API_KEY is configured
+  if (process.env.RESEND_API_KEY && notification) {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true, name: true }
+      })
+      
+      if (user?.email) {
+        await sendMentionEmail({
+          to: user.email,
+          toName: user.name || user.email.split('@')[0],
+          mentionedBy,
+          taskTitle,
+          taskLink: `${process.env.NEXTAUTH_URL || 'https://zyync.com'}/projects/${taskId}`,
+          commentBody: commentBody || 'Click to view the comment'
+        })
+      }
+    } catch (error) {
+      console.error('Failed to send mention email:', error)
+    }
+  }
+  
+  return notification
 }
 
 export async function notifyComment(userId: string, taskId: string, taskTitle: string, commenterName: string) {
