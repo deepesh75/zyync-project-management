@@ -25,7 +25,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Get task details for notifications
     const task = await prisma.task.findUnique({
       where: { id: String(id) },
-      include: { members: true }
+      include: { members: true },
+      select: { id: true, title: true, projectId: true, members: true }
     })
     
     const comment = await prisma.comment.create({ 
@@ -55,7 +56,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               String(id),
               task.title,
               user.name || user.email,
-              body
+              body,
+              task.projectId
             )
           }
         }

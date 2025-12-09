@@ -41,13 +41,13 @@ export async function notifyTaskAssignment(taskId: string, taskTitle: string, as
   })
 }
 
-export async function notifyMention(userId: string, taskId: string, taskTitle: string, mentionedBy: string, commentBody?: string) {
+export async function notifyMention(userId: string, taskId: string, taskTitle: string, mentionedBy: string, commentBody?: string, projectId?: string) {
   const notification = await createNotification({
     userId,
     type: 'mentioned',
     title: 'You were mentioned',
     message: `${mentionedBy} mentioned you in "${taskTitle}"`,
-    link: `/tasks/${taskId}`
+    link: projectId ? `/projects/${projectId}` : `/tasks/${taskId}`
   })
   
   // Send email notification if RESEND_API_KEY is configured
@@ -70,7 +70,7 @@ export async function notifyMention(userId: string, taskId: string, taskTitle: s
           toName: user.name || user.email.split('@')[0],
           mentionedBy,
           taskTitle,
-          taskLink: `${baseUrl}/projects/${taskId}`,
+          taskLink: projectId ? `${baseUrl}/projects/${projectId}` : `${baseUrl}/tasks/${taskId}`,
           commentBody: commentBody || 'Click to view the comment'
         })
         console.log('Email send result:', result)
