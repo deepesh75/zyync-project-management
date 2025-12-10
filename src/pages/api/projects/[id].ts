@@ -65,6 +65,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const allowed: any = {}
       if (updates.name) allowed.name = updates.name
       if (updates.columns !== undefined) allowed.columns = updates.columns
+      if (updates.background !== undefined) allowed.background = updates.background
       if (updates.archived !== undefined) {
         allowed.archived = updates.archived
         allowed.archivedAt = updates.archived ? new Date() : null

@@ -77,6 +77,7 @@ model Project {
   archived  Boolean  @default(false)
   archivedAt DateTime?
   columns   String?  @default("[{\"id\":\"todo\",\"name\":\"Todo\"},{\"id\":\"in-progress\",\"name\":\"In Progress\"},{\"id\":\"done\",\"name\":\"Done\"}]")
+  background String? @default("gradient-purple") // Board background theme
   tasks     Task[]
   labels    Label[]
 }

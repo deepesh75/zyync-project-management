@@ -8,6 +8,20 @@ import Navbar from '../../components/Navbar'
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
+function getBackgroundStyle(bg: string): string {
+  const backgrounds: Record<string, string> = {
+    'gradient-purple': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    'gradient-blue': 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    'gradient-sunset': 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+    'gradient-forest': 'linear-gradient(135deg, #0ba360 0%, #3cba92 100%)',
+    'gradient-rose': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    'gradient-night': 'linear-gradient(135deg, #2c3e50 0%, #3498db 100%)',
+    'solid-light': '#f8f9fa',
+    'solid-dark': '#1a1a1a',
+  }
+  return backgrounds[bg] || backgrounds['gradient-purple']
+}
+
 type Task = {
   id: string
   title: string
@@ -73,6 +87,7 @@ export default function ProjectPage() {
   const [showFilters, setShowFilters] = useState(false)
   const [showLabelManager, setShowLabelManager] = useState(false)
   const [showLabelsModal, setShowLabelsModal] = useState(false)
+  const [showBackgroundPicker, setShowBackgroundPicker] = useState(false)
   
   useEffect(() => {
     if (!project) return
@@ -630,7 +645,15 @@ export default function ProjectPage() {
   return (
     <>
       <Navbar />
-      <main style={{ padding: '16px 20px', height: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <main style={{ 
+        padding: '16px 20px', 
+        height: 'calc(100vh - 80px)', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        overflow: 'hidden',
+        background: getBackgroundStyle(project.background || 'gradient-purple'),
+        transition: 'background 0.3s ease'
+      }}>
         <header style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0, gap: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <a href="/" style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: 14, display: 'flex', alignItems: 'center', gap: 4, transition: 'color 0.2s' }}
@@ -694,6 +717,30 @@ export default function ProjectPage() {
                   {project.labels.length}
                 </span>
               )}
+            </button>
+
+            {/* Background Picker Button */}
+            <button
+              onClick={() => setShowBackgroundPicker(!showBackgroundPicker)}
+              style={{
+                padding: '8px 16px',
+                borderRadius: 8,
+                border: '1px solid var(--border)',
+                background: 'var(--surface)',
+                color: 'var(--text)',
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+              </svg>
+              Background
             </button>
 
             {/* Filter Button */}
@@ -915,6 +962,102 @@ export default function ProjectPage() {
               )}
             </div>
           </div>
+        )}
+
+        {/* Background Picker Modal */}
+        {showBackgroundPicker && (
+          <>
+            <div 
+              onClick={() => setShowBackgroundPicker(false)}
+              style={{ 
+                position: 'fixed', 
+                inset: 0, 
+                background: 'rgba(0,0,0,0.5)', 
+                backdropFilter: 'blur(4px)',
+                zIndex: 999,
+                animation: 'fadeIn 0.2s ease'
+              }} 
+            />
+            <div style={{
+              position: 'fixed',
+              top: 80,
+              right: 20,
+              background: 'var(--surface)',
+              borderRadius: 12,
+              padding: 20,
+              boxShadow: 'var(--shadow-xl)',
+              zIndex: 1000,
+              width: 320,
+              maxHeight: 'calc(100vh - 120px)',
+              overflowY: 'auto',
+              border: '1px solid var(--border)',
+              animation: 'slideUp 0.3s ease'
+            }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 style={{ margin: '0 0 16px 0', fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>
+                Board Background
+              </h3>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+                {[
+                  { id: 'gradient-purple', name: 'Purple Dream', bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+                  { id: 'gradient-blue', name: 'Ocean Blue', bg: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' },
+                  { id: 'gradient-sunset', name: 'Sunset', bg: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' },
+                  { id: 'gradient-forest', name: 'Forest', bg: 'linear-gradient(135deg, #0ba360 0%, #3cba92 100%)' },
+                  { id: 'gradient-rose', name: 'Rose', bg: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
+                  { id: 'gradient-night', name: 'Night Sky', bg: 'linear-gradient(135deg, #2c3e50 0%, #3498db 100%)' },
+                  { id: 'solid-light', name: 'Light', bg: '#f8f9fa' },
+                  { id: 'solid-dark', name: 'Dark', bg: '#1a1a1a' },
+                ].map((bg) => (
+                  <button
+                    key={bg.id}
+                    onClick={async () => {
+                      try {
+                        await fetch(`/api/projects/${id}`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ background: bg.id })
+                        })
+                        await mutate()
+                        setShowBackgroundPicker(false)
+                      } catch (err) {
+                        console.error('Failed to update background:', err)
+                      }
+                    }}
+                    style={{
+                      border: project.background === bg.id ? '3px solid var(--primary)' : '2px solid var(--border)',
+                      borderRadius: 8,
+                      padding: 0,
+                      cursor: 'pointer',
+                      overflow: 'hidden',
+                      transition: 'all 0.2s',
+                      position: 'relative',
+                      height: 80
+                    }}
+                  >
+                    <div style={{ 
+                      background: bg.bg, 
+                      width: '100%', 
+                      height: '100%',
+                      display: 'flex',
+                      alignItems: 'flex-end',
+                      padding: 8
+                    }}>
+                      <span style={{ 
+                        fontSize: 11, 
+                        fontWeight: 600, 
+                        color: bg.id.includes('dark') ? 'white' : bg.id.includes('light') ? '#333' : 'white',
+                        textShadow: bg.id.includes('light') ? 'none' : '0 1px 2px rgba(0,0,0,0.5)'
+                      }}>
+                        {bg.name}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
         )}
 
         {/* Labels Management Modal */}
