@@ -2226,6 +2226,73 @@ export default function ProjectPage() {
               <div style={{ display: 'flex', gap: 10 }}>
                 <button 
                   onClick={async () => {
+                    if (!selectedTask) return
+                    
+                    try {
+                      const res = await fetch(`/api/tasks/${selectedTask.id}/duplicate`, { 
+                        method: 'POST'
+                      })
+                      
+                      if (!res.ok) {
+                        alert('Failed to duplicate task')
+                        return
+                      }
+                      
+                      const duplicatedTask = await res.json()
+                      
+                      // Revalidate and open the new task
+                      await mutate()
+                      
+                      // Find and open the duplicated task
+                      if (project) {
+                        const newTask = project.tasks.find((t: Task) => t.id === duplicatedTask.id)
+                        if (newTask) {
+                          setSelectedTask(newTask)
+                          // Fetch activities for the new task
+                          const activitiesRes = await fetch(`/api/tasks/${newTask.id}/activities`)
+                          if (activitiesRes.ok) {
+                            const activitiesData = await activitiesRes.json()
+                            setActivities(activitiesData)
+                          }
+                        }
+                      }
+                    } catch (err) {
+                      console.error('Failed to duplicate task', err)
+                      alert('Failed to duplicate task')
+                    }
+                  }}
+                  style={{
+                    background: 'var(--surface)',
+                    color: 'var(--text)',
+                    border: '1px solid var(--border)',
+                    padding: '10px 20px',
+                    borderRadius: 8,
+                    fontWeight: 600,
+                    fontSize: 14,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--hover-bg)'
+                    e.currentTarget.style.borderColor = 'var(--primary)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'var(--surface)'
+                    e.currentTarget.style.borderColor = 'var(--border)'
+                  }}
+                  title="Duplicate this card"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  Duplicate
+                </button>
+                <button 
+                  onClick={async () => {
                   // Save changes
                   if (!selectedTask) return
                   const payload: any = { title: selectedTask.title }

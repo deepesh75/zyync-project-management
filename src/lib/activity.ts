@@ -23,6 +23,7 @@ type ActivityAction =
   | 'priority_changed'
   | 'archived'
   | 'unarchived'
+  | 'duplicated'
 
 interface CreateActivityParams {
   taskId: string
@@ -122,6 +123,9 @@ export function formatActivityMessage(activity: any): string {
     
     case 'unarchived':
       return `${userName} unarchived this task`
+    
+    case 'duplicated':
+      return `${userName} duplicated this task`
     
     default:
       return `${userName} performed an action`
