@@ -24,7 +24,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     where: { id: String(id) },
     include: {
       subtasks: true,
-      labels: true
+      labels: {
+        include: {
+          label: true
+        }
+      }
     }
   })
 
@@ -43,7 +47,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       projectId: originalTask.projectId,
       assigneeId: originalTask.assigneeId,
       labels: {
-        connect: originalTask.labels.map(label => ({ id: label.id }))
+        create: originalTask.labels.map(tl => ({
+          labelId: tl.labelId
+        }))
       },
       subtasks: {
         create: originalTask.subtasks.map(subtask => ({
