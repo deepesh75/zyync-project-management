@@ -3,6 +3,7 @@ import { prisma } from '../../../lib/prisma'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '../auth/[...nextauth]'
 import { notifyTaskAssignment, notifyMemberAdded } from '../../../lib/notifications'
+import { logActivity } from '../../../lib/activity'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query
@@ -109,6 +110,77 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       } 
     })
+    
+    // Log activities
+    if (currentUser && currentTask) {
+      // Log title change
+      if (updates.title && updates.title !== currentTask.title) {
+        await logActivity({
+          taskId: String(id),
+          userId: currentUser.id,
+          action: 'updated',
+          field: 'title',
+          oldValue: currentTask.title,
+          newValue: updates.title
+        })
+      }
+      
+      // Log description change
+      if (updates.description !== undefined && updates.description !== currentTask.description) {
+        await logActivity({
+          taskId: String(id),
+          userId: currentUser.id,
+          action: 'updated',
+          field: 'description',
+          oldValue: currentTask.description || '',
+          newValue: updates.description
+        })
+      }
+      
+      // Log status change (moved)
+      if (updates.status && updates.status !== currentTask.status) {
+        await logActivity({
+          taskId: String(id),
+          userId: currentUser.id,
+          action: 'moved',
+          oldValue: currentTask.status,
+          newValue: updates.status
+        })
+      }
+      
+      // Log priority change
+      if (updates.priority !== undefined && updates.priority !== currentTask.priority) {
+        await logActivity({
+          taskId: String(id),
+          userId: currentUser.id,
+          action: 'priority_changed',
+          oldValue: currentTask.priority || 'none',
+          newValue: updates.priority
+        })
+      }
+      
+      // Log assignee change
+      if (updates.assigneeId && updates.assigneeId !== currentTask.assigneeId) {
+        const assignee = await prisma.user.findUnique({ where: { id: updates.assigneeId } })
+        await logActivity({
+          taskId: String(id),
+          userId: currentUser.id,
+          action: 'assigned',
+          newValue: assignee?.name || assignee?.email || updates.assigneeId
+        })
+      }
+      
+      // Log due date change
+      if (updates.dueDate && updates.dueDate !== currentTask.dueDate?.toISOString()) {
+        await logActivity({
+          taskId: String(id),
+          userId: currentUser.id,
+          action: 'due_date_set',
+          newValue: updates.dueDate
+        })
+      }
+    }
+    
     return res.status(200).json(task)
   }
 

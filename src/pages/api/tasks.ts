@@ -3,6 +3,7 @@ import { prisma } from '../../lib/prisma'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from './auth/[...nextauth]'
 import { invalidateCacheKeys } from '../../lib/redis'
+import { logActivity } from '../../lib/activity'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
@@ -16,8 +17,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'POST') {
     const session = await getServerSession(req, res, authOptions)
     if (!session || !session.user?.email) return res.status(401).json({ error: 'Unauthorized' })
+    
+    const user = await prisma.user.findUnique({ where: { email: session.user.email } })
+    if (!user) return res.status(401).json({ error: 'Unauthorized' })
+    
     const { title, description, projectId, assigneeId, dueDate, status } = req.body
     if (!title || !projectId) return res.status(400).json({ error: 'title and projectId are required' })
+    
     const task = await prisma.task.create({
       data: {
         title,
@@ -27,6 +33,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         dueDate: dueDate ? new Date(dueDate) : undefined,
         status: status ?? 'todo'
       }
+    })
+    
+    // Log activity
+    await logActivity({
+      taskId: task.id,
+      userId: user.id,
+      action: 'created'
     })
     
     // Invalidate project cache since tasks are included in project data

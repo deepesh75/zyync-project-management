@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import { useSession, signIn } from 'next-auth/react'
 import useSWR from 'swr'
 import matchesFilter from '../../lib/filter'
+import { formatActivityMessage } from '../../lib/activity'
 import Navbar from '../../components/Navbar'
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
@@ -62,6 +63,7 @@ export default function ProjectPage() {
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('')
   const [attachments, setAttachments] = useState<Array<any>>([])
   const [uploading, setUploading] = useState(false)
+  const [activities, setActivities] = useState<Array<any>>([])
   
   // Filter states
   const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null)
@@ -239,21 +241,24 @@ export default function ProjectPage() {
 
   async function openTask(t: Task) {
     setSelectedTask(t)
-    // fetch comments, users, subtasks, and attachments
-    const [cRes, uRes, sRes, aRes] = await Promise.all([
+    // fetch comments, users, subtasks, attachments, and activities
+    const [cRes, uRes, sRes, aRes, actRes] = await Promise.all([
       fetch(`/api/tasks/${t.id}/comments`), 
       fetch('/api/users'),
       fetch(`/api/tasks/${t.id}/subtasks`),
-      fetch(`/api/tasks/${t.id}/attachments`)
+      fetch(`/api/tasks/${t.id}/attachments`),
+      fetch(`/api/tasks/${t.id}/activities`)
     ])
     const cJson = await cRes.json().catch(() => [])
     const uJson = await uRes.json().catch(() => [])
     const sJson = await sRes.json().catch(() => [])
     const aJson = await aRes.json().catch(() => [])
+    const actJson = await actRes.json().catch(() => [])
     setComments(cJson)
     setUsers(uJson)
     setSubtasks(sJson)
     setAttachments(aJson)
+    setActivities(actJson)
   }
 
   function handleCommentInput(e: React.ChangeEvent<HTMLInputElement>) {
@@ -2851,8 +2856,61 @@ export default function ProjectPage() {
                   </div>
               </div>
 
-              {/* Right column: Comments */}
+              {/* Right column: Activity & Comments */}
               <div style={{ borderLeft: '1px solid var(--border)', paddingLeft: 24 }}>
+                {/* Activity Log */}
+                <h4 style={{ marginTop: 0, marginBottom: 16, fontSize: 16, fontWeight: 600, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  Activity
+                </h4>
+                
+                {activities.length === 0 ? (
+                  <div style={{ 
+                    padding: 16, 
+                    color: 'var(--text-secondary)', 
+                    fontSize: 13,
+                    background: 'var(--bg-secondary)',
+                    borderRadius: 8,
+                    marginBottom: 24
+                  }}>
+                    No activity yet
+                  </div>
+                ) : (
+                  <div style={{ marginBottom: 24, maxHeight: 300, overflowY: 'auto' }}>
+                    {activities.slice(0, 10).map((activity) => (
+                      <div key={activity.id} style={{ 
+                        padding: 12, 
+                        marginBottom: 8,
+                        background: 'var(--bg-secondary)',
+                        borderRadius: 8,
+                        fontSize: 13,
+                        color: 'var(--text)',
+                        borderLeft: '3px solid var(--primary)',
+                        transition: 'all 0.2s'
+                      }}>
+                        <div style={{ marginBottom: 4 }}>
+                          {formatActivityMessage(activity)}
+                        </div>
+                        <div style={{ 
+                          fontSize: 11, 
+                          color: 'var(--text-secondary)',
+                          fontWeight: 400
+                        }}>
+                          {new Date(activity.createdAt).toLocaleString('en-US', { 
+                            month: 'short', 
+                            day: 'numeric', 
+                            hour: 'numeric', 
+                            minute: '2-digit' 
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Comments */}
                 <h4 style={{ marginTop: 0, marginBottom: 16, fontSize: 16, fontWeight: 600, color: 'var(--text)' }}>Comments</h4>
               
               {comments.length === 0 ? (
