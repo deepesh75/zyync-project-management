@@ -213,49 +213,55 @@ export default function Home() {
             }}>Your Organizations</h2>
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
               {organizations.map((org: any) => (
-                <a
-                  key={org.id}
-                  href={`/organizations/${org.id}/settings`}
-                  style={{
-                    padding: '16px 20px',
-                    background: 'var(--surface)',
-                    border: '2px solid var(--border)',
-                    borderRadius: 12,
-                    textDecoration: 'none',
-                    color: 'var(--text)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    boxShadow: 'var(--shadow-sm)',
-                    minWidth: 200
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-3px)'
-                    e.currentTarget.style.boxShadow = 'var(--shadow-lg)'
-                    e.currentTarget.style.borderColor = 'var(--primary)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = 'var(--shadow-sm)'
-                    e.currentTarget.style.borderColor = 'var(--border)'
-                  }}
-                >
-                  <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.01em' }}>{org.name}</span>
-                  <span style={{
-                    padding: '5px 10px',
-                    borderRadius: 7,
-                    fontSize: 10,
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.6px',
-                    background: org.role === 'admin' ? 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)' : 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
-                    color: org.role === 'admin' ? '#92400e' : '#1e40af',
-                    boxShadow: org.role === 'admin' ? '0 2px 8px rgba(251, 191, 36, 0.3)' : '0 2px 8px rgba(59, 130, 246, 0.3)'
-                  }}>
-                    {org.role}
-                  </span>
-                </a>
+                <div key={org.id} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <a
+                    href={`/organizations/${org.id}/settings`}
+                    style={{
+                      padding: '16px 20px',
+                      background: 'var(--surface)',
+                      border: '2px solid var(--border)',
+                      borderRadius: 12,
+                      textDecoration: 'none',
+                      color: 'var(--text)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      boxShadow: 'var(--shadow-sm)',
+                      minWidth: 200
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-3px)'
+                      e.currentTarget.style.boxShadow = 'var(--shadow-lg)'
+                      e.currentTarget.style.borderColor = 'var(--primary)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.boxShadow = 'var(--shadow-sm)'
+                      e.currentTarget.style.borderColor = 'var(--border)'
+                    }}
+                  >
+                    <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.01em' }}>{org.name}</span>
+                    <span style={{
+                      padding: '5px 10px',
+                      borderRadius: 7,
+                      fontSize: 10,
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.6px',
+                      background: org.role === 'admin' ? 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)' : 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
+                      color: org.role === 'admin' ? '#92400e' : '#1e40af',
+                      boxShadow: org.role === 'admin' ? '0 2px 8px rgba(251, 191, 36, 0.3)' : '0 2px 8px rgba(59, 130, 246, 0.3)'
+                    }}>
+                      {org.role}
+                    </span>
+                  </a>
+                  {org.role === 'admin' && (
+                    <a href={`/organizations/${org.id}/billing`} style={{ fontSize: 12, color: '#6366f1', textDecoration: 'none', fontWeight: 600, paddingLeft: 4 }}>
+                      → Manage Billing
+                    </a>
+                  )}
+                </div>
               ))}
             </div>
           </section>
