@@ -1819,9 +1819,35 @@ export default function ProjectPage() {
                         transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                         border: '1px solid var(--border)',
                         borderLeftWidth: '3px',
-                        borderLeftColor: 'var(--primary)'
+                        borderLeftColor: 'var(--primary)',
+                        overflow: 'hidden'
                       }}
                     >
+                      {/* Cover color bar */}
+                      {(t as any).coverColor && (
+                        <div style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          height: 6,
+                          background: (() => {
+                            const colorMap: Record<string, string> = {
+                              red: '#ef4444',
+                              orange: '#f97316',
+                              yellow: '#eab308',
+                              green: '#22c55e',
+                              blue: '#3b82f6',
+                              purple: '#a855f7',
+                              pink: '#ec4899',
+                              gray: '#6b7280'
+                            }
+                            return colorMap[(t as any).coverColor] || 'transparent'
+                          })(),
+                          borderTopLeftRadius: 9,
+                          borderTopRightRadius: 9
+                        }} />
+                      )}
                       <button className="card-edit-icon" onClick={(e) => { e.stopPropagation(); openTask(t) }} title="Edit task">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -2487,6 +2513,47 @@ export default function ProjectPage() {
                       transition: 'all 0.2s'
                     }}
                   />
+                </div>
+
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{ display: 'block', marginBottom: 10, fontWeight: 700, fontSize: 13, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Cover Color</label>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {[
+                      { id: null, name: 'None', color: 'transparent', border: '2px dashed var(--border)' },
+                      { id: 'red', name: 'Red', color: '#ef4444' },
+                      { id: 'orange', name: 'Orange', color: '#f97316' },
+                      { id: 'yellow', name: 'Yellow', color: '#eab308' },
+                      { id: 'green', name: 'Green', color: '#22c55e' },
+                      { id: 'blue', name: 'Blue', color: '#3b82f6' },
+                      { id: 'purple', name: 'Purple', color: '#a855f7' },
+                      { id: 'pink', name: 'Pink', color: '#ec4899' },
+                      { id: 'gray', name: 'Gray', color: '#6b7280' }
+                    ].map(colorOption => (
+                      <button
+                        key={colorOption.id || 'none'}
+                        onClick={() => setSelectedTask({ ...(selectedTask as any), coverColor: colorOption.id })}
+                        style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: 8,
+                          background: colorOption.color,
+                          border: (selectedTask as any).coverColor === colorOption.id ? '3px solid var(--primary)' : (colorOption.border || '1px solid var(--border)'),
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          boxShadow: (selectedTask as any).coverColor === colorOption.id ? '0 0 0 3px var(--primary-light)' : 'none'
+                        }}
+                        title={colorOption.name}
+                        onMouseEnter={(e) => {
+                          if ((selectedTask as any).coverColor !== colorOption.id) {
+                            e.currentTarget.style.transform = 'scale(1.1)'
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'scale(1)'
+                        }}
+                      />
+                    ))}
+                  </div>
                 </div>
 
                 <div style={{ marginBottom: 20 }}>

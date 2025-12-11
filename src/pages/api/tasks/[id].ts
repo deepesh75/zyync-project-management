@@ -33,6 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (updates.description !== undefined) allowed.description = updates.description
     if (updates.status) allowed.status = updates.status
     if (updates.priority !== undefined) allowed.priority = updates.priority
+    if (updates.coverColor !== undefined) allowed.coverColor = updates.coverColor
     if (updates.assigneeId) allowed.assigneeId = updates.assigneeId
     if (updates.dueDate) allowed.dueDate = new Date(updates.dueDate)
 
