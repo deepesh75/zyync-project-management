@@ -11,6 +11,12 @@ model Organization {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
+  // Stripe billing/customer info
+  stripeCustomerId    String?
+  stripeSubscriptionId String?
+  planId              String?
+  seats               Int      @default(1)
+  trialEndsAt         DateTime?
   createdAt DateTime @default(now())
   members   OrganizationMember[]
   projects  Project[]

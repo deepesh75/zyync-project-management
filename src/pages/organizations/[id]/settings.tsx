@@ -71,6 +71,11 @@ export default function OrganizationSettings() {
         </div>
 
         <h1>{organization.name}</h1>
+        {isAdmin && (
+          <div style={{ marginTop: 8 }}>
+            <a href={`/organizations/${organization.id}/billing`} style={{ padding: '6px 10px', background: '#111827', color: 'white', borderRadius: 6, textDecoration: 'none', fontSize: 13 }}>Manage Billing</a>
+          </div>
+        )}
         <p style={{ color: '#6b7280' }}>Manage your organization settings and team members</p>
 
         {/* Team Members */}
