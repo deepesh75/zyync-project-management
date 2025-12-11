@@ -2417,13 +2417,15 @@ export default function ProjectPage() {
                   onClick={async () => {
                   // Save changes
                   if (!selectedTask) return
-                  const payload: any = { title: selectedTask.title }
+                  const payload: any = { 
+                    title: selectedTask.title,
+                    coverColor: (selectedTask as any).coverColor ?? null
+                  }
                   // include description and status if present
                   if ((selectedTask as any).description !== undefined) payload.description = (selectedTask as any).description
                   if ((selectedTask as any).status) payload.status = (selectedTask as any).status
                   if ((selectedTask as any).priority !== undefined) payload.priority = (selectedTask as any).priority
                   if ((selectedTask as any).dueDate !== undefined) payload.dueDate = (selectedTask as any).dueDate
-                  if ((selectedTask as any).coverColor !== undefined) payload.coverColor = (selectedTask as any).coverColor
                   
                   console.log('Saving task:', selectedTask.id, payload)
                   
