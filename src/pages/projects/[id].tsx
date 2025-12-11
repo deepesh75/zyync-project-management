@@ -88,6 +88,7 @@ export default function ProjectPage() {
   const [showLabelManager, setShowLabelManager] = useState(false)
   const [showLabelsModal, setShowLabelsModal] = useState(false)
   const [showBackgroundPicker, setShowBackgroundPicker] = useState(false)
+  const [showColorPicker, setShowColorPicker] = useState(false)
   
   useEffect(() => {
     if (!project) return
@@ -2248,6 +2249,101 @@ export default function ProjectPage() {
                   style={{ fontSize: 24, fontWeight: 800, border: 'none', outline: 'none', width: '100%', background: 'transparent', color: 'var(--text)', padding: 0 }}
                   placeholder="Task title"
                 />
+                {/* Color Picker Button */}
+                <div style={{ position: 'relative' }}>
+                  <button
+                    onClick={() => setShowColorPicker(!showColorPicker)}
+                    style={{
+                      background: 'var(--surface)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 8,
+                      padding: 8,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--primary)'
+                      e.currentTarget.style.background = 'var(--hover-bg)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--border)'
+                      e.currentTarget.style.background = 'var(--surface)'
+                    }}
+                    title="Change card cover color"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="13.5" cy="6.5" r=".5"></circle>
+                      <circle cx="17.5" cy="10.5" r=".5"></circle>
+                      <circle cx="8.5" cy="7.5" r=".5"></circle>
+                      <circle cx="6.5" cy="12.5" r=".5"></circle>
+                      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+                    </svg>
+                  </button>
+                  
+                  {/* Color Picker Dropdown */}
+                  {showColorPicker && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '100%',
+                      right: 0,
+                      marginTop: 8,
+                      background: 'var(--surface)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 12,
+                      padding: 12,
+                      boxShadow: 'var(--shadow-lg)',
+                      zIndex: 1000,
+                      width: 200
+                    }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        Card Cover
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+                        {[
+                          { name: 'None', color: null },
+                          { name: 'Purple', color: '#9333ea' },
+                          { name: 'Blue', color: '#2563eb' },
+                          { name: 'Green', color: '#059669' },
+                          { name: 'Yellow', color: '#ca8a04' },
+                          { name: 'Orange', color: '#ea580c' },
+                          { name: 'Red', color: '#dc2626' },
+                          { name: 'Pink', color: '#db2777' },
+                          { name: 'Gray', color: '#6b7280' }
+                        ].map(({ name, color }) => (
+                          <button
+                            key={name}
+                            onClick={() => {
+                              setSelectedTask({ ...(selectedTask as any), coverColor: color })
+                              setShowColorPicker(false)
+                            }}
+                            style={{
+                              width: '100%',
+                              aspectRatio: '1',
+                              borderRadius: 8,
+                              border: (selectedTask as any).coverColor === color ? '2px solid var(--primary)' : '1px solid var(--border)',
+                              background: color || 'var(--bg-secondary)',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s',
+                              position: 'relative'
+                            }}
+                            title={name}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = 'scale(1.1)'
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = 'scale(1)'
+                            }}
+                          >
+                            {!color && <span style={{ fontSize: 18 }}>✕</span>}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
               <div style={{ display: 'flex', gap: 10 }}>
                 <button 
@@ -2327,6 +2423,7 @@ export default function ProjectPage() {
                   if ((selectedTask as any).status) payload.status = (selectedTask as any).status
                   if ((selectedTask as any).priority !== undefined) payload.priority = (selectedTask as any).priority
                   if ((selectedTask as any).dueDate !== undefined) payload.dueDate = (selectedTask as any).dueDate
+                  if ((selectedTask as any).coverColor !== undefined) payload.coverColor = (selectedTask as any).coverColor
                   
                   console.log('Saving task:', selectedTask.id, payload)
                   
