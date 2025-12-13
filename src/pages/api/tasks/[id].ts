@@ -140,68 +140,147 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }
 
           if (shouldTrigger) {
-            // Create workflow execution record
-            await prisma.workflowExecution.create({
-              data: {
-                workflowId: workflow.id,
-                taskId: String(id),
-                status: 'success',
-                executedAt: new Date(),
-                resultsJson: JSON.stringify({ triggered: true })
-              }
-            })
+            try {
+              // Execute actions
+              const actions = JSON.parse(workflow.actionsJson)
+              const executedActions: string[] = []
 
-            // Execute actions
-            const actions = JSON.parse(workflow.actionsJson)
-            for (const action of actions) {
-              if (action.type === 'notify' && currentUser) {
-                // Create notification
-                await prisma.notification.create({
-                  data: {
-                    userId: currentUser.id,
-                    type: 'task_updated',
-                    title: `Workflow: ${workflow.name}`,
-                    message: `Workflow triggered for task: ${task.title}`,
-                    link: `/projects/${currentTask.projectId}`
-                  }
-                })
-              } else if (action.type === 'assign' && action.value) {
-                // Assign task
-                await prisma.task.update({
-                  where: { id: String(id) },
-                  data: { assigneeId: action.value }
-                })
-              } else if (action.type === 'change_status' && action.value) {
-                // Change status
-                await prisma.task.update({
-                  where: { id: String(id) },
-                  data: { status: action.value }
-                })
-              } else if (action.type === 'add_label' && action.value) {
-                // Add label
-                await prisma.taskLabel.create({
-                  data: {
-                    taskId: String(id),
-                    labelId: action.value
-                  }
-                }).catch(() => {}) // Ignore if already exists
-              } else if (action.type === 'remove_label' && action.value) {
-                // Remove label
-                await prisma.taskLabel.deleteMany({
-                  where: {
-                    taskId: String(id),
-                    labelId: action.value
-                  }
-                })
+              for (const action of actions) {
+                if (action.type === 'notify' && currentUser) {
+                  // Create notification
+                  await prisma.notification.create({
+                    data: {
+                      userId: currentUser.id,
+                      type: 'task_updated',
+                      title: `Workflow: ${workflow.name}`,
+                      message: `Workflow triggered for task: ${task.title}`,
+                      link: `/projects/${currentTask.projectId}`
+                    }
+                  })
+                  executedActions.push('notify')
+                } else if (action.type === 'assign' && action.value) {
+                  // Assign task
+                  await prisma.task.update({
+                    where: { id: String(id) },
+                    data: { assigneeId: action.value }
+                  })
+                  executedActions.push(`assign:${action.value}`)
+                } else if (action.type === 'change_status' && action.value) {
+                  // Change status
+                  await prisma.task.update({
+                    where: { id: String(id) },
+                    data: { status: action.value }
+                  })
+                  executedActions.push(`change_status:${action.value}`)
+                } else if (action.type === 'add_label' && action.value) {
+                  // Add label
+                  await prisma.taskLabel.create({
+                    data: {
+                      taskId: String(id),
+                      labelId: action.value
+                    }
+                  }).catch(() => {}) // Ignore if already exists
+                  executedActions.push(`add_label:${action.value}`)
+                } else if (action.type === 'remove_label' && action.value) {
+                  // Remove label
+                  await prisma.taskLabel.deleteMany({
+                    where: {
+                      taskId: String(id),
+                      labelId: action.value
+                    }
+                  })
+                  executedActions.push(`remove_label:${action.value}`)
+                }
               }
+
+              // Create workflow execution record
+              await prisma.workflowExecution.create({
+                data: {
+                  workflowId: workflow.id,
+                  taskId: String(id),
+                  status: 'success',
+                  executedAt: new Date(),
+                  resultsJson: JSON.stringify({ triggered: true, actions: executedActions })
+                }
+              })
+
+              console.log(`[Workflow] Executed: ${workflow.name} for task ${id}`, executedActions)
+            } catch (actionError) {
+              console.error(`[Workflow] Action execution error for ${workflow.name}:`, actionError)
+              // Create failed execution record
+              await prisma.workflowExecution.create({
+                data: {
+                  workflowId: workflow.id,
+                  taskId: String(id),
+                  status: 'failed',
+                  triggeredAt: new Date(),
+                  errorMessage: actionError instanceof Error ? actionError.message : 'Unknown error'
+                }
+              })
             }
-
-            console.log(`[Workflow] Executed: ${workflow.name} for task ${id}`)
           }
         }
       } catch (error) {
         console.error('[Workflow] Execution error:', error)
         // Don't fail the API request on workflow errors
+      }
+    }
+    
+    // Re-fetch task if workflows modified it
+    let finalTask = task
+    if (currentTask && currentTask.projectId) {
+      try {
+        const workflows = await prisma.workflow.findMany({
+          where: {
+            projectId: currentTask.projectId,
+            enabled: true
+          }
+        })
+        
+        // Check if any workflow might have modified the task
+        let workflowModified = false
+        for (const workflow of workflows) {
+          let shouldTrigger = false
+          
+          if (workflow.triggerType === 'status_changed' && updates.status) {
+            shouldTrigger = workflow.triggerValue === updates.status
+          } else if (workflow.triggerType === 'priority_changed' && updates.priority !== undefined) {
+            shouldTrigger = workflow.triggerValue === updates.priority
+          } else if (workflow.triggerType === 'assigned' && updates.assigneeId) {
+            shouldTrigger = workflow.triggerValue === updates.assigneeId
+          } else if (workflow.triggerType === 'due_date_set' && updates.dueDate) {
+            shouldTrigger = true
+          } else if (workflow.triggerType === 'labeled' && Array.isArray(updates.labelIds)) {
+            shouldTrigger = updates.labelIds.includes(workflow.triggerValue)
+          }
+          
+          if (shouldTrigger) {
+            workflowModified = true
+            break
+          }
+        }
+        
+        if (workflowModified) {
+          finalTask = await prisma.task.findUnique({
+            where: { id: String(id) },
+            include: { 
+              labels: {
+                include: {
+                  label: true
+                }
+              },
+              members: {
+                include: {
+                  user: true
+                }
+              },
+              project: true
+            }
+          }) || task
+        }
+      } catch (error) {
+        console.error('[Workflow] Re-fetch error:', error)
+        // Use the original task if re-fetch fails
       }
     }
     
@@ -275,7 +354,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
     
-    return res.status(200).json(task)
+    return res.status(200).json(finalTask)
   }
 
   if (req.method === 'DELETE') {
