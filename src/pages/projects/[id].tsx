@@ -5,6 +5,9 @@ import useSWR from 'swr'
 import matchesFilter from '../../lib/filter'
 import { formatActivityMessage } from '../../lib/activity'
 import Navbar from '../../components/Navbar'
+import CalendarView from '../../components/views/CalendarView'
+import TableView from '../../components/views/TableView'
+import TimelineView from '../../components/views/TimelineView'
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
@@ -78,6 +81,9 @@ export default function ProjectPage() {
   const [attachments, setAttachments] = useState<Array<any>>([])
   const [uploading, setUploading] = useState(false)
   const [activities, setActivities] = useState<Array<any>>([])
+  
+  // View state
+  const [currentView, setCurrentView] = useState<'kanban' | 'calendar' | 'table' | 'timeline'>('kanban')
   
   // Filter states
   const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null)
@@ -791,7 +797,61 @@ export default function ProjectPage() {
               </span>
             )}
           </button>
+
+          {/* View Switcher */}
+          <div style={{ 
+            display: 'flex', 
+            gap: 4, 
+            padding: '4px 8px',
+            background: 'var(--bg-secondary)',
+            borderRadius: 8,
+            border: '1px solid var(--border)',
+            marginLeft: 'auto'
+          }}>
+            {[
+              { id: 'kanban', label: 'Board', icon: '⊞' },
+              { id: 'calendar', label: 'Calendar', icon: '📅' },
+              { id: 'table', label: 'Table', icon: '≡' },
+              { id: 'timeline', label: 'Timeline', icon: '→' }
+            ].map((view) => (
+              <button
+                key={view.id}
+                onClick={() => setCurrentView(view.id as any)}
+                title={view.label}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: 6,
+                  border: 'none',
+                  background: currentView === view.id ? 'var(--primary)' : 'transparent',
+                  color: currentView === view.id ? 'white' : 'var(--text-secondary)',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  whiteSpace: 'nowrap',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4
+                }}
+                onMouseEnter={(e) => {
+                  if (currentView !== view.id) {
+                    e.currentTarget.style.background = 'var(--primary-light)'
+                    e.currentTarget.style.color = 'var(--primary)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (currentView !== view.id) {
+                    e.currentTarget.style.background = 'transparent'
+                    e.currentTarget.style.color = 'var(--text-secondary)'
+                  }
+                }}
+              >
+                <span>{view.icon}</span>
+                <span style={{ fontSize: 12 }}>{view.label}</span>
+              </button>
+            ))}
           </div>
+        </div>
         </header>
 
         {/* Filters Dropdown */}
@@ -1610,7 +1670,9 @@ export default function ProjectPage() {
         </>
       )}
 
-      <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
+      <div style={{ position: 'relative', flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        {/* Kanban View */}
+        {currentView === 'kanban' && (
         <div className="kanban" style={{ gap: 16, height: '100%', display: 'flex', overflowX: 'auto', paddingBottom: 16 }}>
           {columns.map((col) => {
             const allColumnTasks = project?.tasks?.filter((t: Task) => t.status === col.id) || []
@@ -2235,6 +2297,34 @@ export default function ProjectPage() {
           )}
         </section>
         </div>
+        )}
+
+        {/* Calendar View */}
+        {currentView === 'calendar' && (
+          <CalendarView 
+            tasks={filterTasks(project?.tasks || [])}
+            onTaskClick={openTask}
+            users={boardUsers}
+          />
+        )}
+
+        {/* Table View */}
+        {currentView === 'table' && (
+          <TableView 
+            tasks={filterTasks(project?.tasks || [])}
+            onTaskClick={openTask}
+            users={boardUsers}
+          />
+        )}
+
+        {/* Timeline View */}
+        {currentView === 'timeline' && (
+          <TimelineView 
+            tasks={filterTasks(project?.tasks || [])}
+            onTaskClick={openTask}
+            users={boardUsers}
+          />
+        )}
       </div>
 
       {/* Task detail modal */}
