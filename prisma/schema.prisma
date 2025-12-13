@@ -86,6 +86,7 @@ model Project {
   background String? @default("gradient-purple") // Board background theme
   tasks     Task[]
   labels    Label[]
+  workflows Workflow[]
 }
 model Task {
   id          String   @id @default(cuid())
@@ -106,6 +107,7 @@ model Task {
   subtasks    Subtask[]
   attachments Attachment[]
   activities  Activity[]
+  workflowExecutions WorkflowExecution[]
   
   @@index([projectId])
   @@index([assigneeId])
@@ -218,4 +220,39 @@ model Activity {
   
   @@index([taskId])
   @@index([createdAt])
+}
+
+model Workflow {
+  id              String   @id @default(cuid())
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name            String
+  description     String?
+  enabled         Boolean  @default(true)
+  triggerType     String   // "status_changed", "priority_changed", "assigned", "due_date_set", "labeled"
+  triggerValue    String?  // The specific value to trigger on (e.g., status name, priority level, user id, label id)
+  actionsJson     String   // JSON string of WorkflowAction array
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  executions      WorkflowExecution[]
+  
+  @@index([projectId])
+  @@index([enabled])
+}
+
+model WorkflowExecution {
+  id              String   @id @default(cuid())
+  workflowId      String
+  workflow        Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  taskId          String
+  task            Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  triggeredAt     DateTime @default(now())
+  executedAt      DateTime?
+  status          String   @default("pending") // "pending", "executing", "success", "failed"
+  resultsJson     String?  // JSON string of execution results
+  errorMessage    String?
+  
+  @@index([workflowId])
+  @@index([taskId])
+  @@index([status])
 }

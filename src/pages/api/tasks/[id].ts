@@ -113,9 +113,97 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       } 
     })
     
-    // Note: Workflow execution is currently handled on the client side
-    // When workflows are migrated to the database, they can be executed here on the server
-    // For now, workflows are stored in localStorage and managed client-side
+    // Execute workflows based on changes
+    if (currentTask && currentTask.projectId) {
+      try {
+        const workflows = await prisma.workflow.findMany({
+          where: {
+            projectId: currentTask.projectId,
+            enabled: true
+          }
+        })
+
+        for (const workflow of workflows) {
+          let shouldTrigger = false
+          
+          // Check if trigger matches
+          if (workflow.triggerType === 'status_changed' && updates.status) {
+            shouldTrigger = workflow.triggerValue === updates.status
+          } else if (workflow.triggerType === 'priority_changed' && updates.priority !== undefined) {
+            shouldTrigger = workflow.triggerValue === updates.priority
+          } else if (workflow.triggerType === 'assigned' && updates.assigneeId) {
+            shouldTrigger = workflow.triggerValue === updates.assigneeId
+          } else if (workflow.triggerType === 'due_date_set' && updates.dueDate) {
+            shouldTrigger = true
+          } else if (workflow.triggerType === 'labeled' && Array.isArray(updates.labelIds)) {
+            shouldTrigger = updates.labelIds.includes(workflow.triggerValue)
+          }
+
+          if (shouldTrigger) {
+            // Create workflow execution record
+            await prisma.workflowExecution.create({
+              data: {
+                workflowId: workflow.id,
+                taskId: String(id),
+                status: 'success',
+                executedAt: new Date(),
+                resultsJson: JSON.stringify({ triggered: true })
+              }
+            })
+
+            // Execute actions
+            const actions = JSON.parse(workflow.actionsJson)
+            for (const action of actions) {
+              if (action.type === 'notify' && currentUser) {
+                // Create notification
+                await prisma.notification.create({
+                  data: {
+                    userId: currentUser.id,
+                    type: 'task_updated',
+                    title: `Workflow: ${workflow.name}`,
+                    message: `Workflow triggered for task: ${task.title}`,
+                    link: `/projects/${currentTask.projectId}`
+                  }
+                })
+              } else if (action.type === 'assign' && action.value) {
+                // Assign task
+                await prisma.task.update({
+                  where: { id: String(id) },
+                  data: { assigneeId: action.value }
+                })
+              } else if (action.type === 'change_status' && action.value) {
+                // Change status
+                await prisma.task.update({
+                  where: { id: String(id) },
+                  data: { status: action.value }
+                })
+              } else if (action.type === 'add_label' && action.value) {
+                // Add label
+                await prisma.taskLabel.create({
+                  data: {
+                    taskId: String(id),
+                    labelId: action.value
+                  }
+                }).catch(() => {}) // Ignore if already exists
+              } else if (action.type === 'remove_label' && action.value) {
+                // Remove label
+                await prisma.taskLabel.deleteMany({
+                  where: {
+                    taskId: String(id),
+                    labelId: action.value
+                  }
+                })
+              }
+            }
+
+            console.log(`[Workflow] Executed: ${workflow.name} for task ${id}`)
+          }
+        }
+      } catch (error) {
+        console.error('[Workflow] Execution error:', error)
+        // Don't fail the API request on workflow errors
+      }
+    }
     
     // Log activities
     if (currentUser && currentTask) {

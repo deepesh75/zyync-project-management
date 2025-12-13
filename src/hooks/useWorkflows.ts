@@ -20,24 +20,26 @@ export interface Workflow {
   createdAt: number;
 }
 
-const STORAGE_KEY = 'zyync_project_workflows';
-
 export const useWorkflows = (projectId: string) => {
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load workflows from localStorage
-  const loadWorkflows = useCallback(() => {
+  // Load workflows from API
+  const loadWorkflows = useCallback(async () => {
     if (!projectId) {
       setIsLoading(false);
       return;
     }
 
     try {
-      const allWorkflows = localStorage.getItem(STORAGE_KEY);
-      const workflowsMap = allWorkflows ? JSON.parse(allWorkflows) : {};
-      const projectWorkflows = workflowsMap[projectId] || [];
-      setWorkflows(projectWorkflows);
+      const response = await fetch(`/api/projects/${projectId}/workflows`);
+      if (response.ok) {
+        const data = await response.json();
+        setWorkflows(data);
+      } else {
+        console.error('Failed to load workflows:', response.statusText);
+        setWorkflows([]);
+      }
     } catch (error) {
       console.error('Failed to load workflows:', error);
       setWorkflows([]);
@@ -52,20 +54,22 @@ export const useWorkflows = (projectId: string) => {
 
   // Save workflow (create)
   const saveWorkflow = useCallback(
-    (workflow: Workflow) => {
+    async (workflow: Workflow) => {
       if (!projectId) return;
 
       try {
-        const allWorkflows = localStorage.getItem(STORAGE_KEY);
-        const workflowsMap = allWorkflows ? JSON.parse(allWorkflows) : {};
+        const response = await fetch(`/api/projects/${projectId}/workflows`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(workflow)
+        });
 
-        if (!workflowsMap[projectId]) {
-          workflowsMap[projectId] = [];
+        if (response.ok) {
+          const savedWorkflow = await response.json();
+          setWorkflows([...workflows, savedWorkflow]);
+        } else {
+          console.error('Failed to save workflow:', response.statusText);
         }
-
-        workflowsMap[projectId].push(workflow);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(workflowsMap));
-        setWorkflows([...workflows, workflow]);
       } catch (error) {
         console.error('Failed to save workflow:', error);
       }
@@ -75,25 +79,24 @@ export const useWorkflows = (projectId: string) => {
 
   // Update workflow
   const updateWorkflow = useCallback(
-    (workflow: Workflow) => {
+    async (workflow: Workflow) => {
       if (!projectId) return;
 
       try {
-        const allWorkflows = localStorage.getItem(STORAGE_KEY);
-        const workflowsMap = allWorkflows ? JSON.parse(allWorkflows) : {};
+        const response = await fetch(`/api/projects/${projectId}/workflows/${workflow.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(workflow)
+        });
 
-        if (!workflowsMap[projectId]) {
-          workflowsMap[projectId] = [];
+        if (response.ok) {
+          const updatedWorkflow = await response.json();
+          setWorkflows(
+            workflows.map((w) => (w.id === workflow.id ? updatedWorkflow : w))
+          );
+        } else {
+          console.error('Failed to update workflow:', response.statusText);
         }
-
-        workflowsMap[projectId] = workflowsMap[projectId].map((w: Workflow) =>
-          w.id === workflow.id ? workflow : w
-        );
-
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(workflowsMap));
-        setWorkflows(
-          workflows.map((w) => (w.id === workflow.id ? workflow : w))
-        );
       } catch (error) {
         console.error('Failed to update workflow:', error);
       }
@@ -103,21 +106,19 @@ export const useWorkflows = (projectId: string) => {
 
   // Delete workflow
   const deleteWorkflow = useCallback(
-    (workflowId: string) => {
+    async (workflowId: string) => {
       if (!projectId) return;
 
       try {
-        const allWorkflows = localStorage.getItem(STORAGE_KEY);
-        const workflowsMap = allWorkflows ? JSON.parse(allWorkflows) : {};
+        const response = await fetch(`/api/projects/${projectId}/workflows/${workflowId}`, {
+          method: 'DELETE'
+        });
 
-        if (workflowsMap[projectId]) {
-          workflowsMap[projectId] = workflowsMap[projectId].filter(
-            (w: Workflow) => w.id !== workflowId
-          );
+        if (response.ok) {
+          setWorkflows(workflows.filter((w) => w.id !== workflowId));
+        } else {
+          console.error('Failed to delete workflow:', response.statusText);
         }
-
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(workflowsMap));
-        setWorkflows(workflows.filter((w) => w.id !== workflowId));
       } catch (error) {
         console.error('Failed to delete workflow:', error);
       }
