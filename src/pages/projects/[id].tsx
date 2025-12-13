@@ -145,6 +145,10 @@ export default function ProjectPage() {
   async function moveTask(taskId: string, toStatus: string) {
     if (!project) return
     
+    // Find the task being moved
+    const movedTask = project.tasks.find((t: any) => t.id === taskId)
+    if (!movedTask) return
+    
     // Optimistic update - instant UI
     const optimisticProject = {
       ...project,
@@ -156,11 +160,38 @@ export default function ProjectPage() {
     
     // Update server in background
     try {
-      await fetch(`/api/tasks/${taskId}`, { 
+      const response = await fetch(`/api/tasks/${taskId}`, { 
         method: 'PATCH', 
         headers: { 'Content-Type': 'application/json' }, 
         body: JSON.stringify({ status: toStatus }) 
       })
+      
+      if (response.ok) {
+        // Execute workflows on status change
+        if (workflows && workflows.length > 0) {
+          try {
+            const context = {
+              taskId,
+              projectId: id as string,
+              oldStatus: movedTask.status,
+              newStatus: toStatus,
+            }
+            
+            // Dynamically import executor to avoid server-side issues
+            const { executeWorkflows, logWorkflowExecution } = await import('../../services/workflowExecutor')
+            const results = await executeWorkflows(workflows, context, {
+              id: taskId,
+              title: movedTask.title,
+              labels: movedTask.labels || []
+            })
+            logWorkflowExecution(results, context)
+          } catch (err) {
+            console.error('Workflow execution error:', err)
+            // Don't block the task update on workflow errors
+          }
+        }
+      }
+      
       // Revalidate to sync with server
       mutate()
     } catch (err) {

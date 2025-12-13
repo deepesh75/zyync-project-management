@@ -108,9 +108,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           include: {
             user: true
           }
-        }
+        },
+        project: true
       } 
     })
+    
+    // Note: Workflow execution is currently handled on the client side
+    // When workflows are migrated to the database, they can be executed here on the server
+    // For now, workflows are stored in localStorage and managed client-side
     
     // Log activities
     if (currentUser && currentTask) {
