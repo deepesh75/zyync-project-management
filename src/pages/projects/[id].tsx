@@ -10,6 +10,8 @@ import TableView from '../../components/views/TableView'
 import TimelineView from '../../components/views/TimelineView'
 import AdvancedFilterUI from '../../components/AdvancedFilterUI'
 import { useFilterPresets } from '../../hooks/useFilterPresets'
+import { WorkflowUI } from '../../components/WorkflowUI'
+import { useWorkflows } from '../../hooks/useWorkflows'
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
@@ -109,6 +111,8 @@ export default function ProjectPage() {
   const [showLabelsModal, setShowLabelsModal] = useState(false)
   const [showBackgroundPicker, setShowBackgroundPicker] = useState(false)
   const [showColorPicker, setShowColorPicker] = useState(false)
+  const [showWorkflows, setShowWorkflows] = useState(false)
+  const { workflows, loadWorkflows, saveWorkflow, updateWorkflow, deleteWorkflow } = useWorkflows(id as string || '')
   
   useEffect(() => {
     if (!project) return
@@ -131,6 +135,12 @@ export default function ProjectPage() {
       .then((u) => setBoardUsers(u))
       .catch(() => setBoardUsers([]))
   }, [])
+
+  useEffect(() => {
+    if (id) {
+      loadWorkflows()
+    }
+  }, [id, loadWorkflows])
 
   async function moveTask(taskId: string, toStatus: string) {
     if (!project) return
@@ -876,6 +886,47 @@ export default function ProjectPage() {
                 </span>
               )}
             </button>
+
+          {/* Workflows Button */}
+          <button
+            onClick={() => setShowWorkflows(!showWorkflows)}
+            style={{
+              padding: '8px 16px',
+              borderRadius: 8,
+              border: '1px solid var(--border)',
+              background: workflows.length > 0 ? 'var(--primary-light)' : 'var(--surface)',
+              color: workflows.length > 0 ? 'var(--primary)' : 'var(--text)',
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            Workflows
+            {workflows.length > 0 && (
+              <span style={{
+                background: 'var(--primary)',
+                color: 'white',
+                borderRadius: '50%',
+                width: 18,
+                height: 18,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 11,
+                fontWeight: 700
+              }}>
+                {workflows.length}
+              </span>
+            )}
+          </button>
 
           {/* View Switcher */}
           <div style={{ 
@@ -3616,6 +3667,19 @@ export default function ProjectPage() {
           setAdvancedFilters(filters)
         }}
         onDeletePreset={deletePreset}
+      />
+
+      {/* Workflows Modal */}
+      <WorkflowUI
+        isOpen={showWorkflows}
+        onClose={() => setShowWorkflows(false)}
+        workflows={workflows}
+        users={boardUsers}
+        labels={project?.labels || []}
+        statuses={columns.map(c => c.id)}
+        onSaveWorkflow={saveWorkflow}
+        onUpdateWorkflow={updateWorkflow}
+        onDeleteWorkflow={deleteWorkflow}
       />
     </main>
     </>
