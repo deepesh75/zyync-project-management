@@ -8,6 +8,8 @@ import Navbar from '../../components/Navbar'
 import CalendarView from '../../components/views/CalendarView'
 import TableView from '../../components/views/TableView'
 import TimelineView from '../../components/views/TimelineView'
+import AdvancedFilterUI from '../../components/AdvancedFilterUI'
+import { useFilterPresets } from '../../hooks/useFilterPresets'
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
@@ -84,6 +86,18 @@ export default function ProjectPage() {
   
   // View state
   const [currentView, setCurrentView] = useState<'kanban' | 'calendar' | 'table' | 'timeline'>('kanban')
+  
+  // Advanced filter states
+  const [showAdvancedFilter, setShowAdvancedFilter] = useState(false)
+  const [advancedFilters, setAdvancedFilters] = useState({
+    assignee: null as string | null,
+    priority: null as string | null,
+    label: null as string | null,
+    status: null as string | null,
+    search: null as string | null,
+    dueDate: null as { from?: string; to?: string; isOverdue?: boolean } | null
+  })
+  const { presets, loaded: presetsLoaded, savePreset, deletePreset } = useFilterPresets()
   
   // Filter states
   const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null)
@@ -370,6 +384,29 @@ export default function ProjectPage() {
 
   function filterTasks(tasks: Task[]) {
     return tasks.filter(task => {
+      // Advanced filters
+      if (advancedFilters.search) {
+        const searchLower = advancedFilters.search.toLowerCase()
+        const titleMatch = task.title.toLowerCase().includes(searchLower)
+        const descMatch = task.description?.toLowerCase().includes(searchLower)
+        if (!titleMatch && !descMatch) return false
+      }
+
+      if (advancedFilters.assignee) {
+        if (advancedFilters.assignee === 'unassigned' && task.assigneeId) return false
+        if (advancedFilters.assignee !== 'unassigned' && task.assigneeId !== advancedFilters.assignee) return false
+      }
+
+      if (advancedFilters.priority && task.priority !== advancedFilters.priority) return false
+
+      if (advancedFilters.label) {
+        const hasLabel = (task.labels || []).some(l => l.id === advancedFilters.label)
+        if (!hasLabel) return false
+      }
+
+      if (advancedFilters.status && task.status !== advancedFilters.status) return false
+
+      // Legacy filters (for backwards compatibility)
       // Assignee filter
       if (assigneeFilter) {
         if (assigneeFilter === 'unassigned' && task.assigneeId) return false
@@ -797,6 +834,48 @@ export default function ProjectPage() {
               </span>
             )}
           </button>
+
+            {/* Advanced Filters Button */}
+            <button
+              onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
+              style={{
+                padding: '8px 16px',
+                borderRadius: 8,
+                border: '1px solid var(--border)',
+                background: (advancedFilters.search || advancedFilters.assignee || advancedFilters.priority || advancedFilters.label || advancedFilters.status) ? 'var(--primary-light)' : 'var(--surface)',
+                color: (advancedFilters.search || advancedFilters.assignee || advancedFilters.priority || advancedFilters.label || advancedFilters.status) ? 'var(--primary)' : 'var(--text)',
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 6h18"></path>
+                <path d="M8 12h8"></path>
+                <path d="M10 18h4"></path>
+              </svg>
+              Advanced
+              {(advancedFilters.search || advancedFilters.assignee || advancedFilters.priority || advancedFilters.label || advancedFilters.status) && (
+                <span style={{
+                  background: 'var(--primary)',
+                  color: 'white',
+                  borderRadius: '50%',
+                  width: 18,
+                  height: 18,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 11,
+                  fontWeight: 700
+                }}>
+                  {[advancedFilters.search, advancedFilters.assignee, advancedFilters.priority, advancedFilters.label, advancedFilters.status].filter(Boolean).length}
+                </span>
+              )}
+            </button>
 
           {/* View Switcher */}
           <div style={{ 
@@ -3513,6 +3592,31 @@ export default function ProjectPage() {
           </div>
         </div>
       )}
+
+      {/* Advanced Filter Modal */}
+      <AdvancedFilterUI
+        isOpen={showAdvancedFilter}
+        onClose={() => setShowAdvancedFilter(false)}
+        filters={advancedFilters}
+        onFiltersChange={setAdvancedFilters}
+        users={boardUsers}
+        labels={project?.labels || []}
+        statuses={columns.map(c => c.id)}
+        presets={presets}
+        onSavePreset={(name) => savePreset(name, advancedFilters)}
+        onLoadPreset={(preset) => {
+          const filters = {
+            assignee: preset.filters.assignee ?? null,
+            priority: preset.filters.priority ?? null,
+            label: preset.filters.label ?? null,
+            status: preset.filters.status ?? null,
+            search: preset.filters.search ?? null,
+            dueDate: preset.filters.dueDate ?? null
+          }
+          setAdvancedFilters(filters)
+        }}
+        onDeletePreset={deletePreset}
+      />
     </main>
     </>
   )
