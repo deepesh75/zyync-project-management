@@ -71,12 +71,45 @@ export default function OrganizationSettings() {
         </div>
 
         <h1>{organization.name}</h1>
+        <p style={{ color: '#6b7280' }}>Manage your organization settings and team members</p>
+        
         {isAdmin && (
-          <div style={{ marginTop: 8 }}>
-            <a href={`/organizations/${organization.id}/billing`} style={{ padding: '6px 10px', background: '#111827', color: 'white', borderRadius: 6, textDecoration: 'none', fontSize: 13 }}>Manage Billing</a>
+          <div style={{ marginTop: 16, marginBottom: 24, display: 'flex', gap: 12 }}>
+            <a href={`/organizations/${organization.id}/billing`} style={{ 
+              padding: '12px 20px', 
+              background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', 
+              color: 'white', 
+              borderRadius: 8, 
+              textDecoration: 'none', 
+              fontSize: 14,
+              fontWeight: 600,
+              display: 'inline-block',
+              boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
+              transition: 'all 0.2s'
+            }} onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)'
+              e.currentTarget.style.boxShadow = '0 6px 16px rgba(99, 102, 241, 0.4)'
+            }} onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.3)'
+            }}>💳 Manage Billing & Plans</a>
+            <a href={`/organizations/${organization.id}/settings`} style={{ 
+              padding: '12px 20px', 
+              background: '#f3f4f6', 
+              color: '#1f2937', 
+              borderRadius: 8, 
+              textDecoration: 'none', 
+              fontSize: 14,
+              fontWeight: 600,
+              display: 'inline-block',
+              border: '1px solid #e5e7eb'
+            }} onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#e5e7eb'
+            }} onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#f3f4f6'
+            }}>⚙️ Team Settings</a>
           </div>
         )}
-        <p style={{ color: '#6b7280' }}>Manage your organization settings and team members</p>
 
         {/* Team Members */}
         <section style={{ marginTop: 32 }}>

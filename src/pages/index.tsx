@@ -211,56 +211,78 @@ export default function Home() {
               color: 'var(--text)',
               letterSpacing: '-0.02em'
             }}>Your Organizations</h2>
-            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
               {organizations.map((org: any) => (
-                <div key={org.id} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <a
-                    href={`/organizations/${org.id}/settings`}
-                    style={{
-                      padding: '16px 20px',
-                      background: 'var(--surface)',
-                      border: '2px solid var(--border)',
-                      borderRadius: 12,
-                      textDecoration: 'none',
-                      color: 'var(--text)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      boxShadow: 'var(--shadow-sm)',
-                      minWidth: 200
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-3px)'
-                      e.currentTarget.style.boxShadow = 'var(--shadow-lg)'
-                      e.currentTarget.style.borderColor = 'var(--primary)'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = 'var(--shadow-sm)'
-                      e.currentTarget.style.borderColor = 'var(--border)'
-                    }}
-                  >
-                    <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.01em' }}>{org.name}</span>
+                <div key={org.id} style={{ 
+                  background: 'var(--surface)', 
+                  border: '2px solid var(--border)', 
+                  borderRadius: 12, 
+                  padding: '20px',
+                  boxShadow: 'var(--shadow-sm)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                }} onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)'
+                  e.currentTarget.style.boxShadow = 'var(--shadow-lg)'
+                  e.currentTarget.style.borderColor = 'var(--primary)'
+                }} onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = 'var(--shadow-sm)'
+                  e.currentTarget.style.borderColor = 'var(--border)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{ margin: 0, fontWeight: 700, fontSize: 16, color: 'var(--text)' }}>{org.name}</h3>
+                    </div>
                     <span style={{
-                      padding: '5px 10px',
-                      borderRadius: 7,
-                      fontSize: 10,
+                      padding: '6px 12px',
+                      borderRadius: 8,
+                      fontSize: 11,
                       fontWeight: 700,
                       textTransform: 'uppercase',
-                      letterSpacing: '0.6px',
+                      letterSpacing: '0.5px',
                       background: org.role === 'admin' ? 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)' : 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
-                      color: org.role === 'admin' ? '#92400e' : '#1e40af',
-                      boxShadow: org.role === 'admin' ? '0 2px 8px rgba(251, 191, 36, 0.3)' : '0 2px 8px rgba(59, 130, 246, 0.3)'
+                      color: org.role === 'admin' ? '#92400e' : '#1e40af'
                     }}>
                       {org.role}
                     </span>
-                  </a>
-                  {org.role === 'admin' && (
-                    <a href={`/organizations/${org.id}/billing`} style={{ fontSize: 12, color: '#6366f1', textDecoration: 'none', fontWeight: 600, paddingLeft: 4 }}>
-                      → Manage Billing
-                    </a>
-                  )}
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <a href={`/organizations/${org.id}/settings`} style={{ 
+                      flex: 1,
+                      padding: '10px 12px', 
+                      background: '#f3f4f6', 
+                      color: '#1f2937', 
+                      borderRadius: 8, 
+                      textDecoration: 'none', 
+                      fontSize: 13,
+                      fontWeight: 600,
+                      textAlign: 'center',
+                      border: '1px solid #e5e7eb',
+                      transition: 'all 0.2s'
+                    }} onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#e5e7eb'
+                    }} onMouseLeave={(e) => {
+                      e.currentTarget.style.background = '#f3f4f6'
+                    }}>⚙️ Settings</a>
+                    {org.role === 'admin' && (
+                      <a href={`/organizations/${org.id}/billing`} style={{ 
+                        flex: 1,
+                        padding: '10px 12px', 
+                        background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                        color: 'white', 
+                        borderRadius: 8, 
+                        textDecoration: 'none', 
+                        fontSize: 13,
+                        fontWeight: 600,
+                        textAlign: 'center',
+                        transition: 'all 0.2s'
+                      }} onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'scale(1.05)'
+                      }} onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'scale(1)'
+                      }}>💳 Billing</a>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
