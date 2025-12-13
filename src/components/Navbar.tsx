@@ -89,30 +89,52 @@ export default function Navbar() {
         }}>
           Zyync
         </Link>
-        {session && (
-          <div style={{ display: 'flex', gap: 28 }}>
-            <Link href="/" prefetch={true} style={{ 
-              color: 'white', 
-              textDecoration: 'none', 
-              fontSize: 15, 
-              fontWeight: 600, 
-              opacity: 0.95, 
-              transition: 'all 0.2s',
-              padding: '6px 0',
-              borderBottom: '2px solid transparent'
-            }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.opacity = '1'
-                e.currentTarget.style.borderBottomColor = 'white'
+        <div style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
+          {session && (
+            <>
+              <Link href="/" prefetch={true} style={{ 
+                color: 'white', 
+                textDecoration: 'none', 
+                fontSize: 15, 
+                fontWeight: 600, 
+                opacity: 0.95, 
+                transition: 'all 0.2s',
+                padding: '6px 0',
+                borderBottom: '2px solid transparent'
               }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.opacity = '0.95'
-                e.currentTarget.style.borderBottomColor = 'transparent'
-              }}>
-              Projects
-            </Link>
-          </div>
-        )}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.opacity = '1'
+                  e.currentTarget.style.borderBottomColor = 'white'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = '0.95'
+                  e.currentTarget.style.borderBottomColor = 'transparent'
+                }}>
+                Projects
+              </Link>
+            </>
+          )}
+          <Link href="/pricing" prefetch={true} style={{ 
+            color: 'white', 
+            textDecoration: 'none', 
+            fontSize: 15, 
+            fontWeight: 600, 
+            opacity: 0.95, 
+            transition: 'all 0.2s',
+            padding: '6px 0',
+            borderBottom: '2px solid transparent'
+          }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '1'
+              e.currentTarget.style.borderBottomColor = 'white'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '0.95'
+              e.currentTarget.style.borderBottomColor = 'transparent'
+            }}>
+            Pricing
+          </Link>
+        </div>
       </div>
       
       {session && (
@@ -388,6 +410,53 @@ export default function Navbar() {
             </svg>
             Sign out
           </button>
+        </div>
+      )}
+      {!session && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <Link href="/auth/signin" style={{
+            color: 'white',
+            textDecoration: 'none',
+            fontSize: 14,
+            fontWeight: 600,
+            opacity: 0.95,
+            transition: 'all 0.3s',
+            padding: '8px 0'
+          }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '1'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '0.95'
+            }}>
+            Sign in
+          </Link>
+          <Link href="/auth/signup" style={{
+            padding: '10px 20px',
+            background: 'rgba(255, 255, 255, 0.25)',
+            color: 'white',
+            border: '1.5px solid rgba(255, 255, 255, 0.4)',
+            borderRadius: 10,
+            textDecoration: 'none',
+            fontSize: 14,
+            fontWeight: 600,
+            backdropFilter: 'blur(12px)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+            display: 'inline-block'
+          }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.35)'
+              e.currentTarget.style.transform = 'translateY(-2px)'
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)'
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)'
+            }}>
+            Sign up
+          </Link>
         </div>
       )}
     </nav>
