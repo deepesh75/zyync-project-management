@@ -54,32 +54,49 @@ export default function CalendarView({ tasks, onTaskClick, users }: CalendarView
   }
 
   return (
-    <div style={{ padding: 24, background: 'var(--bg)', minHeight: '100vh' }}>
+    <div style={{ 
+      padding: 24, 
+      background: 'var(--bg)', 
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'auto'
+    }}>
       {/* Calendar Header */}
       <div style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
-        marginBottom: 32,
+        marginBottom: 24,
         background: 'var(--surface)',
         padding: 20,
         borderRadius: 12,
-        border: '1px solid var(--border)'
+        border: '1px solid var(--border)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10
       }}>
         <button
           onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))}
           style={{
-            padding: '8px 16px',
+            padding: '10px 16px',
             background: 'var(--primary)',
             color: 'white',
             border: 'none',
             borderRadius: 8,
             cursor: 'pointer',
             fontWeight: 600,
-            fontSize: 14
+            fontSize: 14,
+            transition: 'all 0.2s'
           }}
-          onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-          onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.opacity = '0.85'
+            e.currentTarget.style.transform = 'translateX(-2px)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.opacity = '1'
+            e.currentTarget.style.transform = 'translateX(0)'
+          }}
         >
           ← Previous
         </button>
@@ -89,17 +106,24 @@ export default function CalendarView({ tasks, onTaskClick, users }: CalendarView
         <button
           onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))}
           style={{
-            padding: '8px 16px',
+            padding: '10px 16px',
             background: 'var(--primary)',
             color: 'white',
             border: 'none',
             borderRadius: 8,
             cursor: 'pointer',
             fontWeight: 600,
-            fontSize: 14
+            fontSize: 14,
+            transition: 'all 0.2s'
           }}
-          onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-          onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.opacity = '0.85'
+            e.currentTarget.style.transform = 'translateX(2px)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.opacity = '1'
+            e.currentTarget.style.transform = 'translateX(0)'
+          }}
         >
           Next →
         </button>
@@ -109,8 +133,9 @@ export default function CalendarView({ tasks, onTaskClick, users }: CalendarView
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(7, 1fr)',
-        gap: 12,
-        marginBottom: 12
+        gap: 8,
+        marginBottom: 12,
+        marginTop: 24
       }}>
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
           <div
@@ -134,18 +159,19 @@ export default function CalendarView({ tasks, onTaskClick, users }: CalendarView
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(7, 1fr)',
-        gap: 12
+        gap: 8,
+        gridAutoRows: 'minmax(100px, auto)',
+        flex: 1
       }}>
         {/* Empty cells for days before month starts */}
         {emptyDays.map(i => (
           <div
             key={`empty-${i}`}
             style={{
-              minHeight: 120,
               background: 'var(--bg-secondary)',
               borderRadius: 8,
               border: '1px solid var(--border)',
-              opacity: 0.5
+              opacity: 0.3
             }}
           />
         ))}
@@ -157,35 +183,51 @@ export default function CalendarView({ tasks, onTaskClick, users }: CalendarView
             <div
               key={day}
               style={{
-                minHeight: 120,
                 background: 'var(--surface)',
                 border: '1px solid var(--border)',
                 borderRadius: 8,
                 padding: 8,
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
+                transition: 'all 0.2s',
+                cursor: 'pointer'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--primary)'
+                e.currentTarget.style.boxShadow = 'var(--shadow-md)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border)'
+                e.currentTarget.style.boxShadow = 'none'
               }}
             >
               <div style={{
                 fontWeight: 700,
                 color: 'var(--text)',
-                marginBottom: 8,
-                fontSize: 14
+                marginBottom: 6,
+                fontSize: 14,
+                minHeight: 20
               }}>
                 {day}
               </div>
-              <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
-                {dayTasks.map(task => (
+              <div style={{ 
+                flex: 1, 
+                overflow: 'auto', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                gap: 3
+              }}>
+                {dayTasks.slice(0, 3).map(task => (
                   <button
                     key={task.id}
                     onClick={() => onTaskClick(task)}
                     style={{
-                      padding: '6px 8px',
+                      padding: '4px 6px',
                       background: getPriorityColor(task.priority),
                       color: 'white',
                       border: 'none',
-                      borderRadius: 4,
-                      fontSize: 11,
+                      borderRadius: 3,
+                      fontSize: 10,
                       fontWeight: 600,
                       cursor: 'pointer',
                       textAlign: 'left',
@@ -195,7 +237,7 @@ export default function CalendarView({ tasks, onTaskClick, users }: CalendarView
                       transition: 'all 0.2s'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.opacity = '0.8'
+                      e.currentTarget.style.opacity = '0.85'
                       e.currentTarget.style.transform = 'scale(1.02)'
                     }}
                     onMouseLeave={(e) => {
@@ -207,6 +249,16 @@ export default function CalendarView({ tasks, onTaskClick, users }: CalendarView
                     {task.title}
                   </button>
                 ))}
+                {dayTasks.length > 3 && (
+                  <div style={{
+                    fontSize: 9,
+                    color: 'var(--text-secondary)',
+                    fontWeight: 600,
+                    padding: '2px 4px'
+                  }}>
+                    +{dayTasks.length - 3} more
+                  </div>
+                )}
               </div>
             </div>
           )
