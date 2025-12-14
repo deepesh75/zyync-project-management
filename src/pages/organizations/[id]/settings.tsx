@@ -12,6 +12,11 @@ export default function OrganizationSettings() {
   const [inviteRole, setInviteRole] = useState('member')
   const [inviting, setInviting] = useState(false)
   const [inviteLink, setInviteLink] = useState('')
+  const [managingMember, setManagingMember] = useState<string | null>(null)
+  const [changingRole, setChangingRole] = useState<Record<string, boolean>>({})
+  const [removingMember, setRemovingMember] = useState<Record<string, boolean>>({})
+  const [showMemberOptions, setShowMemberOptions] = useState<Record<string, boolean>>({})
+  const [cancellingInvite, setCancellingInvite] = useState<Record<string, boolean>>({})
 
   // Use SWR hook for caching
   const { organization, isLoading, mutate } = useOrganization(id as string)
@@ -45,6 +50,79 @@ export default function OrganizationSettings() {
       alert('Failed to send invitation')
     } finally {
       setInviting(false)
+    }
+  }
+
+  async function handleChangeRole(memberId: string, newRole: string) {
+    if (!confirm(`Are you sure you want to change this member's role to ${newRole}?`)) return
+
+    setChangingRole(prev => ({ ...prev, [memberId]: true }))
+    try {
+      const res = await fetch(`/api/organizations/${id}/members/${memberId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: newRole })
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        alert(data.error || 'Failed to change role')
+        return
+      }
+
+      mutate()
+      setShowMemberOptions(prev => ({ ...prev, [memberId]: false }))
+    } catch (err) {
+      alert('Failed to change role')
+    } finally {
+      setChangingRole(prev => ({ ...prev, [memberId]: false }))
+    }
+  }
+
+  async function handleRemoveMember(memberId: string, memberName: string) {
+    if (!confirm(`Are you sure you want to remove ${memberName} from the organization? This action cannot be undone.`)) return
+
+    setRemovingMember(prev => ({ ...prev, [memberId]: true }))
+    try {
+      const res = await fetch(`/api/organizations/${id}/members/${memberId}`, {
+        method: 'DELETE'
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        alert(data.error || 'Failed to remove member')
+        return
+      }
+
+      mutate()
+      setShowMemberOptions(prev => ({ ...prev, [memberId]: false }))
+    } catch (err) {
+      alert('Failed to remove member')
+    } finally {
+      setRemovingMember(prev => ({ ...prev, [memberId]: false }))
+    }
+  }
+
+  async function handleCancelInvite(invitationId: string, email: string) {
+    if (!confirm(`Cancel invitation to ${email}?`)) return
+
+    setCancellingInvite(prev => ({ ...prev, [invitationId]: true }))
+    try {
+      const res = await fetch(`/api/organizations/${id}/invitations/${invitationId}`, {
+        method: 'DELETE'
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        alert(data.error || 'Failed to cancel invitation')
+        return
+      }
+
+      mutate()
+    } catch (err) {
+      alert('Failed to cancel invitation')
+    } finally {
+      setCancellingInvite(prev => ({ ...prev, [invitationId]: false }))
     }
   }
 
@@ -116,27 +194,155 @@ export default function OrganizationSettings() {
           <h2 style={{ fontSize: 20, marginBottom: 16 }}>Team Members ({organization.members.length})</h2>
           
           <div style={{ background: 'white', borderRadius: 8, border: '1px solid #e5e7eb' }}>
-            {organization.members.map((member: any) => (
-              <div key={member.id} style={{ padding: 16, borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontWeight: 600 }}>{member.user.name || member.user.email}</div>
-                  {member.user.name && <div style={{ fontSize: 14, color: '#6b7280' }}>{member.user.email}</div>}
+            {organization.members.map((member: any) => {
+              const isCurrentUser = member.user.email === session?.user?.email
+              const isAdmin = userMembership?.role === 'admin'
+              
+              return (
+                <div key={member.id} style={{ padding: 16, borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600 }}>
+                      {member.user.name || member.user.email}
+                      {isCurrentUser && <span style={{ marginLeft: 8, fontSize: 12, color: '#6b7280' }}>(You)</span>}
+                    </div>
+                    {member.user.name && <div style={{ fontSize: 14, color: '#6b7280' }}>{member.user.email}</div>}
+                    <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>Joined {new Date(member.joinedAt).toLocaleDateString()}</div>
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                    <span style={{
+                      padding: '4px 12px',
+                      borderRadius: 999,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      background: member.role === 'admin' ? '#fef3c7' : '#e0e7ff',
+                      color: member.role === 'admin' ? '#92400e' : '#3730a3'
+                    }}>
+                      {member.role}
+                    </span>
+                    
+                    {isAdmin && !isCurrentUser && (
+                      <div style={{ position: 'relative' }}>
+                        <button
+                          onClick={() => setShowMemberOptions(prev => ({ ...prev, [member.id]: !prev[member.id] }))}
+                          style={{
+                            padding: '6px 12px',
+                            background: '#f3f4f6',
+                            border: '1px solid #d1d5db',
+                            borderRadius: 6,
+                            cursor: 'pointer',
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: '#374151',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = '#e5e7eb'
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = '#f3f4f6'
+                          }}
+                        >
+                          ⋮ Manage
+                        </button>
+                        
+                        {showMemberOptions[member.id] && (
+                          <div style={{
+                            position: 'absolute',
+                            top: '100%',
+                            right: 0,
+                            marginTop: 8,
+                            background: 'white',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: 6,
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            zIndex: 10,
+                            minWidth: 160
+                          }}>
+                            {member.role !== 'admin' ? (
+                              <button
+                                onClick={() => handleChangeRole(member.id, 'admin')}
+                                disabled={changingRole[member.id]}
+                                style={{
+                                  width: '100%',
+                                  padding: '10px 12px',
+                                  background: 'transparent',
+                                  border: 'none',
+                                  textAlign: 'left',
+                                  cursor: changingRole[member.id] ? 'not-allowed' : 'pointer',
+                                  fontSize: 14,
+                                  color: '#374151',
+                                  opacity: changingRole[member.id] ? 0.6 : 1,
+                                  transition: 'background 0.2s'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.background = '#f3f4f6'
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.background = 'transparent'
+                                }}
+                              >
+                                👑 Make Admin
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleChangeRole(member.id, 'member')}
+                                disabled={changingRole[member.id]}
+                                style={{
+                                  width: '100%',
+                                  padding: '10px 12px',
+                                  background: 'transparent',
+                                  border: 'none',
+                                  textAlign: 'left',
+                                  cursor: changingRole[member.id] ? 'not-allowed' : 'pointer',
+                                  fontSize: 14,
+                                  color: '#374151',
+                                  opacity: changingRole[member.id] ? 0.6 : 1,
+                                  transition: 'background 0.2s'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.background = '#f3f4f6'
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.background = 'transparent'
+                                }}
+                              >
+                                👤 Demote to Member
+                              </button>
+                            )}
+                            <div style={{ borderTop: '1px solid #e5e7eb' }} />
+                            <button
+                              onClick={() => handleRemoveMember(member.id, member.user.name || member.user.email)}
+                              disabled={removingMember[member.id]}
+                              style={{
+                                width: '100%',
+                                padding: '10px 12px',
+                                background: 'transparent',
+                                border: 'none',
+                                textAlign: 'left',
+                                cursor: removingMember[member.id] ? 'not-allowed' : 'pointer',
+                                fontSize: 14,
+                                color: '#dc2626',
+                                opacity: removingMember[member.id] ? 0.6 : 1,
+                                transition: 'background 0.2s'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#fef2f2'
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'transparent'
+                              }}
+                            >
+                              {removingMember[member.id] ? '⏳ Removing...' : '🗑️ Remove Member'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                  <span style={{
-                    padding: '4px 12px',
-                    borderRadius: 999,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    background: member.role === 'admin' ? '#fef3c7' : '#e0e7ff',
-                    color: member.role === 'admin' ? '#92400e' : '#3730a3'
-                  }}>
-                    {member.role}
-                  </span>
-                  {/* TODO: Add remove button for admins */}
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </section>
 
@@ -148,22 +354,52 @@ export default function OrganizationSettings() {
             <div style={{ background: 'white', borderRadius: 8, border: '1px solid #e5e7eb' }}>
               {organization.invitations.map((inv: any) => (
                 <div key={inv.id} style={{ padding: 16, borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
+                  <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600 }}>{inv.email}</div>
                     <div style={{ fontSize: 14, color: '#6b7280' }}>
                       Invited {new Date(inv.createdAt).toLocaleDateString()} • Expires {new Date(inv.expiresAt).toLocaleDateString()}
                     </div>
                   </div>
-                  <span style={{
-                    padding: '4px 12px',
-                    borderRadius: 999,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    background: '#e0e7ff',
-                    color: '#3730a3'
-                  }}>
-                    {inv.role}
-                  </span>
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                    <span style={{
+                      padding: '4px 12px',
+                      borderRadius: 999,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      background: '#e0e7ff',
+                      color: '#3730a3'
+                    }}>
+                      {inv.role}
+                    </span>
+                    <button
+                      onClick={() => handleCancelInvite(inv.id, inv.email)}
+                      disabled={cancellingInvite[inv.id]}
+                      style={{
+                        padding: '6px 12px',
+                        background: '#fee2e2',
+                        border: '1px solid #fca5a5',
+                        borderRadius: 6,
+                        cursor: cancellingInvite[inv.id] ? 'not-allowed' : 'pointer',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: '#dc2626',
+                        transition: 'all 0.2s',
+                        opacity: cancellingInvite[inv.id] ? 0.6 : 1
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!cancellingInvite[inv.id]) {
+                          e.currentTarget.style.background = '#fecaca'
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!cancellingInvite[inv.id]) {
+                          e.currentTarget.style.background = '#fee2e2'
+                        }
+                      }}
+                    >
+                      {cancellingInvite[inv.id] ? '⏳ Cancelling...' : '✕ Cancel'}
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
