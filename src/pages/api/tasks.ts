@@ -7,7 +7,48 @@ import { logActivity } from '../../lib/activity'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
+    // Require authentication
+    const session = await getServerSession(req, res, authOptions)
+    if (!session || !session.user?.email) {
+      return res.status(401).json({ error: 'Unauthorized' })
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    })
+    if (!user) return res.status(401).json({ error: 'Unauthorized' })
+
     const { projectId } = req.query
+    
+    // If projectId is specified, verify user has access to the project
+    if (projectId) {
+      const project = await prisma.project.findUnique({
+        where: { id: String(projectId) }
+      })
+      
+      if (!project) return res.status(404).json({ error: 'Project not found' })
+      
+      // Check authorization: user must own the project or be in the organization
+      let hasAccess = false
+      if (project.ownerId === user.id) {
+        hasAccess = true
+      } else if (project.organizationId) {
+        const membership = await prisma.organizationMember.findUnique({
+          where: {
+            organizationId_userId: {
+              organizationId: project.organizationId,
+              userId: user.id
+            }
+          }
+        })
+        hasAccess = !!membership
+      }
+
+      if (!hasAccess) {
+        return res.status(403).json({ error: 'You do not have access to this project' })
+      }
+    }
+
     const opts: any = { include: { assignee: true, project: true }, orderBy: { createdAt: 'desc' } }
     if (projectId) opts.where = { projectId: String(projectId) }
     const tasks = await prisma.task.findMany(opts)
@@ -23,6 +64,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     const { title, description, projectId, assigneeId, dueDate, status } = req.body
     if (!title || !projectId) return res.status(400).json({ error: 'title and projectId are required' })
+    
+    // Verify user has access to the project
+    const project = await prisma.project.findUnique({
+      where: { id: String(projectId) }
+    })
+    
+    if (!project) return res.status(404).json({ error: 'Project not found' })
+    
+    // Check authorization: user must own the project or be in the organization
+    let hasAccess = false
+    if (project.ownerId === user.id) {
+      hasAccess = true
+    } else if (project.organizationId) {
+      const membership = await prisma.organizationMember.findUnique({
+        where: {
+          organizationId_userId: {
+            organizationId: project.organizationId,
+            userId: user.id
+          }
+        }
+      })
+      hasAccess = !!membership
+    }
+
+    if (!hasAccess) {
+      return res.status(403).json({ error: 'You do not have access to this project' })
+    }
     
     const task = await prisma.task.create({
       data: {

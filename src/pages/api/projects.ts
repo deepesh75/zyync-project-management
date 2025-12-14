@@ -6,8 +6,26 @@ import { getCached, setCached, invalidateCache } from '../../lib/redis'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
+    // Require authentication
+    const session = await getServerSession(req, res, authOptions)
+    if (!session || !session.user?.email) {
+      return res.status(401).json({ error: 'Unauthorized' })
+    }
+
     const { showArchived } = req.query
-    const cacheKey = `projects:list:${showArchived || 'active'}`
+    
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    })
+    if (!user) return res.status(404).json({ error: 'User not found' })
+
+    // Get projects owned by user or where user is in organization
+    const userOrgIds = await prisma.organizationMember.findMany({
+      where: { userId: user.id },
+      select: { organizationId: true }
+    }).then(mems => mems.map(m => m.organizationId))
+
+    const cacheKey = `projects:list:${user.id}:${showArchived || 'active'}`
     
     // Try to get from cache
     const cached = await getCached(cacheKey)
@@ -16,7 +34,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
     
     const projects = await prisma.project.findMany({ 
-      where: showArchived === 'true' ? {} : { archived: false },
+      where: {
+        AND: [
+          showArchived === 'true' ? {} : { archived: false },
+          {
+            OR: [
+              { ownerId: user.id }, // User owns the project
+              { organizationId: { in: userOrgIds } } // User is in the organization
+            ]
+          }
+        ]
+      },
       include: { 
         owner: true, 
         tasks: {

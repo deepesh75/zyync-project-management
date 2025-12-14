@@ -9,14 +9,44 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { id } = req.query
   if (!id || Array.isArray(id)) return res.status(400).json({ error: 'invalid id' })
 
-  if (req.method === 'PATCH') {
-    const session = await getServerSession(req, res, authOptions)
-    if (!session || !session.user?.email) return res.status(401).json({ error: 'Unauthorized' })
-    
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email }
+  // Require authentication for all methods
+  const session = await getServerSession(req, res, authOptions)
+  if (!session || !session.user?.email) return res.status(401).json({ error: 'Unauthorized' })
+  
+  const currentUser = await prisma.user.findUnique({
+    where: { email: session.user.email }
+  })
+  if (!currentUser) return res.status(401).json({ error: 'Unauthorized' })
+
+  // Get the task to check project access
+  const task = await prisma.task.findUnique({
+    where: { id: String(id) },
+    include: { project: true }
+  })
+  
+  if (!task) return res.status(404).json({ error: 'Task not found' })
+
+  // Check authorization: user must own the project or be in the organization
+  let hasAccess = false
+  if (task.project.ownerId === currentUser.id) {
+    hasAccess = true
+  } else if (task.project.organizationId) {
+    const membership = await prisma.organizationMember.findUnique({
+      where: {
+        organizationId_userId: {
+          organizationId: task.project.organizationId,
+          userId: currentUser.id
+        }
+      }
     })
-    
+    hasAccess = !!membership
+  }
+
+  if (!hasAccess) {
+    return res.status(403).json({ error: 'You do not have access to this task' })
+  }
+
+  if (req.method === 'PATCH') {
     const updates = req.body
     
     // Get current task state for comparison

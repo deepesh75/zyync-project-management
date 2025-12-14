@@ -8,6 +8,44 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { id } = req.query
   if (!id || Array.isArray(id)) return res.status(400).json({ error: 'invalid id' })
 
+  // Get the current user's session for all methods
+  const session = await getServerSession(req, res, authOptions)
+  if (!session || !session.user?.email) {
+    return res.status(401).json({ error: 'Unauthorized' })
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email }
+  })
+  if (!user) return res.status(404).json({ error: 'User not found' })
+
+  // Check if user has access to this project
+  const project = await prisma.project.findUnique({
+    where: { id: String(id) }
+  })
+  
+  if (!project) return res.status(404).json({ error: 'Not found' })
+
+  // Check authorization: user must own the project or be in the organization
+  let hasAccess = false
+  if (project.ownerId === user.id) {
+    hasAccess = true
+  } else if (project.organizationId) {
+    const membership = await prisma.organizationMember.findUnique({
+      where: {
+        organizationId_userId: {
+          organizationId: project.organizationId,
+          userId: user.id
+        }
+      }
+    })
+    hasAccess = !!membership
+  }
+
+  if (!hasAccess) {
+    return res.status(403).json({ error: 'You do not have access to this project' })
+  }
+
   if (req.method === 'GET') {
     const cacheKey = `project:${id}`
     
@@ -17,7 +55,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).json(cached)
     }
     
-    const project = await prisma.project.findUnique({
+    const fullProject = await prisma.project.findUnique({
       where: { id: String(id) },
       include: {
         owner: true,
@@ -43,23 +81,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       }
     })
-    if (!project) return res.status(404).json({ error: 'Not found' })
+    if (!fullProject) return res.status(404).json({ error: 'Not found' })
     
     // Cache for 60 seconds
-    await setCached(cacheKey, project, 60)
-    return res.status(200).json(project)
+    await setCached(cacheKey, fullProject, 60)
+    return res.status(200).json(fullProject)
   }
 
   if (req.method === 'PATCH') {
     try {
-      const session = await getServerSession(req, res, authOptions)
-      if (!session || !session.user?.email) {
-        console.log('PATCH /api/projects/[id]: No session found')
-        return res.status(401).json({ error: 'Unauthorized' })
+      // Only project owner can modify
+      if (project.ownerId !== user.id) {
+        return res.status(403).json({ error: 'Only the project owner can modify this project' })
       }
-      
-      console.log('PATCH /api/projects/[id]: Session user:', session.user.email)
-      console.log('PATCH /api/projects/[id]: Request body:', req.body)
       
       const updates = req.body
       const allowed: any = {}
@@ -71,9 +105,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         allowed.archivedAt = updates.archived ? new Date() : null
       }
 
-      console.log('PATCH /api/projects/[id]: Allowed updates:', allowed)
-
-      const project = await prisma.project.update({
+      const updatedProject = await prisma.project.update({
         where: { id: String(id) },
         data: allowed,
         include: {
@@ -105,19 +137,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await invalidateCacheKeys([`project:${id}`])
       await invalidateCache('projects:list:*')
       
-      console.log('PATCH /api/projects/[id]: Project updated successfully')
-      return res.status(200).json(project)
+      return res.status(200).json(updatedProject)
     } catch (err) {
       console.error('PATCH /api/projects/[id]: Error:', err)
-      return res.status(500).json({ error: 'Internal server error', details: String(err) })
+      return res.status(500).json({ error: 'Internal server error' })
     }
   }
 
   if (req.method === 'DELETE') {
     try {
-      const session = await getServerSession(req, res, authOptions)
-      if (!session || !session.user?.email) {
-        return res.status(401).json({ error: 'Unauthorized' })
+      // Only project owner can delete
+      if (project.ownerId !== user.id) {
+        return res.status(403).json({ error: 'Only the project owner can delete this project' })
       }
 
       // Delete the project (this will cascade delete tasks, labels, etc.)
