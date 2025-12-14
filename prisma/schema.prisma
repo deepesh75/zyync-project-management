@@ -87,6 +87,7 @@ model Project {
   tasks     Task[]
   labels    Label[]
   workflows Workflow[]
+  templates TaskTemplate[]
 }
 model Task {
   id          String   @id @default(cuid())
@@ -255,4 +256,23 @@ model WorkflowExecution {
   @@index([workflowId])
   @@index([taskId])
   @@index([status])
+}
+
+model TaskTemplate {
+  id              String   @id @default(cuid())
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name            String
+  description     String?
+  priority        String?  @default("medium") // "low", "medium", "high"
+  coverColor      String?  // Default card cover color
+  labelIds        String?  // JSON array of label IDs
+  defaultAssigneeId String? // Default assignee user ID
+  defaultMembers  String?  // JSON array of member user IDs
+  dueOffsetDays   Int?     // Number of days from task creation for due date
+  customFields    String?  // JSON object for any custom field values
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([projectId])
 }

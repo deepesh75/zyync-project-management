@@ -12,6 +12,8 @@ import AdvancedFilterUI from '../../components/AdvancedFilterUI'
 import { useFilterPresets } from '../../hooks/useFilterPresets'
 import { WorkflowUI } from '../../components/WorkflowUI'
 import { useWorkflows } from '../../hooks/useWorkflows'
+import TaskTemplateSelector from '../../components/TaskTemplateSelector'
+import ManageTemplates from '../../components/ManageTemplates'
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
@@ -85,6 +87,11 @@ export default function ProjectPage() {
   const [attachments, setAttachments] = useState<Array<any>>([])
   const [uploading, setUploading] = useState(false)
   const [activities, setActivities] = useState<Array<any>>([])
+  
+  // Template states
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false)
+  const [showManageTemplates, setShowManageTemplates] = useState(false)
+  const [showTemplatesForColumn, setShowTemplatesForColumn] = useState<string | null>(null)
   
   // View state
   const [currentView, setCurrentView] = useState<'kanban' | 'calendar' | 'table' | 'timeline'>('kanban')
@@ -313,6 +320,75 @@ export default function ProjectPage() {
     
     setCreating(false)
     // Revalidate in background
+    mutate()
+  }
+
+  async function createTaskFromTemplate(template: any, columnId?: string) {
+    if (!project) return
+    setCreating(true)
+    
+    const status = columnId || columns[0]?.id
+    const taskData: any = {
+      title: template?.name || 'New Task',
+      description: template?.description || '',
+      projectId: id,
+      status,
+      priority: template?.priority || 'medium'
+    }
+
+    // If has cover color, set it
+    if (template?.coverColor) {
+      taskData.coverColor = template.coverColor
+    }
+
+    // If has due offset, set due date
+    if (template?.dueOffsetDays) {
+      const dueDate = new Date()
+      dueDate.setDate(dueDate.getDate() + template.dueOffsetDays)
+      taskData.dueDate = dueDate.toISOString()
+    }
+
+    // If has default assignee, set it
+    if (template?.defaultAssigneeId) {
+      taskData.assigneeId = template.defaultAssigneeId
+    }
+
+    const res = await fetch('/api/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(taskData)
+    })
+
+    if (res.ok) {
+      const newTask = await res.json()
+      
+      // Add labels if template has them
+      if (template?.labelIds && template.labelIds.length > 0) {
+        await Promise.all(
+          template.labelIds.map((labelId: string) =>
+            fetch(`/api/tasks/${newTask.id}/labels/${labelId}`, { method: 'POST' })
+          )
+        )
+      }
+
+      // Add members if template has them
+      if (template?.defaultMembers && template.defaultMembers.length > 0) {
+        await Promise.all(
+          template.defaultMembers.map((userId: string) =>
+            fetch(`/api/tasks/${newTask.id}/members/${userId}`, { method: 'POST' })
+          )
+        )
+      }
+
+      // Optimistic update
+      mutate({
+        ...project,
+        tasks: [...project.tasks, newTask]
+      }, false)
+    }
+
+    setCreating(false)
+    setShowTemplateSelector(false)
     mutate()
   }
 
@@ -957,6 +1033,31 @@ export default function ProjectPage() {
                 {workflows.length}
               </span>
             )}
+          </button>
+
+          {/* Templates Button */}
+          <button
+            onClick={() => setShowManageTemplates(!showManageTemplates)}
+            style={{
+              padding: '8px 16px',
+              borderRadius: 8,
+              border: '1px solid var(--border)',
+              background: 'var(--surface)',
+              color: 'var(--text)',
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            Templates
           </button>
 
           {/* View Switcher */}
@@ -2287,7 +2388,10 @@ export default function ProjectPage() {
                   marginTop: 10,
                   padding: 0,
                   background: 'transparent',
-                  flexShrink: 0
+                  flexShrink: 0,
+                  display: 'flex',
+                  gap: 8,
+                  alignItems: 'center'
                 }}>
                   <input 
                     placeholder="+ Add task" 
@@ -2300,7 +2404,7 @@ export default function ProjectPage() {
                       }
                     }}
                     style={{ 
-                      width: '100%',
+                      flex: 1,
                       padding: '8px 10px',
                       fontSize: 13,
                       border: '1px dashed var(--border)',
@@ -2321,6 +2425,40 @@ export default function ProjectPage() {
                       e.currentTarget.style.color = 'var(--text-secondary)'
                     }}
                   />
+                  <button
+                    onClick={() => {
+                      setShowTemplatesForColumn(col.id)
+                      setShowTemplateSelector(true)
+                    }}
+                    title="Create from template"
+                    style={{
+                      padding: '8px 10px',
+                      fontSize: 13,
+                      border: '1px dashed var(--border)',
+                      borderRadius: 6,
+                      background: 'var(--bg-primary)',
+                      color: 'var(--text-secondary)',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minWidth: 40,
+                      flexShrink: 0
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderStyle = 'solid'
+                      e.currentTarget.style.borderColor = 'var(--primary)'
+                      e.currentTarget.style.color = 'var(--primary)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderStyle = 'dashed'
+                      e.currentTarget.style.borderColor = 'var(--border)'
+                      e.currentTarget.style.color = 'var(--text-secondary)'
+                    }}
+                  >
+                    📋
+                  </button>
                 </div>
               )}
             </section>
@@ -3712,6 +3850,31 @@ export default function ProjectPage() {
         onUpdateWorkflow={updateWorkflow}
         onDeleteWorkflow={deleteWorkflow}
       />
+
+      {/* Manage Templates Modal */}
+      <ManageTemplates
+        projectId={String(id)}
+        isOpen={showManageTemplates}
+        onClose={() => setShowManageTemplates(false)}
+      />
+
+      {/* Template Selector Modal */}
+      {showTemplateSelector && (
+        <TaskTemplateSelector
+          projectId={String(id)}
+          onSelectTemplate={(template) => {
+            if (template) {
+              createTaskFromTemplate(template, showTemplatesForColumn || undefined)
+            } else {
+              setShowTemplateSelector(false)
+            }
+          }}
+          onClose={() => {
+            setShowTemplateSelector(false)
+            setShowTemplatesForColumn(null)
+          }}
+        />
+      )}
     </main>
     </>
   )
