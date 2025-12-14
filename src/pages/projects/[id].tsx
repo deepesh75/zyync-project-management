@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, lazy, Suspense } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import { useSession, signIn } from 'next-auth/react'
 import useSWR from 'swr'
@@ -8,12 +9,16 @@ import Navbar from '../../components/Navbar'
 import CalendarView from '../../components/views/CalendarView'
 import TableView from '../../components/views/TableView'
 import TimelineView from '../../components/views/TimelineView'
-import AdvancedFilterUI from '../../components/AdvancedFilterUI'
 import { useFilterPresets } from '../../hooks/useFilterPresets'
-import { WorkflowUI } from '../../components/WorkflowUI'
 import { useWorkflows } from '../../hooks/useWorkflows'
-import TaskTemplateSelector from '../../components/TaskTemplateSelector'
-import ManageTemplates from '../../components/ManageTemplates'
+import ProjectHeader from '../../components/project/ProjectHeader'
+import KanbanBoard from '../../components/project/KanbanBoard'
+
+// Lazy load heavy modals and components
+const AdvancedFilterUI = dynamic(() => import('../../components/AdvancedFilterUI'), { ssr: false })
+const WorkflowUI = dynamic(() => import('../../components/WorkflowUI').then(mod => ({ default: mod.WorkflowUI })), { ssr: false })
+const TaskTemplateSelector = dynamic(() => import('../../components/TaskTemplateSelector'), { ssr: false })
+const ManageTemplates = dynamic(() => import('../../components/ManageTemplates'), { ssr: false })
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
@@ -119,6 +124,8 @@ export default function ProjectPage() {
   const [showBackgroundPicker, setShowBackgroundPicker] = useState(false)
   const [showColorPicker, setShowColorPicker] = useState(false)
   const [showWorkflows, setShowWorkflows] = useState(false)
+  const [showToolsMenu, setShowToolsMenu] = useState(false)
+  const [showFiltersMenu, setShowFiltersMenu] = useState(false)
   const { workflows, loadWorkflows, saveWorkflow, updateWorkflow, deleteWorkflow } = useWorkflows(id as string || '')
   
   useEffect(() => {
@@ -815,306 +822,17 @@ export default function ProjectPage() {
         background: getBackgroundStyle(project.background || 'gradient-purple'),
         transition: 'background 0.3s ease'
       }}>
-        <header style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0, gap: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <a href="/" style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: 14, display: 'flex', alignItems: 'center', gap: 4, transition: 'color 0.2s' }}
-              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
-              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
-            >← Back</a>
-            <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: 'var(--text)' }}>
-              {project.name}
-              {project.archived && (
-                <span style={{ 
-                  marginLeft: 12, 
-                  padding: '4px 12px', 
-                  background: '#f3f4f6', 
-                  color: '#6b7280', 
-                  borderRadius: 6, 
-                  fontSize: 13, 
-                  fontWeight: 600,
-                  textTransform: 'uppercase'
-                }}>Archived</span>
-              )}
-            </h1>
-          </div>
-          
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            {/* Manage Labels Button */}
-            <button
-              onClick={() => setShowLabelsModal(true)}
-              style={{
-                padding: '8px 16px',
-                borderRadius: 8,
-                border: '1px solid var(--border)',
-                background: 'var(--surface)',
-                color: 'var(--text)',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8
-              }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                <line x1="7" y1="7" x2="7.01" y2="7"></line>
-              </svg>
-              Labels
-              {project.labels && project.labels.length > 0 && (
-                <span style={{
-                  background: 'var(--primary)',
-                  color: 'white',
-                  borderRadius: '50%',
-                  width: 18,
-                  height: 18,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 11,
-                  fontWeight: 700
-                }}>
-                  {project.labels.length}
-                </span>
-              )}
-            </button>
-
-            {/* Background Picker Button */}
-            <button
-              onClick={() => setShowBackgroundPicker(!showBackgroundPicker)}
-              style={{
-                padding: '8px 16px',
-                borderRadius: 8,
-                border: '1px solid var(--border)',
-                background: 'var(--surface)',
-                color: 'var(--text)',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8
-              }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
-              </svg>
-              Background
-            </button>
-
-            {/* Filter Button */}
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              style={{
-                padding: '8px 16px',
-                borderRadius: 8,
-                border: '1px solid var(--border)',
-                background: (assigneeFilter || priorityFilter || labelFilter || quickFilter) ? 'var(--primary-light)' : 'var(--surface)',
-                color: (assigneeFilter || priorityFilter || labelFilter || quickFilter) ? 'var(--primary)' : 'var(--text)',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8
-              }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="4" y1="21" x2="4" y2="14"></line>
-              <line x1="4" y1="10" x2="4" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12" y2="3"></line>
-              <line x1="20" y1="21" x2="20" y2="16"></line>
-              <line x1="20" y1="12" x2="20" y2="3"></line>
-              <line x1="1" y1="14" x2="7" y2="14"></line>
-              <line x1="9" y1="8" x2="15" y2="8"></line>
-              <line x1="17" y1="16" x2="23" y2="16"></line>
-            </svg>
-            Filters
-            {(assigneeFilter || priorityFilter || labelFilter || quickFilter) && (
-              <span style={{
-                background: 'var(--primary)',
-                color: 'white',
-                borderRadius: '50%',
-                width: 18,
-                height: 18,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 11,
-                fontWeight: 700
-              }}>
-                {[assigneeFilter, priorityFilter, labelFilter, quickFilter].filter(Boolean).length}
-              </span>
-            )}
-          </button>
-
-            {/* Advanced Filters Button */}
-            <button
-              onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
-              style={{
-                padding: '8px 16px',
-                borderRadius: 8,
-                border: '1px solid var(--border)',
-                background: (advancedFilters.search || advancedFilters.assignee || advancedFilters.priority || advancedFilters.label || advancedFilters.status) ? 'var(--primary-light)' : 'var(--surface)',
-                color: (advancedFilters.search || advancedFilters.assignee || advancedFilters.priority || advancedFilters.label || advancedFilters.status) ? 'var(--primary)' : 'var(--text)',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8
-              }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 6h18"></path>
-                <path d="M8 12h8"></path>
-                <path d="M10 18h4"></path>
-              </svg>
-              Advanced
-              {(advancedFilters.search || advancedFilters.assignee || advancedFilters.priority || advancedFilters.label || advancedFilters.status) && (
-                <span style={{
-                  background: 'var(--primary)',
-                  color: 'white',
-                  borderRadius: '50%',
-                  width: 18,
-                  height: 18,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 11,
-                  fontWeight: 700
-                }}>
-                  {[advancedFilters.search, advancedFilters.assignee, advancedFilters.priority, advancedFilters.label, advancedFilters.status].filter(Boolean).length}
-                </span>
-              )}
-            </button>
-
-          {/* Workflows Button */}
-          <button
-            onClick={() => setShowWorkflows(!showWorkflows)}
-            style={{
-              padding: '8px 16px',
-              borderRadius: 8,
-              border: '1px solid var(--border)',
-              background: workflows.length > 0 ? 'var(--primary-light)' : 'var(--surface)',
-              color: workflows.length > 0 ? 'var(--primary)' : 'var(--text)',
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.35-4.35"></path>
-            </svg>
-            Workflows
-            {workflows.length > 0 && (
-              <span style={{
-                background: 'var(--primary)',
-                color: 'white',
-                borderRadius: '50%',
-                width: 18,
-                height: 18,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 11,
-                fontWeight: 700
-              }}>
-                {workflows.length}
-              </span>
-            )}
-          </button>
-
-          {/* Templates Button */}
-          <button
-            onClick={() => setShowManageTemplates(!showManageTemplates)}
-            style={{
-              padding: '8px 16px',
-              borderRadius: 8,
-              border: '1px solid var(--border)',
-              background: 'var(--surface)',
-              color: 'var(--text)',
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-            </svg>
-            Templates
-          </button>
-
-          {/* View Switcher */}
-          <div style={{ 
-            display: 'flex', 
-            gap: 4, 
-            padding: '4px 8px',
-            background: 'var(--bg-secondary)',
-            borderRadius: 8,
-            border: '1px solid var(--border)',
-            marginLeft: 'auto'
-          }}>
-            {[
-              { id: 'kanban', label: 'Board', icon: '⊞' },
-              { id: 'calendar', label: 'Calendar', icon: '📅' },
-              { id: 'table', label: 'Table', icon: '≡' },
-              { id: 'timeline', label: 'Timeline', icon: '→' }
-            ].map((view) => (
-              <button
-                key={view.id}
-                onClick={() => setCurrentView(view.id as any)}
-                title={view.label}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: 6,
-                  border: 'none',
-                  background: currentView === view.id ? 'var(--primary)' : 'transparent',
-                  color: currentView === view.id ? 'white' : 'var(--text-secondary)',
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  whiteSpace: 'nowrap',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 4
-                }}
-                onMouseEnter={(e) => {
-                  if (currentView !== view.id) {
-                    e.currentTarget.style.background = 'var(--primary-light)'
-                    e.currentTarget.style.color = 'var(--primary)'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (currentView !== view.id) {
-                    e.currentTarget.style.background = 'transparent'
-                    e.currentTarget.style.color = 'var(--text-secondary)'
-                  }
-                }}
-              >
-                <span>{view.icon}</span>
-                <span style={{ fontSize: 12 }}>{view.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-        </header>
+        <ProjectHeader
+          project={project}
+          onEditLabels={() => setShowLabelsModal(true)}
+          onEditBackground={() => setShowBackgroundPicker(true)}
+          onShowWorkflows={() => setShowWorkflows(true)}
+          onShowManageTemplates={() => setShowManageTemplates(true)}
+          onEditColumns={() => setEditingColumns(true)}
+          currentView={currentView}
+          onViewChange={setCurrentView}
+          workflows={workflows}
+        />
 
         {/* Filters Dropdown */}
         {showFilters && (
