@@ -11,12 +11,13 @@ model Organization {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
-  // Stripe billing/customer info
-  stripeCustomerId    String?
-  stripeSubscriptionId String?
-  planId              String?
-  seats               Int      @default(1)
-  trialEndsAt         DateTime?
+  // PayPal billing/customer info
+  paypalCustomerId      String?
+  paypalSubscriptionId  String?
+  paypalPlanId          String?
+  planId                String?
+  seats                 Int      @default(1)
+  trialEndsAt           DateTime?
   createdAt DateTime @default(now())
   members   OrganizationMember[]
   projects  Project[]
@@ -230,12 +231,14 @@ model Workflow {
   name            String
   description     String?
   enabled         Boolean  @default(true)
-  triggerType     String   // "status_changed", "priority_changed", "assigned", "due_date_set", "labeled"
-  triggerValue    String?  // The specific value to trigger on (e.g., status name, priority level, user id, label id)
+  // Support for advanced triggers with conditions
+  triggersJson    String   // JSON array of trigger objects with AND/OR logic
   actionsJson     String   // JSON string of WorkflowAction array
+  delaySeconds    Int      @default(0) // Delay before executing actions (in seconds)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   executions      WorkflowExecution[]
+  logs            WorkflowLog[]
   
   @@index([projectId])
   @@index([enabled])
@@ -252,10 +255,31 @@ model WorkflowExecution {
   status          String   @default("pending") // "pending", "executing", "success", "failed"
   resultsJson     String?  // JSON string of execution results
   errorMessage    String?
+  logs            WorkflowLog[]
   
   @@index([workflowId])
   @@index([taskId])
   @@index([status])
+}
+
+model WorkflowLog {
+  id              String   @id @default(cuid())
+  workflowId      String
+  workflow        Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  executionId     String?
+  execution       WorkflowExecution? @relation(fields: [executionId], references: [id], onDelete: SetNull)
+  taskId          String?
+  action          String   // "triggered", "executed", "failed", "skipped", "delayed"
+  actionType      String?  // Type of action executed (notify, assign, etc.)
+  message         String   // Human-readable log message
+  resultJson      String?  // JSON of action result
+  errorMessage    String?
+  createdAt       DateTime @default(now())
+  
+  @@index([workflowId])
+  @@index([executionId])
+  @@index([taskId])
+  @@index([createdAt])
 }
 
 model TaskTemplate {

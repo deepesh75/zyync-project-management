@@ -64,13 +64,13 @@ export default function OrganizationBilling() {
   }
 
   async function performCreateCheckout() {
-    if (!priceId) return alert('Please select a price or enter a priceId from Stripe')
+    if (!priceId) return alert('Please select a plan')
     setProcessing(true)
     try {
       const res = await fetch('/api/billing/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orgId: organization.id, priceId })
+        body: JSON.stringify({ orgId: organization.id, planId: priceId })
       })
 
       const data = await res.json()
@@ -79,7 +79,7 @@ export default function OrganizationBilling() {
         return
       }
 
-      // Redirect to Stripe Checkout
+      // Redirect to PayPal subscription
       window.location.href = data.url
     } catch (err) {
       console.error(err)
@@ -143,7 +143,7 @@ export default function OrganizationBilling() {
 
         <section style={{ marginTop: 24, background: 'white', padding: 20, borderRadius: 8, border: '1px solid #e5e7eb' }}>
           <h3 style={{ marginTop: 0 }}>Change Plan / Subscribe</h3>
-          <p style={{ color: '#6b7280' }}>Select a Stripe price from your test account or enter a `priceId` manually.</p>
+          <p style={{ color: '#6b7280' }}>Select a plan below to start your subscription via PayPal.</p>
           <div style={{ display: 'flex', gap: 12, marginTop: 8, alignItems: 'center' }}>
             {prices && prices.length > 0 && !useManual ? (
               <select value={priceId} onChange={(e) => setPriceId(e.target.value)} style={{ flex: 1, padding: 10, borderRadius: 6, border: '1px solid #d1d5db' }}>
@@ -164,7 +164,7 @@ export default function OrganizationBilling() {
             <button onClick={() => { setConfirmType('checkout'); setConfirmOpen(true) }} disabled={processing} style={{ padding: '10px 16px', background: '#6366f1', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' }}>{processing ? 'Starting...' : 'Start Checkout'}</button>
           </div>
           {prices && prices.length === 0 && (
-            <div style={{ marginTop: 8, color: '#6b7280' }}>No prices found in Stripe. You can enter a `priceId` manually.</div>
+            <div style={{ marginTop: 8, color: '#6b7280' }}>No plans available.</div>
           )}
 
           {selectedPrice && selectedPrice.product?.description && (
@@ -173,9 +173,9 @@ export default function OrganizationBilling() {
         </section>
 
         <section style={{ marginTop: 24, background: 'white', padding: 20, borderRadius: 8, border: '1px solid #e5e7eb' }}>
-          <h3 style={{ marginTop: 0 }}>Billing Portal</h3>
-          <p style={{ color: '#6b7280' }}>Open Stripe Billing Portal to manage payment methods, invoices and subscriptions.</p>
-          <button onClick={() => { setConfirmType('portal'); setConfirmOpen(true) }} disabled={processing} style={{ padding: '10px 16px', background: '#10b981', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' }}>{processing ? 'Opening...' : 'Open Billing Portal'}</button>
+          <h3 style={{ marginTop: 0 }}>Manage Subscription</h3>
+          <p style={{ color: '#6b7280' }}>Open PayPal to manage payment methods, invoices and subscriptions.</p>
+          <button onClick={() => { setConfirmType('portal'); setConfirmOpen(true) }} disabled={processing} style={{ padding: '10px 16px', background: '#0070ba', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' }}>{processing ? 'Opening...' : 'Manage in PayPal'}</button>
         </section>
 
         <ConfirmationModal
@@ -199,7 +199,7 @@ function ConfirmationModal({ open, onClose, onConfirm, type, priceLabel, process
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 60 }}>
       <div style={{ width: 480, background: 'white', borderRadius: 8, padding: 20, boxShadow: '0 8px 30px rgba(0,0,0,0.15)' }}>
         <h3 style={{ marginTop: 0 }}>{type === 'checkout' ? 'Confirm Checkout' : 'Open Billing Portal'}</h3>
-        <p style={{ color: '#6b7280' }}>{type === 'checkout' ? `You are about to start a subscription for ${priceLabel || 'the selected plan'}. Continue?` : 'You will be redirected to Stripe Billing Portal where you can manage invoices and payment methods.'}</p>
+        <p style={{ color: '#6b7280' }}>{type === 'checkout' ? `You are about to start a subscription for ${priceLabel || 'the selected plan'}. Continue?` : 'You will be redirected to PayPal where you can manage invoices and payment methods.'}</p>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>
           <button onClick={onClose} disabled={processing} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'white' }}>Cancel</button>
           <button onClick={onConfirm} disabled={processing} style={{ padding: '8px 12px', borderRadius: 6, border: 'none', background: '#111827', color: 'white' }}>

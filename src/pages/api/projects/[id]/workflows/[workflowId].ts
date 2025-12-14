@@ -40,15 +40,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'PATCH') {
     try {
-      const { name, description, enabled, trigger, actions } = req.body
+      const { name, description, enabled, trigger, actions, delaySeconds } = req.body
 
       const updates: any = {}
       if (name !== undefined) updates.name = name
       if (description !== undefined) updates.description = description
       if (enabled !== undefined) updates.enabled = enabled
+      if (delaySeconds !== undefined) updates.delaySeconds = delaySeconds
       if (trigger) {
-        updates.triggerType = trigger.type
-        updates.triggerValue = trigger.value || null
+        // Support both old and new trigger formats
+        if (trigger.conditions && Array.isArray(trigger.conditions)) {
+          // New format
+          updates.triggersJson = JSON.stringify(trigger)
+        } else if (trigger.type) {
+          // Old format - convert to new
+          updates.triggerType = trigger.type
+          updates.triggerValue = trigger.value || null
+          updates.triggersJson = JSON.stringify({
+            conditions: [{
+              type: trigger.type,
+              value: trigger.value
+            }],
+            logic: 'AND'
+          })
+        }
       }
       if (actions) {
         updates.actionsJson = JSON.stringify(actions)
@@ -59,16 +74,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         data: updates
       })
 
+      const trigger_response = JSON.parse(updatedWorkflow.triggersJson || '{}')
       return res.status(200).json({
         id: updatedWorkflow.id,
         name: updatedWorkflow.name,
         description: updatedWorkflow.description,
         enabled: updatedWorkflow.enabled,
-        trigger: {
-          type: updatedWorkflow.triggerType,
-          value: updatedWorkflow.triggerValue
-        },
+        trigger: trigger_response,
         actions: JSON.parse(updatedWorkflow.actionsJson),
+        delaySeconds: updatedWorkflow.delaySeconds,
         createdAt: updatedWorkflow.createdAt.getTime()
       })
     } catch (error) {

@@ -156,17 +156,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         for (const workflow of workflows) {
           let shouldTrigger = false
           
-          // Check if trigger matches
-          if (workflow.triggerType === 'status_changed' && updates.status) {
-            shouldTrigger = workflow.triggerValue === updates.status
-          } else if (workflow.triggerType === 'priority_changed' && updates.priority !== undefined) {
-            shouldTrigger = workflow.triggerValue === updates.priority
-          } else if (workflow.triggerType === 'assigned' && updates.assigneeId) {
-            shouldTrigger = workflow.triggerValue === updates.assigneeId
-          } else if (workflow.triggerType === 'due_date_set' && updates.dueDate) {
-            shouldTrigger = true
-          } else if (workflow.triggerType === 'labeled' && Array.isArray(updates.labelIds)) {
-            shouldTrigger = updates.labelIds.includes(workflow.triggerValue)
+          // Parse trigger JSON from new format
+          let trigger: any = { conditions: [], logic: 'AND' }
+          try {
+            trigger = JSON.parse(workflow.triggersJson || '{"conditions":[],"logic":"AND"}')
+          } catch {
+            // Fallback to empty trigger
+          }
+
+          // Check if any condition matches
+          const results = trigger.conditions?.map((condition: any) => {
+            switch (condition.type) {
+              case 'status_changed':
+                return updates.status && condition.value === updates.status
+              case 'priority_changed':
+                return updates.priority !== undefined && condition.value === updates.priority
+              case 'assigned':
+                return updates.assigneeId && condition.value === updates.assigneeId
+              case 'due_date_set':
+                return !!updates.dueDate
+              case 'labeled':
+                return Array.isArray(updates.labelIds) && updates.labelIds.includes(condition.value)
+              default:
+                return false
+            }
+          }) || []
+
+          // Combine results based on logic
+          if (trigger.logic === 'OR') {
+            shouldTrigger = results.some((r: boolean) => r)
+          } else {
+            // Default to AND
+            shouldTrigger = results.length > 0 && results.every((r: boolean) => r)
           }
 
           if (shouldTrigger) {
@@ -272,16 +293,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         for (const workflow of workflows) {
           let shouldTrigger = false
           
-          if (workflow.triggerType === 'status_changed' && updates.status) {
-            shouldTrigger = workflow.triggerValue === updates.status
-          } else if (workflow.triggerType === 'priority_changed' && updates.priority !== undefined) {
-            shouldTrigger = workflow.triggerValue === updates.priority
-          } else if (workflow.triggerType === 'assigned' && updates.assigneeId) {
-            shouldTrigger = workflow.triggerValue === updates.assigneeId
-          } else if (workflow.triggerType === 'due_date_set' && updates.dueDate) {
-            shouldTrigger = true
-          } else if (workflow.triggerType === 'labeled' && Array.isArray(updates.labelIds)) {
-            shouldTrigger = updates.labelIds.includes(workflow.triggerValue)
+          // Parse trigger JSON from new format
+          let trigger: any = { conditions: [], logic: 'AND' }
+          try {
+            trigger = JSON.parse(workflow.triggersJson || '{"conditions":[],"logic":"AND"}')
+          } catch {
+            // Fallback to empty trigger
+          }
+
+          // Check if any condition matches
+          const results = trigger.conditions?.map((condition: any) => {
+            switch (condition.type) {
+              case 'status_changed':
+                return updates.status && condition.value === updates.status
+              case 'priority_changed':
+                return updates.priority !== undefined && condition.value === updates.priority
+              case 'assigned':
+                return updates.assigneeId && condition.value === updates.assigneeId
+              case 'due_date_set':
+                return !!updates.dueDate
+              case 'labeled':
+                return Array.isArray(updates.labelIds) && updates.labelIds.includes(condition.value)
+              default:
+                return false
+            }
+          }) || []
+
+          // Combine results based on logic
+          if (trigger.logic === 'OR') {
+            shouldTrigger = results.some((r: boolean) => r)
+          } else {
+            // Default to AND
+            shouldTrigger = results.length > 0 && results.every((r: boolean) => r)
           }
           
           if (shouldTrigger) {

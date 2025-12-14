@@ -1,8 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import Stripe from 'stripe'
 import { requireOrgAdmin } from '../../../lib/requireOrgAdmin'
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '')
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).end()
@@ -15,19 +12,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!admin) return // requireOrgAdmin already sent response
 
   try {
-    const prices = await stripe.prices.list({ active: true, limit: 100, expand: ['data.product'] })
+    // Return hardcoded pricing plans (from PayPal)
+    // In production, you'd fetch these from PayPal API
+    const prices = [
+      {
+        id: 'price_pro_monthly',
+        name: 'Pro',
+        amount: 2900, // $29.00
+        currency: 'usd',
+        interval: 'month',
+        description: 'For growing teams',
+        features: [
+          'Unlimited projects',
+          'Unlimited tasks',
+          'Up to 10 team members',
+          'Email support'
+        ]
+      },
+      {
+        id: 'price_enterprise_monthly',
+        name: 'Enterprise',
+        amount: 9900, // $99.00
+        currency: 'usd',
+        interval: 'month',
+        description: 'For large organizations',
+        features: [
+          'Everything in Pro',
+          'Unlimited team members',
+          'Advanced permissions',
+          'Priority support'
+        ]
+      }
+    ]
 
-    const mapped = prices.data.map((p) => ({
-      id: p.id,
-      nickname: p.nickname,
-      unit_amount: (p.unit_amount ?? null),
-      currency: p.currency,
-      recurring: p.recurring ? { interval: p.recurring.interval, interval_count: p.recurring.interval_count } : null,
-      product: typeof p.product === 'object' && p.product ? { id: (p.product as any).id, name: (p.product as any).name, description: (p.product as any).description || null } : null,
-      active: p.active
-    }))
-
-    return res.status(200).json({ prices: mapped })
+    return res.status(200).json({ prices })
   } catch (err: any) {
     console.error('List prices error', err)
     return res.status(500).json({ error: err.message || 'Server error' })

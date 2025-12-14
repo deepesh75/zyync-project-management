@@ -1,43 +1,51 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import Stripe from 'stripe'
 import { prisma } from '../../../lib/prisma'
 import { requireOrgAdmin } from '../../../lib/requireOrgAdmin'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '')
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end()
-  const { orgId, priceId, successUrl, cancelUrl } = req.body
-  if (!orgId || !priceId) return res.status(400).json({ error: 'orgId and priceId required' })
+  const { orgId, planId, successUrl, cancelUrl } = req.body
+  if (!orgId || !planId) return res.status(400).json({ error: 'orgId and planId required' })
 
   // Require requesting user to be admin on this org
   const admin = await requireOrgAdmin(req, res, orgId)
   if (!admin) return // requireOrgAdmin already sent response
 
   try {
-    // Create or fetch Stripe customer for organization
+    // Fetch or create PayPal customer for organization
     const org = await prisma.organization.findUnique({ where: { id: orgId } })
-    let customerId = org?.stripeCustomerId
+    let customerId = org?.paypalCustomerId
 
     if (!customerId) {
-      const customer = await stripe.customers.create({ metadata: { orgId } })
-      customerId = customer.id
-      await prisma.organization.update({ where: { id: orgId }, data: { stripeCustomerId: customerId } })
+      // For PayPal, we use email as customer identifier
+      customerId = `org_${orgId}@paypal.local`
+      await prisma.organization.update({ 
+        where: { id: orgId }, 
+        data: { paypalCustomerId: customerId } 
+      })
     }
 
-    const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-      payment_method_types: ['card'],
-      line_items: [{ price: priceId, quantity: 1 }],
-      customer: customerId,
-      success_url: successUrl || `${process.env.NEXTAUTH_URL}/billing/success`,
-      cancel_url: cancelUrl || `${process.env.NEXTAUTH_URL}/billing/cancel`,
-      subscription_data: { metadata: { orgId } }
-    })
+    // Map plan IDs to PayPal plan IDs (you need to set these in PayPal)
+    const planMapping: Record<string, string> = {
+      'price_pro_monthly': process.env.PAYPAL_PRO_PLAN_ID || 'P-PLACEHOLDER-PRO',
+      'price_enterprise_monthly': process.env.PAYPAL_ENTERPRISE_PLAN_ID || 'P-PLACEHOLDER-ENTERPRISE'
+    }
 
-    return res.status(200).json({ url: session.url, id: session.id })
+    const paypalPlanId = planMapping[planId] || planId
+
+    // Create subscription link using PayPal subscription URL
+    // The actual subscription creation happens when user approves on PayPal's side
+    const subscriptionLink = `https://www.paypal.com/billing/plans/${paypalPlanId}/subscribe`
+
+    // In production, you'd create a PayPal approval URL with return URLs
+    // For now, we'll return the subscription link
+    return res.status(200).json({ 
+      url: subscriptionLink,
+      type: 'paypal_subscription',
+      planId: paypalPlanId
+    })
   } catch (err: any) {
-    console.error('Checkout session error', err)
+    console.error('PayPal checkout session error', err)
     return res.status(500).json({ error: err.message || 'Server error' })
   }
 }

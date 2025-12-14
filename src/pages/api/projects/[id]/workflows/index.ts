@@ -36,19 +36,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         orderBy: { createdAt: 'desc' }
       })
 
-      // Parse actionsJson for each workflow
-      const parsedWorkflows = workflows.map(w => ({
-        id: w.id,
-        name: w.name,
-        description: w.description,
-        enabled: w.enabled,
-        trigger: {
-          type: w.triggerType,
-          value: w.triggerValue
-        },
-        actions: JSON.parse(w.actionsJson),
-        createdAt: w.createdAt.getTime()
-      }))
+      // Parse workflows from triggersJson format
+      const parsedWorkflows = workflows.map(w => {
+        let trigger: any
+        
+        try {
+          trigger = JSON.parse(w.triggersJson || '{"conditions":[],"logic":"AND"}')
+        } catch {
+          // Fallback to empty trigger
+          trigger = { conditions: [], logic: 'AND' }
+        }
+
+        return {
+          id: w.id,
+          name: w.name,
+          description: w.description,
+          enabled: w.enabled,
+          trigger,
+          actions: JSON.parse(w.actionsJson || '[]'),
+          delaySeconds: w.delaySeconds || 0,
+          createdAt: w.createdAt.getTime()
+        }
+      })
 
       return res.status(200).json(parsedWorkflows)
     } catch (error) {
@@ -59,10 +68,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'POST') {
     try {
-      const { name, description, enabled, trigger, actions } = req.body
+      const { name, description, enabled, trigger, actions, delaySeconds } = req.body
 
       if (!name || !trigger || !Array.isArray(actions)) {
         return res.status(400).json({ error: 'Missing required fields' })
+      }
+
+      // Support both old and new trigger formats
+      let triggersJson: string
+
+      if (trigger.conditions && Array.isArray(trigger.conditions)) {
+        // New format
+        triggersJson = JSON.stringify(trigger)
+      } else if (trigger.type) {
+        // Old format - convert to new
+        triggersJson = JSON.stringify({
+          conditions: [{
+            type: trigger.type,
+            value: trigger.value
+          }],
+          logic: 'AND'
+        })
+      } else {
+        return res.status(400).json({ error: 'Invalid trigger format' })
       }
 
       const workflow = await prisma.workflow.create({
@@ -71,22 +99,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           name,
           description: description || null,
           enabled: enabled !== false,
-          triggerType: trigger.type,
-          triggerValue: trigger.value || null,
-          actionsJson: JSON.stringify(actions)
+          triggersJson,
+          actionsJson: JSON.stringify(actions),
+          delaySeconds: delaySeconds || 0
         }
       })
 
+      // Parse and return
+      const trigger_response = JSON.parse(workflow.triggersJson || '{}')
       return res.status(201).json({
         id: workflow.id,
         name: workflow.name,
         description: workflow.description,
         enabled: workflow.enabled,
-        trigger: {
-          type: workflow.triggerType,
-          value: workflow.triggerValue
-        },
+        trigger: trigger_response,
         actions: JSON.parse(workflow.actionsJson),
+        delaySeconds: workflow.delaySeconds,
         createdAt: workflow.createdAt.getTime()
       })
     } catch (error) {
