@@ -35,7 +35,6 @@ const plans = [
       'Kanban, Table & Calendar views',
       'Advanced task management',
       'File attachments',
-      'Unlimited team members',
       'Priority email support',
       'Workflow automation',
       'Activity logs',
@@ -70,7 +69,7 @@ const plans = [
   },
   {
     name: 'Pro Lifetime',
-    price: '$99',
+    price: '$199',
     period: 'one-time',
     description: 'One-time payment for Pro features',
     features: [
@@ -140,13 +139,15 @@ export default function Pricing() {
           maxWidth: 1200, 
           margin: '0 auto'
         }}>
+          {/* Main Plans */}
           <div style={{ 
             display: 'grid', 
             gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
             gap: 32,
-            alignItems: 'start'
+            alignItems: 'start',
+            marginBottom: 60
           }}>
-            {plans.map((plan) => (
+            {plans.filter(plan => plan.id !== 'pro_lifetime').map((plan) => (
               <div
                 key={plan.name}
                 style={{
@@ -278,6 +279,115 @@ export default function Pricing() {
               </div>
             ))}
           </div>
+
+          {/* Pro Lifetime Plan - Centered */}
+          {plans.filter(plan => plan.id === 'pro_lifetime').map((plan) => (
+            <div
+              key={plan.name}
+              style={{
+                background: 'white',
+                border: '3px solid #f59e0b', // Orange/gold border for lifetime deal
+                borderRadius: 16,
+                padding: 40,
+                boxShadow: '0 20px 40px rgba(245, 158, 11, 0.15)',
+                position: 'relative',
+                maxWidth: 400,
+                margin: '0 auto',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = '0 25px 50px rgba(245, 158, 11, 0.2)'
+                e.currentTarget.style.transform = 'translateY(-4px)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = '0 20px 40px rgba(245, 158, 11, 0.15)'
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
+            >
+              {/* Special Badge */}
+              <div style={{
+                position: 'absolute',
+                top: -12,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                background: '#f59e0b',
+                color: 'white',
+                padding: '6px 16px',
+                borderRadius: 20,
+                fontSize: 12,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
+                🔥 Limited Time
+              </div>
+
+              <h2 style={{ fontSize: 28, fontWeight: 700, margin: 0, marginBottom: 8, color: '#111827', textAlign: 'center' }}>
+                {plan.name}
+              </h2>
+              <p style={{ color: '#6b7280', margin: 0, marginBottom: 24, fontSize: 14, textAlign: 'center' }}>
+                {plan.description}
+              </p>
+
+              <div style={{ marginBottom: 32, textAlign: 'center' }}>
+                <div style={{ fontSize: 48, fontWeight: 800, color: '#111827', margin: 0 }}>
+                  {plan.price}
+                </div>
+                <div style={{ color: '#6b7280', fontSize: 14, marginTop: 4 }}>
+                  {plan.period}
+                </div>
+              </div>
+
+              <button
+                onClick={() => handleSelectPlan(plan)}
+                style={{
+                  width: '100%',
+                  padding: '14px 24px',
+                  background: '#f59e0b',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 10,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  marginBottom: 32
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#d97706'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#f59e0b'
+                }}
+              >
+                {plan.cta}
+              </button>
+
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {plan.features.map((feature, idx) => (
+                  <li
+                    key={idx}
+                    style={{
+                      padding: '12px 0',
+                      borderBottom: idx < plan.features.length - 1 ? '1px solid #f3f4f6' : 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      fontSize: 14,
+                      color: '#374151'
+                    }}
+                  >
+                    <span style={{
+                      color: '#10b981',
+                      fontSize: 18,
+                      lineHeight: 1
+                    }}>✓</span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </section>
 
         {/* FAQ Section */}

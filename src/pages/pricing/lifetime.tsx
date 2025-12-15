@@ -23,7 +23,7 @@ export default function LifetimePricing() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           planId: 'pro_lifetime',
-          price: 99,
+          price: 199,
           isLifetime: true
         })
       })
@@ -90,7 +90,7 @@ export default function LifetimePricing() {
 
             <div style={{ textAlign: 'center', marginBottom: 32 }}>
               <div style={{ fontSize: 64, fontWeight: 800, color: '#111827', margin: 0 }}>
-                $99
+                $199
               </div>
               <div style={{ color: '#6b7280', fontSize: 16, marginTop: 4 }}>
                 One-time payment • Lifetime access
@@ -107,10 +107,10 @@ export default function LifetimePricing() {
                   <strong>Regular Pro pricing:</strong> $3/user/month = $36/user/year
                 </p>
                 <p style={{ margin: 0, marginBottom: 12 }}>
-                  <strong>With lifetime deal:</strong> Only $99 total (worth $360+ over 1 year)
+                  <strong>With lifetime deal:</strong> Only $199 total (worth $720+ over 2 years)
                 </p>
                 <p style={{ margin: 0, fontSize: 16, fontWeight: 600, color: '#10b981' }}>
-                  Save over 70% compared to annual subscriptions!
+                  Save over 80% compared to annual subscriptions!
                 </p>
               </div>
             </div>
@@ -160,7 +160,7 @@ export default function LifetimePricing() {
                 transition: 'all 0.3s ease'
               }}
             >
-              {loading ? 'Processing...' : 'Get Lifetime Access - $99'}
+              {loading ? 'Processing...' : 'Get Lifetime Access - $199'}
             </button>
 
             <p style={{ fontSize: 14, color: '#6b7280', textAlign: 'center', marginTop: 16 }}>
