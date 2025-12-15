@@ -9,57 +9,106 @@ const plans = [
     name: 'Free',
     price: '$0',
     period: 'forever',
-    description: 'Perfect for getting started',
+    description: 'Perfect for individuals and small teams getting started',
     features: [
       'Up to 3 projects',
       'Unlimited tasks',
+      'Kanban, Table & Calendar views',
       'Basic task management',
       'Comments & mentions',
-      '1 team member',
-      'Community support'
+      'File attachments (up to 10MB)',
+      '5 team members',
+      'Community support',
+      'Basic workflow automation (3 workflows)',
+      'Task templates (5 templates)',
+      'Activity log (30 days retention)'
     ],
     cta: 'Get Started',
     highlight: false,
-    priceId: null // No Stripe price ID for free plan
+    priceId: null, // No payment needed
+    id: 'free'
   },
   {
     name: 'Pro',
-    price: '$29',
-    period: '/month',
-    description: 'For growing teams',
+    price: 'Starting at $3',
+    period: '/user/month',
+    description: 'For growing teams that need advanced features',
     features: [
       'Unlimited projects',
       'Unlimited tasks',
+      'All views: Kanban, Table, Calendar, Timeline',
       'Advanced task management',
-      'Comments & mentions',
-      'Up to 10 team members',
-      'Email support',
-      'Activity log',
-      'Task duplication',
-      'Card customization'
+      'Comments & mentions with @notifications',
+      'File attachments (up to 100MB per file)',
+      'Unlimited team members',
+      'Priority email support',
+      'Advanced workflow automation (unlimited workflows)',
+      'Custom task templates (unlimited)',
+      'Activity log (1 year retention)',
+      'Task dependencies & subtasks',
+      'Time tracking & reporting',
+      'Custom fields & labels',
+      'API access',
+      'Mobile app access',
+      'Integration with Slack, GitHub, Jira',
+      'Advanced permissions & roles',
+      'Export capabilities (PDF, CSV, JSON)',
+      'Backup & restore'
     ],
+    pricing: {
+      monthly: '$4/user/month (billed monthly)',
+      annual: '$3/user/month (billed annually - save 25%)',
+      minUsers: 1
+    },
     cta: 'Start Free Trial',
     highlight: true,
-    priceId: 'price_pro_monthly' // Replace with actual Stripe price ID
+    priceId: 'paypal_pro_plan', // Will be replaced with actual PayPal plan ID
+    id: 'pro'
   },
   {
     name: 'Enterprise',
     price: 'Custom',
     period: 'pricing',
-    description: 'For large organizations',
+    description: 'For large organizations with advanced requirements',
     features: [
-      'Everything in Pro',
-      'Unlimited team members',
-      'Advanced permissions',
-      'SSO (Google, GitHub)',
-      'Custom integrations',
-      'Priority support',
-      'SLA guaranteed',
-      'Dedicated account manager'
+      'Everything in Pro, plus:',
+      'Unlimited everything',
+      'Custom integrations & webhooks',
+      'Advanced analytics & reporting',
+      'SSO (SAML, Google, GitHub, Okta)',
+      'Advanced security & compliance',
+      'Dedicated account manager',
+      'Custom training & onboarding',
+      'Priority phone & video support',
+      '99.9% SLA guarantee',
+      'Custom branding & white-labeling',
+      'Advanced audit logs',
+      'Data export & migration tools',
+      'Custom contract terms',
+      'On-premise deployment option'
     ],
     cta: 'Contact Sales',
     highlight: false,
-    priceId: null
+    priceId: null,
+    id: 'enterprise'
+  },
+  {
+    name: 'Pro Lifetime',
+    price: '$299',
+    period: 'one-time',
+    description: 'One-time payment for Pro features forever',
+    features: [
+      'All Pro features included',
+      'No recurring payments',
+      'Lifetime access & updates',
+      'Perfect for freelancers & small agencies',
+      'Same great support & features',
+      'Upgrade path to Enterprise available'
+    ],
+    cta: 'Get Lifetime Access',
+    highlight: false,
+    priceId: 'paypal_pro_lifetime', // Will be replaced with actual PayPal plan ID
+    id: 'pro_lifetime'
   }
 ]
 
@@ -74,8 +123,27 @@ export default function Pricing() {
       return
     }
 
-    // If already signed in, redirect to home to select an organization
-    router.push('/')
+    // Handle different plan types
+    switch (plan.id) {
+      case 'free':
+        // Redirect to home to start using free plan
+        router.push('/')
+        break
+      case 'pro':
+        // Redirect to Pro plan selection with user count
+        router.push('/pricing/pro')
+        break
+      case 'enterprise':
+        // Open contact form or redirect to contact page
+        window.open('mailto:sales@zyync.com?subject=Enterprise%20Inquiry', '_blank')
+        break
+      case 'pro_lifetime':
+        // Redirect to lifetime deal checkout
+        router.push('/pricing/lifetime')
+        break
+      default:
+        router.push('/')
+    }
   }
 
   return (
@@ -164,6 +232,18 @@ export default function Pricing() {
                   <div style={{ color: '#6b7280', fontSize: 14, marginTop: 4 }}>
                     {plan.period}
                   </div>
+                  {plan.pricing && (
+                    <div style={{ marginTop: 16, padding: 16, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: '#374151', marginBottom: 8 }}>Pricing Options:</div>
+                      <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.5 }}>
+                        <div>• {plan.pricing.monthly}</div>
+                        <div>• {plan.pricing.annual}</div>
+                        <div style={{ marginTop: 8, fontSize: 12, color: '#9ca3af' }}>
+                          Minimum {plan.pricing.minUsers} user{plan.pricing.minUsers > 1 ? 's' : ''}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <button

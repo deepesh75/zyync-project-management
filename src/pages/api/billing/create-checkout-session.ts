@@ -4,46 +4,95 @@ import { requireOrgAdmin } from '../../../lib/requireOrgAdmin'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end()
-  const { orgId, planId, successUrl, cancelUrl } = req.body
-  if (!orgId || !planId) return res.status(400).json({ error: 'orgId and planId required' })
 
-  // Require requesting user to be admin on this org
-  const admin = await requireOrgAdmin(req, res, orgId)
-  if (!admin) return // requireOrgAdmin already sent response
+  const {
+    orgId,
+    planId,
+    userCount,
+    billingCycle,
+    pricePerUser,
+    total,
+    isLifetime,
+    successUrl,
+    cancelUrl
+  } = req.body
+
+  if (!planId) return res.status(400).json({ error: 'planId required' })
+
+  // For new signups, orgId might not exist yet
+  if (orgId) {
+    const admin = await requireOrgAdmin(req, res, orgId)
+    if (!admin) return // requireOrgAdmin already sent response
+  }
 
   try {
-    // Fetch or create PayPal customer for organization
-    const org = await prisma.organization.findUnique({ where: { id: orgId } })
-    let customerId = org?.paypalCustomerId
+    // Handle different plan types
+    if (planId === 'pro') {
+      // Pro plan with user-based pricing
+      if (!userCount || !billingCycle) {
+        return res.status(400).json({ error: 'userCount and billingCycle required for Pro plan' })
+      }
 
-    if (!customerId) {
-      // For PayPal, we use email as customer identifier
-      customerId = `org_${orgId}@paypal.local`
-      await prisma.organization.update({ 
-        where: { id: orgId }, 
-        data: { paypalCustomerId: customerId } 
+      const paypalPlanId = billingCycle === 'annual'
+        ? process.env.PAYPAL_PLAN_PRO_ANNUAL
+        : process.env.PAYPAL_PLAN_PRO_MONTHLY
+
+      if (!paypalPlanId) {
+        return res.status(500).json({ error: 'PayPal plan not configured' })
+      }
+
+      // Create PayPal subscription approval URL
+      const approvalUrl = `https://www.paypal.com/billing/plans/${paypalPlanId}/subscribe?quantity=${userCount}`
+
+      return res.status(200).json({
+        url: approvalUrl,
+        type: 'paypal_subscription',
+        planId: paypalPlanId,
+        userCount,
+        billingCycle
+      })
+
+    } else if (planId === 'pro_lifetime') {
+      // Lifetime deal - one-time payment
+      const paypalProductId = process.env.PAYPAL_PRODUCT_PRO_LIFETIME
+      if (!paypalProductId) {
+        return res.status(500).json({ error: 'PayPal lifetime product not configured' })
+      }
+
+      // Create PayPal one-time payment approval URL
+      const approvalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${process.env.PAYPAL_MERCHANT_EMAIL}&item_name=Zyync%20Pro%20Lifetime&item_number=pro_lifetime&amount=299.00&currency_code=USD&return=${encodeURIComponent(successUrl || 'https://zyync.com/success')}&cancel_return=${encodeURIComponent(cancelUrl || 'https://zyync.com/pricing')}`
+
+      return res.status(200).json({
+        url: approvalUrl,
+        type: 'paypal_onetime',
+        amount: 299,
+        productId: paypalProductId
+      })
+
+    } else if (planId === 'enterprise') {
+      // Enterprise - redirect to contact
+      return res.status(200).json({
+        url: 'mailto:sales@zyync.com?subject=Enterprise%20Inquiry',
+        type: 'contact'
+      })
+
+    } else {
+      // Legacy plan handling
+      const planMapping: Record<string, string> = {
+        'price_pro_monthly': process.env.PAYPAL_PLAN_PRO_MONTHLY || 'P-PLACEHOLDER-PRO',
+        'price_enterprise_monthly': process.env.PAYPAL_PLAN_ENTERPRISE || 'P-PLACEHOLDER-ENTERPRISE'
+      }
+
+      const paypalPlanId = planMapping[planId] || planId
+      const subscriptionLink = `https://www.paypal.com/billing/plans/${paypalPlanId}/subscribe`
+
+      return res.status(200).json({
+        url: subscriptionLink,
+        type: 'paypal_subscription',
+        planId: paypalPlanId
       })
     }
 
-    // Map plan IDs to PayPal plan IDs (you need to set these in PayPal)
-    const planMapping: Record<string, string> = {
-      'price_pro_monthly': process.env.PAYPAL_PRO_PLAN_ID || 'P-PLACEHOLDER-PRO',
-      'price_enterprise_monthly': process.env.PAYPAL_ENTERPRISE_PLAN_ID || 'P-PLACEHOLDER-ENTERPRISE'
-    }
-
-    const paypalPlanId = planMapping[planId] || planId
-
-    // Create subscription link using PayPal subscription URL
-    // The actual subscription creation happens when user approves on PayPal's side
-    const subscriptionLink = `https://www.paypal.com/billing/plans/${paypalPlanId}/subscribe`
-
-    // In production, you'd create a PayPal approval URL with return URLs
-    // For now, we'll return the subscription link
-    return res.status(200).json({ 
-      url: subscriptionLink,
-      type: 'paypal_subscription',
-      planId: paypalPlanId
-    })
   } catch (err: any) {
     console.error('PayPal checkout session error', err)
     return res.status(500).json({ error: err.message || 'Server error' })
