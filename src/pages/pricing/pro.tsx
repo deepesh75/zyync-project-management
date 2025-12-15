@@ -44,7 +44,7 @@ export default function ProPricing() {
           layout: 'vertical',
           label: 'subscribe'
         },
-        createSubscription: function(data, actions) {
+        createSubscription: function(data: any, actions: any) {
           if (!session) {
             router.push(`/auth/signup?plan=pro&users=${userCount}&billing=${billingCycle}`)
             return Promise.reject('User not authenticated')
@@ -60,14 +60,14 @@ export default function ProPricing() {
             quantity: userCount
           })
         },
-        onApprove: function(data, actions) {
+        onApprove: function(data: any, actions: any) {
           // Handle successful subscription
           console.log('Subscription created:', data.subscriptionID)
           alert(`Subscription created successfully! ID: ${data.subscriptionID}`)
           // You can redirect to a success page or update user status here
           router.push('/dashboard?subscription=success')
         },
-        onError: function(err) {
+        onError: function(err: any) {
           console.error('PayPal error:', err)
           alert('There was an error processing your subscription. Please try again.')
         }
