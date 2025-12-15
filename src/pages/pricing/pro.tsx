@@ -1,8 +1,15 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Navbar from '../../components/Navbar'
+
+// PayPal global type declaration
+declare global {
+  interface Window {
+    paypal?: any
+  }
+}
 
 export default function ProPricing() {
   const { data: session } = useSession()
@@ -10,45 +17,70 @@ export default function ProPricing() {
   const [userCount, setUserCount] = useState(5)
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual')
   const [loading, setLoading] = useState(false)
+  const [paypalLoaded, setPaypalLoaded] = useState(false)
 
   const pricePerUser = billingCycle === 'monthly' ? 4 : 3
   const subtotal = userCount * pricePerUser
   const discount = billingCycle === 'annual' ? subtotal * 0.25 : 0
   const total = subtotal - discount
 
-  const handleSubscribe = async () => {
+  // Load PayPal SDK
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !paypalLoaded) {
+      const script = document.createElement('script')
+      script.src = 'https://www.paypal.com/sdk/js?client-id=Afdwxc772Yiai4tutPAMlm-7y7VSEVEEUXlGlniM2G3tAZSioWwX7M1tOHO-K-LoxiR7VlIca5okFJ1S&vault=true&intent=subscription'
+      script.onload = () => setPaypalLoaded(true)
+      document.head.appendChild(script)
+    }
+  }, [paypalLoaded])
+
+  // Render PayPal button when SDK is loaded
+  useEffect(() => {
+    if (paypalLoaded && window.paypal) {
+      window.paypal.Buttons({
+        style: {
+          shape: 'pill',
+          color: 'blue',
+          layout: 'vertical',
+          label: 'subscribe'
+        },
+        createSubscription: function(data, actions) {
+          if (!session) {
+            router.push(`/auth/signup?plan=pro&users=${userCount}&billing=${billingCycle}`)
+            return Promise.reject('User not authenticated')
+          }
+
+          // Use different plan IDs for monthly vs annual
+          const planId = billingCycle === 'annual' 
+            ? process.env.NEXT_PUBLIC_PAYPAL_PLAN_PRO_ANNUAL || 'P-ANNUAL-PLACEHOLDER'
+            : 'P-3N8118553R364412BNFAARJA' // Monthly plan ID
+
+          return actions.subscription.create({
+            plan_id: planId,
+            quantity: userCount
+          })
+        },
+        onApprove: function(data, actions) {
+          // Handle successful subscription
+          console.log('Subscription created:', data.subscriptionID)
+          alert(`Subscription created successfully! ID: ${data.subscriptionID}`)
+          // You can redirect to a success page or update user status here
+          router.push('/dashboard?subscription=success')
+        },
+        onError: function(err) {
+          console.error('PayPal error:', err)
+          alert('There was an error processing your subscription. Please try again.')
+        }
+      }).render('#paypal-button-container')
+    }
+  }, [paypalLoaded, session, userCount, billingCycle, router])
+
+  const handleSubscribe = () => {
     if (!session) {
       router.push(`/auth/signup?plan=pro&users=${userCount}&billing=${billingCycle}`)
       return
     }
-
-    setLoading(true)
-    try {
-      // Redirect to PayPal checkout
-      const response = await fetch('/api/billing/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          planId: 'pro',
-          userCount,
-          billingCycle,
-          pricePerUser,
-          total
-        })
-      })
-
-      const data = await response.json()
-      if (data.url) {
-        window.location.href = data.url
-      } else {
-        alert('Error creating checkout session')
-      }
-    } catch (error) {
-      console.error('Error:', error)
-      alert('Error processing subscription')
-    } finally {
-      setLoading(false)
-    }
+    // PayPal button will handle the subscription
   }
 
   return (
@@ -169,26 +201,14 @@ export default function ProPricing() {
             </div>
           </div>
 
-          {/* Subscribe Button */}
+          {/* PayPal Button */}
           <div style={{ textAlign: 'center' }}>
-            <button
-              onClick={handleSubscribe}
-              disabled={loading}
-              style={{
-                padding: '16px 48px',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: 12,
-                fontSize: 18,
-                fontWeight: 700,
-                cursor: loading ? 'not-allowed' : 'pointer',
-                boxShadow: '0 8px 24px rgba(102, 126, 234, 0.3)',
-                transition: 'all 0.3s ease'
-              }}
-            >
-              {loading ? 'Processing...' : `Start Pro Plan - $${total.toFixed(2)}/${billingCycle === 'monthly' ? 'month' : 'year'}`}
-            </button>
+            <div id="paypal-button-container" style={{ maxWidth: 400, margin: '0 auto' }}></div>
+            {!paypalLoaded && (
+              <div style={{ padding: '20px', color: '#6b7280' }}>
+                Loading PayPal...
+              </div>
+            )}
             <p style={{ fontSize: 14, color: '#6b7280', marginTop: 16 }}>
               14-day free trial • Cancel anytime • Upgrade or downgrade at any time
             </p>
