@@ -19,9 +19,9 @@ export default function ProPricing() {
   const [loading, setLoading] = useState(false)
   const [paypalLoaded, setPaypalLoaded] = useState(false)
 
-  const pricePerUser = billingCycle === 'monthly' ? 4 : 3
+  const pricePerUser = 4 // Monthly only for now
   const subtotal = userCount * pricePerUser
-  const discount = billingCycle === 'annual' ? subtotal * 0.25 : 0
+  const discount = 0 // No discount for monthly
   const total = subtotal - discount
 
   // Load PayPal SDK
@@ -51,15 +51,23 @@ export default function ProPricing() {
           label: 'subscribe'
         },
         createSubscription: function(data: any, actions: any) {
+          // Check if user is authenticated first
           if (!session) {
+            // Redirect to signup instead of creating subscription
             router.push(`/auth/signup?plan=pro&users=${userCount}&billing=${billingCycle}`)
-            return Promise.reject('User not authenticated')
+            return Promise.reject('User not authenticated - redirecting to signup')
           }
 
-          // Use different plan IDs for monthly vs annual
-          const planId = billingCycle === 'annual'
-            ? process.env.NEXT_PUBLIC_PAYPAL_PLAN_PRO_ANNUAL || 'P-ANNUAL-PLACEHOLDER'
-            : 'P-3N8118553R364412BNFAARJA' // Monthly plan ID
+          // Check if annual plan is available
+          if (billingCycle === 'annual') {
+            alert('Annual billing is coming soon! Please select monthly billing for now.')
+            return Promise.reject('Annual plan not yet available')
+          }
+
+          // Use monthly plan ID
+          const planId = 'P-3N8118553R364412BNFAARJA'
+
+          console.log('Creating subscription with:', { planId, quantity: userCount })
 
           return actions.subscription.create({
             plan_id: planId,
@@ -75,7 +83,14 @@ export default function ProPricing() {
         },
         onError: function(err: any) {
           console.error('PayPal error:', err)
-          alert('There was an error processing your subscription. Please try again.')
+          // Don't show alert for expected errors (like redirects)
+          if (err !== 'User not authenticated - redirecting to signup' && err !== 'Annual plan not yet available') {
+            alert('There was an error processing your subscription. Please try again.')
+          }
+        },
+        onCancel: function(data: any) {
+          console.log('PayPal payment cancelled by user')
+          // Optional: Show a message or redirect
         }
       }).render('#paypal-button-container')
     }
@@ -169,11 +184,13 @@ export default function ProPricing() {
                 </button>
                 <button
                   onClick={() => setBillingCycle('annual')}
+                  disabled={true}
                   style={{
                     flex: 1, padding: '12px 24px', borderRadius: 8, border: billingCycle === 'annual' ? '2px solid #6366f1' : '1px solid #d1d5db',
-                    background: billingCycle === 'annual' ? '#f0f4ff' : 'white', cursor: 'pointer', fontWeight: 600,
-                    position: 'relative', color: '#374151'
+                    background: billingCycle === 'annual' ? '#f0f4ff' : '#f5f5f5', cursor: 'not-allowed', fontWeight: 600,
+                    position: 'relative', color: '#9ca3af', opacity: 0.6
                   }}
+                  title="Annual billing coming soon"
                 >
                   Annual - ${3}/user
                   <span style={{
@@ -192,17 +209,11 @@ export default function ProPricing() {
                 Pricing Summary
               </h3>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span>{userCount} users × ${pricePerUser}/{billingCycle === 'monthly' ? 'month' : 'month (billed annually)'}</span>
+                <span>{userCount} users × ${pricePerUser}/month</span>
                 <span>${subtotal.toFixed(2)}</span>
               </div>
-              {discount > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, color: '#10b981' }}>
-                  <span>Annual discount (25%)</span>
-                  <span>-${discount.toFixed(2)}</span>
-                </div>
-              )}
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 18, fontWeight: 700, borderTop: '1px solid #e5e7eb', paddingTop: 12 }}>
-                <span>Total {billingCycle === 'monthly' ? 'per month' : 'per year'}</span>
+                <span>Total per month</span>
                 <span>${total.toFixed(2)}</span>
               </div>
             </div>
