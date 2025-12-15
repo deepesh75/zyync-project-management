@@ -60,12 +60,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       // Create PayPal one-time payment approval URL
-      const approvalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${process.env.PAYPAL_MERCHANT_EMAIL}&item_name=Zyync%20Pro%20Lifetime&item_number=pro_lifetime&amount=299.00&currency_code=USD&return=${encodeURIComponent(successUrl || 'https://zyync.com/success')}&cancel_return=${encodeURIComponent(cancelUrl || 'https://zyync.com/pricing')}`
+      const approvalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${process.env.PAYPAL_MERCHANT_EMAIL}&item_name=Zyync%20Pro%20Lifetime&item_number=pro_lifetime&amount=199.00&currency_code=USD&return=${encodeURIComponent(successUrl || 'https://zyync.com/success')}&cancel_return=${encodeURIComponent(cancelUrl || 'https://zyync.com/pricing')}`
 
       return res.status(200).json({
         url: approvalUrl,
         type: 'paypal_onetime',
-        amount: 299,
+        amount: 199,
         productId: paypalProductId
       })
 
