@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import { FeatureGate } from '../FeatureGate'
+import type { Feature } from '../../lib/permissions'
 
 interface ProjectHeaderProps {
   project: any
@@ -204,7 +206,9 @@ export default function ProjectHeader({
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                   </svg>
-                  Templates
+                  <FeatureGate feature="templates">
+                    <span>Templates</span>
+                  </FeatureGate>
                 </button>
               </div>
             </>
@@ -212,37 +216,39 @@ export default function ProjectHeader({
         </div>
 
         {/* Workflows Button */}
-        <button
-          onClick={onShowWorkflows}
-          style={{
-            padding: '8px 12px',
-            borderRadius: 8,
-            border: '1px solid var(--border)',
-            background: workflows.length > 0 ? 'var(--primary-light)' : 'var(--surface)',
-            color: workflows.length > 0 ? 'var(--primary)' : 'var(--text)',
-            fontSize: 13,
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            whiteSpace: 'nowrap'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-          onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <path d="m21 21-4.35-4.35"></path>
-          </svg>
-          Workflows
-          {workflows.length > 0 && (
-            <span style={{ background: 'var(--primary)', color: 'white', borderRadius: 4, padding: '2px 6px', fontSize: 11, fontWeight: 700 }}>
-              {workflows.length}
-            </span>
-          )}
-        </button>
+        <FeatureGate feature="workflows">
+          <button
+            onClick={onShowWorkflows}
+            style={{
+              padding: '8px 12px',
+              borderRadius: 8,
+              border: '1px solid var(--border)',
+              background: workflows.length > 0 ? 'var(--primary-light)' : 'var(--surface)',
+              color: workflows.length > 0 ? 'var(--primary)' : 'var(--text)',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              whiteSpace: 'nowrap'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            Workflows
+            {workflows.length > 0 && (
+              <span style={{ background: 'var(--primary)', color: 'white', borderRadius: 4, padding: '2px 6px', fontSize: 11, fontWeight: 700 }}>
+                {workflows.length}
+              </span>
+            )}
+          </button>
+        </FeatureGate>
 
         {/* View Switcher */}
         <div style={{ 
@@ -256,45 +262,58 @@ export default function ProjectHeader({
         }}>
           {[
             { id: 'kanban', label: 'Kanban', icon: '▦' },
-            { id: 'calendar', label: 'Calendar', icon: '📅' },
-            { id: 'table', label: 'Table', icon: '▥' },
-            { id: 'timeline', label: 'Timeline', icon: '▬' }
-          ].map(view => (
-            <button
-              key={view.id}
-              onClick={() => onViewChange(view.id as any)}
-              title={view.label}
-              style={{
-                padding: '6px 10px',
-                borderRadius: 6,
-                border: 'none',
-                background: currentView === view.id ? 'var(--primary)' : 'transparent',
-                color: currentView === view.id ? 'white' : 'var(--text-secondary)',
-                cursor: 'pointer',
-                fontSize: 13,
-                fontWeight: 600,
-                transition: 'all 0.2s',
-                minWidth: 32,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-              onMouseEnter={(e) => {
-                if (currentView !== view.id) {
-                  e.currentTarget.style.background = 'var(--surface)'
-                  e.currentTarget.style.color = 'var(--text)'
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (currentView !== view.id) {
-                  e.currentTarget.style.background = 'transparent'
-                  e.currentTarget.style.color = 'var(--text-secondary)'
-                }
-              }}
-            >
-              {view.icon}
-            </button>
-          ))}
+            { id: 'calendar', label: 'Calendar', icon: '📅', feature: 'calendar_view' as Feature },
+            { id: 'table', label: 'Table', icon: '▥', feature: 'table_view' as Feature },
+            { id: 'timeline', label: 'Timeline', icon: '▬', feature: 'timeline_view' as Feature }
+          ].map(view => {
+            const button = (
+              <button
+                key={view.id}
+                onClick={() => onViewChange(view.id as any)}
+                title={view.label}
+                style={{
+                  padding: '6px 10px',
+                  borderRadius: 6,
+                  border: 'none',
+                  background: currentView === view.id ? 'var(--primary)' : 'transparent',
+                  color: currentView === view.id ? 'white' : 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  transition: 'all 0.2s',
+                  minWidth: 32,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                onMouseEnter={(e) => {
+                  if (currentView !== view.id) {
+                    e.currentTarget.style.background = 'var(--surface)'
+                    e.currentTarget.style.color = 'var(--text)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (currentView !== view.id) {
+                    e.currentTarget.style.background = 'transparent'
+                    e.currentTarget.style.color = 'var(--text-secondary)'
+                  }
+                }}
+              >
+                {view.icon}
+              </button>
+            )
+
+            // Wrap premium views with FeatureGate
+            if (view.feature) {
+              return (
+                <FeatureGate key={view.id} feature={view.feature}>
+                  {button}
+                </FeatureGate>
+              )
+            }
+
+            return button
+          })}
         </div>
 
         {/* Columns Management Button */}

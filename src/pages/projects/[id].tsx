@@ -13,6 +13,7 @@ import { useFilterPresets } from '../../hooks/useFilterPresets'
 import { useWorkflows } from '../../hooks/useWorkflows'
 import ProjectHeader from '../../components/project/ProjectHeader'
 import KanbanBoard from '../../components/project/KanbanBoard'
+import { FeatureGate } from '../../components/FeatureGate'
 
 // Lazy load heavy modals and components
 const AdvancedFilterUI = dynamic(() => import('../../components/AdvancedFilterUI'), { ssr: false })
@@ -1005,6 +1006,132 @@ export default function ProjectPage() {
           </div>
         )}
 
+        {/* Toolbar */}
+        <div style={{ 
+          marginBottom: 16, 
+          flexShrink: 0,
+          display: 'flex',
+          gap: 12,
+          alignItems: 'center',
+          flexWrap: 'wrap'
+        }}>
+          {/* Search Bar */}
+          <div style={{ position: 'relative', flex: 1, maxWidth: 300 }}>
+            <input
+              type="text"
+              placeholder="Search tasks..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '10px 16px',
+                paddingLeft: 40,
+                borderRadius: 8,
+                border: '1px solid var(--border)',
+                background: 'var(--surface)',
+                color: 'var(--text)',
+                fontSize: 14,
+                outline: 'none',
+                transition: 'all 0.2s'
+              }}
+              onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
+              onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
+            />
+            <svg 
+              width="16" 
+              height="16" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+              style={{
+                position: 'absolute',
+                left: 12,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--text-secondary)',
+                pointerEvents: 'none'
+              }}
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+          </div>
+
+          {/* Filters Toggle */}
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            style={{
+              padding: '10px 16px',
+              borderRadius: 8,
+              border: '1px solid var(--border)',
+              background: showFilters ? 'var(--primary-light)' : 'var(--surface)',
+              color: showFilters ? 'var(--primary)' : 'var(--text)',
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = showFilters ? 'var(--primary-light)' : 'var(--bg-secondary)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = showFilters ? 'var(--primary-light)' : 'var(--surface)'
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+            Filters
+            {(assigneeFilter || priorityFilter || labelFilter || quickFilter) && (
+              <span style={{ background: 'var(--primary)', color: 'white', borderRadius: 4, padding: '2px 6px', fontSize: 11, fontWeight: 700 }}>
+                {[assigneeFilter, priorityFilter, labelFilter, quickFilter].filter(Boolean).length}
+              </span>
+            )}
+          </button>
+
+          {/* Advanced Filters Button */}
+          <FeatureGate feature="advanced_filters">
+            <button
+              onClick={() => setShowAdvancedFilter(true)}
+              style={{
+                padding: '10px 16px',
+                borderRadius: 8,
+                border: '1px solid var(--border)',
+                background: 'var(--surface)',
+                color: 'var(--text)',
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--bg-secondary)'
+                e.currentTarget.style.borderColor = 'var(--primary)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--surface)'
+                e.currentTarget.style.borderColor = 'var(--border)'
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 6h18"></path>
+                <path d="M7 12h10"></path>
+                <path d="M11 18h2"></path>
+              </svg>
+              Advanced
+            </button>
+          </FeatureGate>
+        </div>
+
         {/* Background Picker Modal */}
         {showBackgroundPicker && (
           <>
@@ -1670,13 +1797,15 @@ export default function ProjectPage() {
                   display: 'flex',
                   flexDirection: 'column',
                   background: dragOverColumn === col.id 
-                    ? 'linear-gradient(135deg, var(--primary-light) 0%, rgba(99, 102, 241, 0.1) 100%)' 
-                    : 'var(--surface)',
+                    ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0.05) 100%)' 
+                    : 'rgba(255, 255, 255, 0.1)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
                   padding: 12,
                   borderRadius: 14,
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  border: dragOverColumn === col.id ? '2px solid var(--primary)' : '2px solid var(--border)',
-                  boxShadow: dragOverColumn === col.id ? 'var(--shadow-xl)' : 'var(--shadow-md)',
+                  border: dragOverColumn === col.id ? '2px solid var(--primary)' : '2px solid rgba(255, 255, 255, 0.2)',
+                  boxShadow: dragOverColumn === col.id ? 'var(--shadow-xl)' : '0 4px 6px rgba(0, 0, 0, 0.1)',
                   height: 'calc(100% - 76px)'
                 }}
               >
