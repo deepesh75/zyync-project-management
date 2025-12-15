@@ -37,6 +37,12 @@ export default function ProPricing() {
   // Render PayPal button when SDK is loaded
   useEffect(() => {
     if (paypalLoaded && window.paypal) {
+      // Clear any existing PayPal buttons
+      const container = document.getElementById('paypal-button-container')
+      if (container) {
+        container.innerHTML = ''
+      }
+
       window.paypal.Buttons({
         style: {
           shape: 'pill',
@@ -51,7 +57,7 @@ export default function ProPricing() {
           }
 
           // Use different plan IDs for monthly vs annual
-          const planId = billingCycle === 'annual' 
+          const planId = billingCycle === 'annual'
             ? process.env.NEXT_PUBLIC_PAYPAL_PLAN_PRO_ANNUAL || 'P-ANNUAL-PLACEHOLDER'
             : 'P-3N8118553R364412BNFAARJA' // Monthly plan ID
 
@@ -73,7 +79,7 @@ export default function ProPricing() {
         }
       }).render('#paypal-button-container')
     }
-  }, [paypalLoaded, session, userCount, billingCycle, router])
+  }, [paypalLoaded, session, userCount, billingCycle]) // Removed router from dependencies
 
   const handleSubscribe = () => {
     if (!session) {
@@ -155,7 +161,8 @@ export default function ProPricing() {
                   onClick={() => setBillingCycle('monthly')}
                   style={{
                     flex: 1, padding: '12px 24px', borderRadius: 8, border: billingCycle === 'monthly' ? '2px solid #6366f1' : '1px solid #d1d5db',
-                    background: billingCycle === 'monthly' ? '#f0f4ff' : 'white', cursor: 'pointer', fontWeight: 600
+                    background: billingCycle === 'monthly' ? '#f0f4ff' : 'white', cursor: 'pointer', fontWeight: 600,
+                    color: '#374151'
                   }}
                 >
                   Monthly - ${4}/user
@@ -165,7 +172,7 @@ export default function ProPricing() {
                   style={{
                     flex: 1, padding: '12px 24px', borderRadius: 8, border: billingCycle === 'annual' ? '2px solid #6366f1' : '1px solid #d1d5db',
                     background: billingCycle === 'annual' ? '#f0f4ff' : 'white', cursor: 'pointer', fontWeight: 600,
-                    position: 'relative'
+                    position: 'relative', color: '#374151'
                   }}
                 >
                   Annual - ${3}/user
@@ -205,7 +212,7 @@ export default function ProPricing() {
           <div style={{ textAlign: 'center' }}>
             <div id="paypal-button-container" style={{ maxWidth: 400, margin: '0 auto' }}></div>
             {!paypalLoaded && (
-              <div style={{ padding: '20px', color: '#6b7280' }}>
+              <div style={{ padding: '20px', color: '#6b7280', fontSize: '14px' }}>
                 Loading PayPal...
               </div>
             )}
