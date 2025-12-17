@@ -1862,7 +1862,7 @@ export default function ProjectPage() {
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   border: dragOverColumn === col.id ? '2px solid var(--primary)' : '2px solid rgba(255, 255, 255, 0.2)',
                   boxShadow: dragOverColumn === col.id ? 'var(--shadow-xl)' : '0 4px 6px rgba(0, 0, 0, 0.1)',
-                  height: 'calc(100% - 60px)'
+                  height: 'calc(100% - 40px)'
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexShrink: 0 }}>
@@ -2375,7 +2375,7 @@ export default function ProjectPage() {
             minWidth: 320,
             display: 'flex',
             flexDirection: 'column',
-            height: 'calc(100% - 76px)'
+            height: 'calc(100% - 40px)'
           }}
         >
           {addingColumn ? (

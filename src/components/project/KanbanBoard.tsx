@@ -92,7 +92,7 @@ function KanbanBoard({
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               border: dragOverColumn === col.id ? '2px solid var(--primary)' : '2px solid var(--border)',
               boxShadow: dragOverColumn === col.id ? 'var(--shadow-xl)' : 'var(--shadow-md)',
-              height: 'calc(100% - 76px)'
+              height: 'calc(100% - 40px)'
             }}
           >
             {/* Column Header */}
@@ -282,7 +282,7 @@ function KanbanBoard({
           minWidth: 320,
           display: 'flex',
           flexDirection: 'column',
-          height: 'calc(100% - 76px)'
+          height: 'calc(100% - 40px)'
         }}
       >
         {addingColumn ? (
