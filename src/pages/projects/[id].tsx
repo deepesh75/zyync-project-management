@@ -132,20 +132,24 @@ export default function ProjectPage() {
   
   useEffect(() => {
     if (!project) return
-    // Parse columns from project or use defaults
-    let parsedColumns: Array<{ id: string; name: string }>
-    if (project.columns) {
-      try {
-        parsedColumns = JSON.parse(project.columns)
-      } catch {
+    // Only update columns from project data if we're not currently editing columns
+    // This prevents the local column additions from being overwritten
+    if (!editingColumns) {
+      // Parse columns from project or use defaults
+      let parsedColumns: Array<{ id: string; name: string }>
+      if (project.columns) {
+        try {
+          parsedColumns = JSON.parse(project.columns)
+        } catch {
+          parsedColumns = [{ id: 'todo', name: 'Todo' }, { id: 'in-progress', name: 'In Progress' }, { id: 'done', name: 'Done' }]
+        }
+      } else {
         parsedColumns = [{ id: 'todo', name: 'Todo' }, { id: 'in-progress', name: 'In Progress' }, { id: 'done', name: 'Done' }]
       }
-    } else {
-      parsedColumns = [{ id: 'todo', name: 'Todo' }, { id: 'in-progress', name: 'In Progress' }, { id: 'done', name: 'Done' }]
+      setColumns(parsedColumns)
+      setOriginalColumns(JSON.parse(JSON.stringify(parsedColumns))) // Deep copy for comparison
     }
-    setColumns(parsedColumns)
-    setOriginalColumns(JSON.parse(JSON.stringify(parsedColumns))) // Deep copy for comparison
-  }, [project])
+  }, [project, editingColumns])
 
   useEffect(() => {
     // fetch users for assignee selection on the board
@@ -706,10 +710,11 @@ export default function ProjectPage() {
   }
 
   function addColumn() {
-    if (!newColumnName.trim()) return
+    const trimmedName = newColumnName.trim()
+    if (!trimmedName) return
 
     // Generate a unique ID to avoid duplicates
-    const baseId = newColumnName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+    const baseId = trimmedName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
     let newId = baseId
     let counter = 1
 
@@ -719,11 +724,11 @@ export default function ProjectPage() {
       counter++
     }
 
-    setColumns([...columns, { id: newId, name: newColumnName.trim() }])
+    setColumns([...columns, { id: newId, name: trimmedName }])
     setNewColumnName('')
 
     // Show success feedback
-    console.log(`Column "${newColumnName.trim()}" added successfully. Remember to save changes!`)
+    console.log(`Column "${trimmedName}" added successfully. Remember to save changes!`)
   }
 
   async function changeAssignee(taskId: string, assigneeId: string | null) {
