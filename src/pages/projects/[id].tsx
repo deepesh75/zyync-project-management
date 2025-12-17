@@ -653,10 +653,7 @@ export default function ProjectPage() {
   }
 
   async function saveColumns() {
-    if (!project) {
-      console.log('saveColumns: no project, returning')
-      return
-    }
+    if (!project) return
     try {
       console.log('Saving columns:', columns)
       const payload = { columns: JSON.stringify(columns) }
@@ -709,11 +706,7 @@ export default function ProjectPage() {
   }
 
   function addColumn() {
-    console.log('addColumn called with newColumnName:', newColumnName)
-    if (!newColumnName.trim()) {
-      console.log('addColumn: newColumnName is empty, returning')
-      return
-    }
+    if (!newColumnName.trim()) return
 
     // Generate a unique ID to avoid duplicates
     const baseId = newColumnName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
@@ -726,7 +719,6 @@ export default function ProjectPage() {
       counter++
     }
 
-    console.log('addColumn: adding column with id:', newId, 'name:', newColumnName.trim())
     setColumns([...columns, { id: newId, name: newColumnName.trim() }])
     setNewColumnName('')
 
