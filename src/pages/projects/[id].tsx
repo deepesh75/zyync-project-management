@@ -656,27 +656,28 @@ export default function ProjectPage() {
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
   }
 
-  async function saveColumns() {
+  async function saveColumns(cols?: Array<{ id: string; name: string }>) {
     if (!project) return
     try {
-      console.log('Saving columns:', columns)
-      const payload = { columns: JSON.stringify(columns) }
+      const toSave = cols || columns
+      console.log('Saving columns (toSave):', toSave)
+      const payload = { columns: JSON.stringify(toSave) }
       console.log('Payload:', payload)
-      
-      // Optimistic update
-      mutate({ ...project, columns: JSON.stringify(columns) }, false)
-      
+
+      // Optimistic update using the provided cols or current state
+      mutate({ ...project, columns: JSON.stringify(toSave) }, false)
+
       const res = await fetch(`/api/projects/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
-      
+
       console.log('Response status:', res.status)
-      
+
       if (res.ok) {
         setEditingColumns(false)
-        setOriginalColumns(JSON.parse(JSON.stringify(columns))) // Update original columns
+        setOriginalColumns(JSON.parse(JSON.stringify(toSave))) // Update original columns
         alert('Columns saved successfully!')
         // Revalidate in background
         mutate()
@@ -709,7 +710,7 @@ export default function ProjectPage() {
     setColumns(columns.filter((_, i) => i !== index))
   }
 
-  function addColumn() {
+  function addColumn(): Array<{ id: string; name: string }> | undefined {
     const trimmedName = newColumnName.trim()
     if (!trimmedName) return
 
@@ -724,11 +725,13 @@ export default function ProjectPage() {
       counter++
     }
 
-    setColumns([...columns, { id: newId, name: trimmedName }])
+    const newColumns = [...columns, { id: newId, name: trimmedName }]
+    setColumns(newColumns)
     setNewColumnName('')
 
     // Show success feedback
     console.log(`Column "${trimmedName}" added successfully. Remember to save changes!`)
+    return newColumns
   }
 
   async function changeAssignee(taskId: string, assigneeId: string | null) {
@@ -1783,7 +1786,7 @@ export default function ProjectPage() {
                 Cancel
               </button>
               <button 
-                onClick={saveColumns}
+                onClick={() => saveColumns()}
                 style={{ 
                   padding: '10px 24px', 
                   background: 'linear-gradient(to right, var(--gradient-start), var(--gradient-end))',
@@ -2396,8 +2399,8 @@ export default function ProjectPage() {
                 }}
                 onKeyDown={async (e) => {
                   if (e.key === 'Enter' && newColumnName.trim()) {
-                    addColumn()
-                    await saveColumns()
+                    const newCols = addColumn()
+                    if (newCols) await saveColumns(newCols)
                     setAddingColumn(false)
                   }
                   if (e.key === 'Escape') {
@@ -2420,8 +2423,8 @@ export default function ProjectPage() {
                 <button
                   onClick={async () => {
                     if (newColumnName.trim()) {
-                      addColumn()
-                      await saveColumns()
+                      const newCols = addColumn()
+                      if (newCols) await saveColumns(newCols)
                       setAddingColumn(false)
                     }
                   }}
