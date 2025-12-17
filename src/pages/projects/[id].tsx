@@ -706,8 +706,10 @@ export default function ProjectPage() {
     setColumns(updated)
   }
 
-  function deleteColumn(index: number) {
-    setColumns(columns.filter((_, i) => i !== index))
+  function deleteColumn(index: number): Array<{ id: string; name: string }> {
+    const newCols = columns.filter((_, i) => i !== index)
+    setColumns(newCols)
+    return newCols
   }
 
   function addColumn(): Array<{ id: string; name: string }> | undefined {
@@ -1676,7 +1678,10 @@ export default function ProjectPage() {
                       }}
                     />
                     <button 
-                      onClick={() => deleteColumn(index)}
+                      onClick={() => {
+                        // delete locally but do not save automatically here
+                        deleteColumn(index)
+                      }}
                       style={{ 
                         padding: '8px 14px', 
                         background: 'var(--surface)',
@@ -1967,8 +1972,8 @@ export default function ProjectPage() {
                         <button
                           onClick={async () => {
                             if (confirm(`Delete column "${col.name}"? Tasks in this column will not be deleted.`)) {
-                              deleteColumn(columns.findIndex(c => c.id === col.id))
-                              await saveColumns()
+                              const newCols = deleteColumn(columns.findIndex(c => c.id === col.id))
+                              await saveColumns(newCols)
                             }
                           }}
                           style={{
