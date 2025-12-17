@@ -1,4 +1,4 @@
-import useSWR from 'swr'
+import { useEffect, useState, useRef } from 'react'
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
@@ -19,10 +19,47 @@ interface ParsedTaskTemplate {
 }
 
 export function useTaskTemplates(projectId: string | undefined) {
-  const { data, error, isLoading, mutate } = useSWR<ParsedTaskTemplate[]>(
-    projectId ? `/api/projects/${projectId}/templates` : null,
-    fetcher
-  )
+  const [templates, setTemplates] = useState<ParsedTaskTemplate[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isError, setIsError] = useState<any>(null)
+  const mounted = useRef(true)
+
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false } }, [])
+
+  useEffect(() => {
+    if (!projectId) return
+    let cancelled = false
+    setIsLoading(true)
+    fetcher(`/api/projects/${projectId}/templates`)
+      .then(data => {
+        if (cancelled) return
+        setTemplates(data || [])
+        setIsError(null)
+      })
+      .catch(err => {
+        if (cancelled) return
+        setIsError(err)
+      })
+      .finally(() => { if (!cancelled) setIsLoading(false) })
+
+    return () => { cancelled = true }
+  }, [projectId])
+
+  async function mutate(updated?: any, revalidate = true) {
+    if (updated !== undefined) {
+      setTemplates(updated)
+      if (!revalidate) return Promise.resolve(updated)
+    }
+    if (!projectId) return Promise.resolve(templates)
+    try {
+      const data = await fetcher(`/api/projects/${projectId}/templates`)
+      if (mounted.current) setTemplates(data || [])
+      return data
+    } catch (err) {
+      setIsError(err)
+      throw err
+    }
+  }
 
   const createTemplate = async (templateData: Partial<ParsedTaskTemplate>) => {
     try {
@@ -33,7 +70,7 @@ export function useTaskTemplates(projectId: string | undefined) {
       })
       if (!response.ok) throw new Error('Failed to create template')
       const created = await response.json()
-      mutate()
+      await mutate()
       return created
     } catch (error) {
       console.error('Error creating template:', error)
@@ -50,7 +87,7 @@ export function useTaskTemplates(projectId: string | undefined) {
       })
       if (!response.ok) throw new Error('Failed to update template')
       const updated = await response.json()
-      mutate()
+      await mutate()
       return updated
     } catch (error) {
       console.error('Error updating template:', error)
@@ -64,7 +101,7 @@ export function useTaskTemplates(projectId: string | undefined) {
         method: 'DELETE'
       })
       if (!response.ok) throw new Error('Failed to delete template')
-      mutate()
+      await mutate()
     } catch (error) {
       console.error('Error deleting template:', error)
       throw error
@@ -72,9 +109,9 @@ export function useTaskTemplates(projectId: string | undefined) {
   }
 
   return {
-    templates: data || [],
+    templates,
     isLoading,
-    error,
+    isError,
     createTemplate,
     updateTemplate,
     deleteTemplate,

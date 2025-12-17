@@ -2,7 +2,7 @@ import React, { useEffect, useState, lazy, Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import { useSession, signIn } from 'next-auth/react'
-import useSWR from 'swr'
+import { useProject } from '../../hooks/useProject'
 import matchesFilter from '../../lib/filter'
 import { formatActivityMessage } from '../../lib/activity'
 import Navbar from '../../components/Navbar'
@@ -20,8 +20,6 @@ const AdvancedFilterUI = dynamic(() => import('../../components/AdvancedFilterUI
 const WorkflowUI = dynamic(() => import('../../components/WorkflowUI').then(mod => ({ default: mod.WorkflowUI })), { ssr: false })
 const TaskTemplateSelector = dynamic(() => import('../../components/TaskTemplateSelector'), { ssr: false })
 const ManageTemplates = dynamic(() => import('../../components/ManageTemplates'), { ssr: false })
-
-const fetcher = (url: string) => fetch(url).then(r => r.json())
 
 function getBackgroundStyle(bg: string): string {
   const backgrounds: Record<string, string> = {
@@ -53,16 +51,8 @@ export default function ProjectPage() {
   const { id } = router.query
   const { data: session } = useSession()
   
-  // Replace useState with SWR for caching and optimistic updates
-  const { data: project, error, mutate } = useSWR(
-    id ? `/api/projects/${id}` : null,
-    fetcher,
-    {
-      revalidateOnFocus: false,
-      dedupingInterval: 2000,
-    }
-  )
-  const loading = !error && !project
+  const { project, isLoading, isError, mutate } = useProject(typeof id === 'string' ? id : undefined)
+  const loading = isLoading
 
   // form state for creating a task
   const [newTitle, setNewTitle] = useState('')
