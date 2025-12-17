@@ -94,23 +94,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     })
 
-    const inviteLink = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/accept-invite?token=${token}`
+    // Build base URL: prefer NEXTAUTH_URL, otherwise derive from request host
+    const baseUrl = process.env.NEXTAUTH_URL || (req.headers.host ? `${(req.headers.get ? req.headers.get('x-forwarded-proto') : req.headers['x-forwarded-proto']) || 'https'}://${req.headers.host}` : 'http://localhost:3000')
+    const inviteLink = `${baseUrl}/auth/accept-invite?token=${token}`
 
-    // Send invitation email
+    // Send invitation email and capture result
+    let emailSent = false
+    let emailError: any = null
     if (process.env.RESEND_API_KEY) {
-      await sendInvitationEmail({
-        to: email,
-        organizationName: invitation.organization.name,
-        inviterName: invitation.invitedBy?.name || invitation.invitedBy?.email || 'Unknown',
-        inviteLink
-      })
+      try {
+        const result = await sendInvitationEmail({
+          to: email,
+          organizationName: invitation.organization.name,
+          inviterName: invitation.invitedBy?.name || invitation.invitedBy?.email || 'Unknown',
+          inviteLink
+        })
+        if (result && (result as any).success) {
+          emailSent = true
+        } else {
+          emailSent = false
+          emailError = (result as any).error || 'Unknown error'
+        }
+      } catch (err) {
+        console.warn('Failed to send invite email (non-fatal)', err)
+        emailError = err
+      }
     } else {
       console.warn('RESEND_API_KEY not set - email not sent. Invite link:', inviteLink)
     }
 
     return res.status(201).json({
       ...invitation,
-      inviteLink
+      inviteLink,
+      emailSent,
+      emailError: emailError ? String(emailError) : null
     })
   }
 

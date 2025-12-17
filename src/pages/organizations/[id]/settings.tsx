@@ -12,6 +12,8 @@ export default function OrganizationSettings() {
   const [inviteRole, setInviteRole] = useState('member')
   const [inviting, setInviting] = useState(false)
   const [inviteLink, setInviteLink] = useState('')
+  const [inviteEmailSent, setInviteEmailSent] = useState<boolean | null>(null)
+  const [inviteEmailError, setInviteEmailError] = useState<string | null>(null)
   const [managingMember, setManagingMember] = useState<string | null>(null)
   const [changingRole, setChangingRole] = useState<Record<string, boolean>>({})
   const [removingMember, setRemovingMember] = useState<Record<string, boolean>>({})
@@ -42,6 +44,9 @@ export default function OrganizationSettings() {
       }
 
       setInviteLink(data.inviteLink)
+      // server now returns whether an email was actually sent
+      setInviteEmailSent(typeof data.emailSent === 'boolean' ? data.emailSent : null)
+      setInviteEmailError(data.emailError || null)
       setInviteEmail('')
       
       // Revalidate organization data
@@ -457,8 +462,17 @@ export default function OrganizationSettings() {
 
               {inviteLink && (
                 <div style={{ marginTop: 16, padding: 12, background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 6 }}>
-                  <p style={{ margin: 0, marginBottom: 8, fontWeight: 600, color: '#166534' }}>✓ Invitation sent!</p>
-                  <p style={{ margin: 0, fontSize: 14, color: '#15803d' }}>Share this link with your team member:</p>
+                      <p style={{ margin: 0, marginBottom: 8, fontWeight: 600, color: '#166534' }}>
+                        {inviteEmailSent === true ? '✓ Invitation sent!' : inviteEmailSent === false ? 'Invitation created — email not sent' : 'Invitation created'}
+                      </p>
+                      <p style={{ margin: 0, fontSize: 14, color: inviteEmailSent === false ? '#92400e' : '#15803d' }}>
+                        {inviteEmailSent === true ? 'An email was sent to the recipient. You can also share this link:' : inviteEmailSent === false ? 'Email could not be sent — copy and share this link manually:' : 'Share this link with your team member:'}
+                      </p>
+                      {inviteEmailError && (
+                        <div style={{ marginTop: 8, padding: 8, background: '#fff7ed', border: '1px solid #ffd8a8', borderRadius: 6, color: '#92400e' }}>
+                          {inviteEmailError}
+                        </div>
+                      )}
                   <input
                     type="text"
                     value={inviteLink}
