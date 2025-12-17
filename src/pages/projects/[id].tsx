@@ -87,6 +87,7 @@ export default function ProjectPage() {
   const [newColumnName, setNewColumnName] = useState('')
   const [editingColumnId, setEditingColumnId] = useState<string | null>(null)
   const [addingColumn, setAddingColumn] = useState(false)
+  const [originalColumns, setOriginalColumns] = useState<Array<{ id: string; name: string }>>([])
   const [columnTaskInputs, setColumnTaskInputs] = useState<Record<string, string>>({})
   const [subtasks, setSubtasks] = useState<Array<any>>([])
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('')
@@ -132,15 +133,18 @@ export default function ProjectPage() {
   useEffect(() => {
     if (!project) return
     // Parse columns from project or use defaults
+    let parsedColumns: Array<{ id: string; name: string }>
     if (project.columns) {
       try {
-        setColumns(JSON.parse(project.columns))
+        parsedColumns = JSON.parse(project.columns)
       } catch {
-        setColumns([{ id: 'todo', name: 'Todo' }, { id: 'in-progress', name: 'In Progress' }, { id: 'done', name: 'Done' }])
+        parsedColumns = [{ id: 'todo', name: 'Todo' }, { id: 'in-progress', name: 'In Progress' }, { id: 'done', name: 'Done' }]
       }
     } else {
-      setColumns([{ id: 'todo', name: 'Todo' }, { id: 'in-progress', name: 'In Progress' }, { id: 'done', name: 'Done' }])
+      parsedColumns = [{ id: 'todo', name: 'Todo' }, { id: 'in-progress', name: 'In Progress' }, { id: 'done', name: 'Done' }]
     }
+    setColumns(parsedColumns)
+    setOriginalColumns(JSON.parse(JSON.stringify(parsedColumns))) // Deep copy for comparison
   }, [project])
 
   useEffect(() => {
@@ -668,6 +672,7 @@ export default function ProjectPage() {
       
       if (res.ok) {
         setEditingColumns(false)
+        setOriginalColumns(JSON.parse(JSON.stringify(columns))) // Update original columns
         alert('Columns saved successfully!')
         // Revalidate in background
         mutate()
@@ -686,11 +691,8 @@ export default function ProjectPage() {
     }
   }
 
-  function addColumn() {
-    if (!newColumnName.trim()) return
-    const newId = newColumnName.toLowerCase().replace(/\s+/g, '-')
-    setColumns([...columns, { id: newId, name: newColumnName }])
-    setNewColumnName('')
+  function hasUnsavedChanges() {
+    return JSON.stringify(columns) !== JSON.stringify(originalColumns)
   }
 
   function updateColumnName(index: number, newName: string) {
@@ -701,6 +703,27 @@ export default function ProjectPage() {
 
   function deleteColumn(index: number) {
     setColumns(columns.filter((_, i) => i !== index))
+  }
+
+  function addColumn() {
+    if (!newColumnName.trim()) return
+
+    // Generate a unique ID to avoid duplicates
+    const baseId = newColumnName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+    let newId = baseId
+    let counter = 1
+
+    // Ensure unique ID
+    while (columns.some(col => col.id === newId)) {
+      newId = `${baseId}-${counter}`
+      counter++
+    }
+
+    setColumns([...columns, { id: newId, name: newColumnName.trim() }])
+    setNewColumnName('')
+
+    // Show success feedback
+    console.log(`Column "${newColumnName.trim()}" added successfully. Remember to save changes!`)
   }
 
   async function changeAssignee(taskId: string, assigneeId: string | null) {
@@ -1558,9 +1581,34 @@ export default function ProjectPage() {
               borderRadius: '16px 16px 0 0',
               zIndex: 1
             }}>
-              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: 'var(--text)' }}>Manage Columns</h2>
+              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: 'var(--text)' }}>
+                Manage Columns
+                {hasUnsavedChanges() && (
+                  <span style={{
+                    marginLeft: 8,
+                    padding: '2px 8px',
+                    background: '#fbbf24',
+                    color: '#92400e',
+                    borderRadius: 12,
+                    fontSize: 12,
+                    fontWeight: 600
+                  }}>
+                    Unsaved Changes
+                  </span>
+                )}
+              </h2>
               <button
-                onClick={() => setEditingColumns(false)}
+                onClick={() => {
+                  if (hasUnsavedChanges()) {
+                    if (confirm('You have unsaved changes. Are you sure you want to close without saving?')) {
+                      setEditingColumns(false)
+                      // Reset columns to original state
+                      setColumns(JSON.parse(JSON.stringify(originalColumns)))
+                    }
+                  } else {
+                    setEditingColumns(false)
+                  }
+                }}
                 style={{
                   background: 'none',
                   border: 'none',
