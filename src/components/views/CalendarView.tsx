@@ -57,7 +57,7 @@ export default function CalendarView({ tasks, onTaskClick, users }: CalendarView
     <div style={{ 
       padding: 24, 
       background: 'var(--bg)', 
-      minHeight: '100vh',
+      height: '100vh',
       display: 'flex',
       flexDirection: 'column',
       overflow: 'auto'

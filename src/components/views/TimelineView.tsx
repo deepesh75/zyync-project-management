@@ -84,13 +84,13 @@ export default function TimelineView({ tasks, onTaskClick, users }: TimelineView
   const totalDays = Math.ceil((rangeEnd.getTime() - rangeStart.getTime()) / (1000 * 60 * 60 * 24))
 
   return (
-    <div style={{ padding: 24, background: 'var(--bg)', minHeight: '100vh', overflowX: 'auto' }}>
+    <div style={{ padding: 24, background: 'var(--bg)', height: '100vh', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
       <h2 style={{ margin: '0 0 24px 0', fontSize: 20, fontWeight: 700, color: 'var(--text)' }}>
         Timeline View
       </h2>
 
       {/* Timeline */}
-      <div style={{ background: 'var(--surface)', borderRadius: 12, border: '1px solid var(--border)', overflow: 'hidden' }}>
+      <div style={{ background: 'var(--surface)', borderRadius: 12, border: '1px solid var(--border)', overflow: 'auto', flex: 1 }}>
         {/* Header with dates */}
         <div style={{ overflowX: 'auto' }}>
           <div style={{ display: 'flex', minWidth: 'min-content', borderBottom: '1px solid var(--border)' }}>

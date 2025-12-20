@@ -95,7 +95,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     })
 
     // Build base URL: prefer NEXTAUTH_URL, otherwise derive from request host
-    const baseUrl = process.env.NEXTAUTH_URL || (req.headers.host ? `${(req.headers.get ? req.headers.get('x-forwarded-proto') : req.headers['x-forwarded-proto']) || 'https'}://${req.headers.host}` : 'http://localhost:3000')
+    const host = req.headers.host
+    const proto = (req.headers['x-forwarded-proto'] as string) || 'https'
+    const baseUrl = process.env.NEXTAUTH_URL || (host ? `${proto}://${host}` : 'http://localhost:3000')
     const inviteLink = `${baseUrl}/auth/accept-invite?token=${token}`
 
     // Send invitation email and capture result

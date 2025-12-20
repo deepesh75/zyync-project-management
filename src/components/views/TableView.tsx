@@ -44,12 +44,13 @@ export default function TableView({ tasks, onTaskClick, users }: TableViewProps)
   }
 
   return (
-    <div style={{ padding: 24, background: 'var(--bg)', minHeight: '100vh', overflowX: 'auto' }}>
+    <div style={{ padding: 24, background: 'var(--bg)', height: '100vh', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
       <div style={{
         background: 'var(--surface)',
         borderRadius: 12,
         border: '1px solid var(--border)',
-        overflow: 'hidden'
+        overflow: 'auto',
+        flex: 1
       }}>
         {/* Table */}
         <table style={{
