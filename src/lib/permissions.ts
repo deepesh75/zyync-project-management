@@ -57,32 +57,61 @@ const PLAN_FEATURES: Record<PlanType, Feature[]> = {
 }
 
 // Get user's current plan
-export function getUserPlan(userEmail?: string | null): PlanType {
+export function getUserPlan(userEmail?: string | null, organizationPlanId?: string | null): PlanType {
   // Admin gets enterprise access
   if (userEmail === ADMIN_EMAIL) {
     return 'enterprise'
   }
 
-  // For now, default to free until we implement subscription checking
-  // TODO: Check database for actual subscription status
+  // Check organization's plan
+  if (organizationPlanId) {
+    if (organizationPlanId === 'free') return 'free'
+    if (organizationPlanId.includes('pro') || organizationPlanId.includes('P-')) return 'pro'
+    if (organizationPlanId === 'enterprise') return 'enterprise'
+  }
+
+  // Default to free
   return 'free'
 }
 
 // Check if user has access to a feature
-export function hasFeatureAccess(feature: Feature, userEmail?: string | null): boolean {
-  const plan = getUserPlan(userEmail)
+export function hasFeatureAccess(feature: Feature, userEmail?: string | null, organizationPlanId?: string | null): boolean {
+  const plan = getUserPlan(userEmail, organizationPlanId)
   return PLAN_FEATURES[plan].includes(feature)
 }
 
 // Hook to check feature access
+// Hook to check feature access
 export function useFeatureAccess(feature: Feature) {
   const { data: session } = useSession()
   const [hasAccess, setHasAccess] = useState(false)
+  const [organizationPlanId, setOrganizationPlanId] = useState<string | null>(null)
 
   useEffect(() => {
-    const access = hasFeatureAccess(feature, session?.user?.email)
+    // Fetch user's organization to get planId
+    const fetchOrganization = async () => {
+      if (!session?.user?.email) return
+
+      try {
+        const response = await fetch('/api/organizations')
+        if (response.ok) {
+          const organizations = await response.json()
+          if (organizations && organizations.length > 0) {
+            setOrganizationPlanId(organizations[0].planId)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch organization:', error)
+      }
+    }
+
+    fetchOrganization()
+  }, [session?.user?.email])
+
+  useEffect(() => {
+    const access = hasFeatureAccess(feature, session?.user?.email, organizationPlanId)
     setHasAccess(access)
-  }, [feature, session?.user?.email])
+  }, [feature, session?.user?.email, organizationPlanId])
 
   return hasAccess
 }
@@ -91,11 +120,33 @@ export function useFeatureAccess(feature: Feature) {
 export function useCurrentPlan() {
   const { data: session } = useSession()
   const [plan, setPlan] = useState<PlanType>('free')
+  const [organizationPlanId, setOrganizationPlanId] = useState<string | null>(null)
 
   useEffect(() => {
-    const userPlan = getUserPlan(session?.user?.email)
-    setPlan(userPlan)
+    // Fetch user's organization to get planId
+    const fetchOrganization = async () => {
+      if (!session?.user?.email) return
+
+      try {
+        const response = await fetch('/api/organizations')
+        if (response.ok) {
+          const organizations = await response.json()
+          if (organizations && organizations.length > 0) {
+            setOrganizationPlanId(organizations[0].planId)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch organization:', error)
+      }
+    }
+
+    fetchOrganization()
   }, [session?.user?.email])
+
+  useEffect(() => {
+    const userPlan = getUserPlan(session?.user?.email, organizationPlanId)
+    setPlan(userPlan)
+  }, [session?.user?.email, organizationPlanId])
 
   return plan
 }
@@ -115,4 +166,38 @@ export function useIsAdmin() {
   }, [session?.user?.email])
 
   return admin
+}
+
+// Hook to get organization details
+export function useOrganization() {
+  const { data: session } = useSession()
+  const [organization, setOrganization] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchOrganization = async () => {
+      if (!session?.user?.email) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        const response = await fetch('/api/organizations')
+        if (response.ok) {
+          const organizations = await response.json()
+          if (organizations && organizations.length > 0) {
+            setOrganization(organizations[0])
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch organization:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchOrganization()
+  }, [session?.user?.email])
+
+  return { organization, loading }
 }

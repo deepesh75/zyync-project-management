@@ -145,6 +145,23 @@ export default function OrganizationSettings() {
   const userMembership = organization.members.find((m: any) => m.user.email === session?.user?.email)
   const isAdmin = userMembership?.role === 'admin'
 
+  // Get plan display info
+  const getPlanDisplay = (planId: string | null) => {
+    if (!planId) return { name: 'Free Plan', color: '#9ca3af', bgColor: '#f3f4f6' }
+    
+    if (planId === 'free') {
+      return { name: 'Free Plan', color: '#6b7280', bgColor: '#f3f4f6' }
+    } else if (planId.includes('pro') || planId.includes('P-')) {
+      return { name: 'Pro Plan', color: '#1e40af', bgColor: '#dbeafe' }
+    } else if (planId === 'enterprise') {
+      return { name: 'Enterprise Plan', color: '#6d28d9', bgColor: '#ede9fe' }
+    } else {
+      return { name: 'Free Plan', color: '#6b7280', bgColor: '#f3f4f6' }
+    }
+  }
+
+  const planDisplay = getPlanDisplay(organization.planId)
+
   return (
     <>
       <Navbar />
@@ -153,7 +170,20 @@ export default function OrganizationSettings() {
           <a href="/" style={{ color: '#6366f1', textDecoration: 'none', fontSize: 14 }}>← Back to Projects</a>
         </div>
 
-        <h1>{organization.name}</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+          <h1 style={{ margin: 0 }}>{organization.name}</h1>
+          <span style={{
+            padding: '6px 14px',
+            borderRadius: 999,
+            fontSize: 13,
+            fontWeight: 600,
+            background: planDisplay.bgColor,
+            color: planDisplay.color,
+            border: `1px solid ${planDisplay.color}20`
+          }}>
+            {planDisplay.name}
+          </span>
+        </div>
         <p style={{ color: '#6b7280' }}>Manage your organization settings and team members</p>
         
         {isAdmin && (

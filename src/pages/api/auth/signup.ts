@@ -82,6 +82,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       data: {
         name: organizationName,
         slug,
+        planId: 'free', // New organizations start on free plan
         members: {
           create: {
             userId: user.id,

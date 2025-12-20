@@ -4,6 +4,7 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { useTheme } from '../contexts/ThemeContext'
 import { useNotifications } from '../hooks/useNotifications'
+import { useOrganization as useCurrentUserOrganization } from '../lib/permissions'
 
 export default function Navbar() {
   const { data: session } = useSession()
@@ -14,6 +15,24 @@ export default function Navbar() {
 
   // Use SWR hook for notifications with auto-polling - only when authenticated
   const { notifications, unreadCount, mutate } = useNotifications(!!session)
+  
+  // Get user's organization for plan display
+  const { organization } = useCurrentUserOrganization()
+  
+  // Get plan display info
+  const getPlanDisplay = (planId: string | null) => {
+    if (!planId || planId === 'free') {
+      return { name: 'Free', color: 'rgba(255, 255, 255, 0.7)', bgColor: 'rgba(255, 255, 255, 0.15)' }
+    } else if (planId.includes('pro') || planId.includes('P-')) {
+      return { name: 'Pro', color: 'white', bgColor: 'rgba(59, 130, 246, 0.35)' }
+    } else if (planId === 'enterprise') {
+      return { name: 'Enterprise', color: 'white', bgColor: 'rgba(147, 51, 234, 0.35)' }
+    } else {
+      return { name: 'Free', color: 'rgba(255, 255, 255, 0.7)', bgColor: 'rgba(255, 255, 255, 0.15)' }
+    }
+  }
+  
+  const planDisplay = organization ? getPlanDisplay(organization.planId) : null
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -149,6 +168,28 @@ export default function Navbar() {
             borderRadius: 10,
             backdropFilter: 'blur(8px)'
           }}>{session.user?.email}</span>
+          
+          {/* Plan Badge */}
+          {planDisplay && (
+            <span style={{
+              fontSize: 13,
+              color: planDisplay.color,
+              fontWeight: 600,
+              background: planDisplay.bgColor,
+              padding: '6px 12px',
+              borderRadius: 8,
+              backdropFilter: 'blur(8px)',
+              border: '1.5px solid rgba(255, 255, 255, 0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4
+            }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+              </svg>
+              {planDisplay.name}
+            </span>
+          )}
           
           {/* Notifications Bell */}
           <div ref={notifRef} style={{ position: 'relative' }}>
