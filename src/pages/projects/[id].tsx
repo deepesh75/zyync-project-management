@@ -1859,7 +1859,7 @@ export default function ProjectPage() {
         </>
       )}
 
-      <div style={{ position: 'relative', flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ position: 'relative', flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
         {/* Kanban View */}
         {currentView === 'kanban' && (
         <div className="kanban" style={{ gap: 16, height: '100%', display: 'flex', overflowX: 'auto', paddingBottom: 16 }}>
