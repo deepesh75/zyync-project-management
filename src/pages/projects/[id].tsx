@@ -29,10 +29,33 @@ function getBackgroundStyle(bg: string): string {
     'gradient-forest': 'linear-gradient(135deg, #0ba360 0%, #3cba92 100%)',
     'gradient-rose': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
     'gradient-night': 'linear-gradient(135deg, #2c3e50 0%, #3498db 100%)',
+    'gradient-ocean': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    'gradient-mint': 'linear-gradient(135deg, #0ba360 0%, #2d8a7f 100%)',
+    'gradient-coral': 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
+    'gradient-gold': 'linear-gradient(135deg, #f5a623 0%, #f7b731 100%)',
+    'gradient-lavender': 'linear-gradient(135deg, #b993f3 0%, #9b7ebd 100%)',
+    'gradient-peach': 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
     'solid-light': '#f8f9fa',
     'solid-dark': '#1a1a1a',
+    'solid-white': '#ffffff',
+    'solid-cream': '#fffef5',
+    'solid-gray': '#f3f4f6',
   }
   return backgrounds[bg] || backgrounds['gradient-purple']
+}
+
+function getHeaderColorForBackground(bg: string): { text: string; background: string } {
+  const darkBackgrounds = ['solid-dark', 'gradient-night', 'gradient-forest']
+  const lightBackgrounds = ['solid-light', 'solid-white', 'solid-cream', 'gradient-peach']
+  
+  if (darkBackgrounds.includes(bg)) {
+    return { text: '#ffffff', background: 'rgba(0, 0, 0, 0.3)' }
+  }
+  if (lightBackgrounds.includes(bg)) {
+    return { text: '#1a1a1a', background: 'rgba(255, 255, 255, 0.7)' }
+  }
+  // For colorful gradients, use white text with semi-transparent dark background
+  return { text: '#ffffff', background: 'rgba(0, 0, 0, 0.2)' }
 }
 
 type Task = {
@@ -1198,7 +1221,15 @@ export default function ProjectPage() {
                   { id: 'gradient-forest', name: 'Forest', bg: 'linear-gradient(135deg, #0ba360 0%, #3cba92 100%)' },
                   { id: 'gradient-rose', name: 'Rose', bg: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
                   { id: 'gradient-night', name: 'Night Sky', bg: 'linear-gradient(135deg, #2c3e50 0%, #3498db 100%)' },
+                  { id: 'gradient-mint', name: 'Mint', bg: 'linear-gradient(135deg, #0ba360 0%, #2d8a7f 100%)' },
+                  { id: 'gradient-coral', name: 'Coral', bg: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)' },
+                  { id: 'gradient-gold', name: 'Gold', bg: 'linear-gradient(135deg, #f5a623 0%, #f7b731 100%)' },
+                  { id: 'gradient-lavender', name: 'Lavender', bg: 'linear-gradient(135deg, #b993f3 0%, #9b7ebd 100%)' },
+                  { id: 'gradient-peach', name: 'Peach', bg: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)' },
                   { id: 'solid-light', name: 'Light', bg: '#f8f9fa' },
+                  { id: 'solid-white', name: 'White', bg: '#ffffff' },
+                  { id: 'solid-cream', name: 'Cream', bg: '#fffef5' },
+                  { id: 'solid-gray', name: 'Gray', bg: '#f3f4f6' },
                   { id: 'solid-dark', name: 'Dark', bg: '#1a1a1a' },
                 ].map((bg) => (
                   <button
@@ -1238,8 +1269,8 @@ export default function ProjectPage() {
                       <span style={{ 
                         fontSize: 11, 
                         fontWeight: 600, 
-                        color: bg.id.includes('dark') ? 'white' : bg.id.includes('light') ? '#333' : 'white',
-                        textShadow: bg.id.includes('light') ? 'none' : '0 1px 2px rgba(0,0,0,0.5)'
+                        color: ['solid-dark', 'gradient-night', 'gradient-forest'].includes(bg.id) ? 'white' : ['solid-light', 'solid-white', 'solid-cream', 'gradient-peach'].includes(bg.id) ? '#333' : 'white',
+                        textShadow: ['solid-light', 'solid-white', 'solid-cream', 'gradient-peach'].includes(bg.id) ? 'none' : '0 1px 2px rgba(0,0,0,0.5)'
                       }}>
                         {bg.name}
                       </span>

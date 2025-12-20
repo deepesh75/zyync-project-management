@@ -2,6 +2,20 @@ import React, { useState } from 'react'
 import { FeatureGate } from '../FeatureGate'
 import type { Feature } from '../../lib/permissions'
 
+function getHeaderColorForBackground(bg: string): { text: string; background: string } {
+  const darkBackgrounds = ['solid-dark', 'gradient-night', 'gradient-forest']
+  const lightBackgrounds = ['solid-light', 'solid-white', 'solid-cream', 'gradient-peach']
+  
+  if (darkBackgrounds.includes(bg)) {
+    return { text: '#ffffff', background: 'rgba(0, 0, 0, 0.3)' }
+  }
+  if (lightBackgrounds.includes(bg)) {
+    return { text: '#1a1a1a', background: 'rgba(255, 255, 255, 0.7)' }
+  }
+  // For colorful gradients, use white text with semi-transparent dark background
+  return { text: '#ffffff', background: 'rgba(0, 0, 0, 0.2)' }
+}
+
 interface ProjectHeaderProps {
   project: any
   onEditLabels: () => void
@@ -26,22 +40,35 @@ export default function ProjectHeader({
   workflows
 }: ProjectHeaderProps) {
   const [showToolsMenu, setShowToolsMenu] = useState(false)
+  const headerColors = getHeaderColorForBackground(project.background || 'gradient-purple')
 
   return (
-    <header style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0, gap: 16, flexWrap: 'wrap' }}>
+    <header style={{ 
+      marginBottom: 16, 
+      display: 'flex', 
+      justifyContent: 'space-between', 
+      alignItems: 'center', 
+      flexShrink: 0, 
+      gap: 16, 
+      flexWrap: 'wrap',
+      padding: '12px 16px',
+      borderRadius: 12,
+      background: headerColors.background,
+      transition: 'all 0.3s ease'
+    }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        <a href="/" style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: 14, display: 'flex', alignItems: 'center', gap: 4, transition: 'color 0.2s' }}
-          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
-          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+        <a href="/" style={{ color: headerColors.text, textDecoration: 'none', fontSize: 14, display: 'flex', alignItems: 'center', gap: 4, transition: 'opacity 0.2s', opacity: 0.8 }}
+          onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+          onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
         >← Back</a>
-        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: 'var(--text)' }}>
+        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: headerColors.text }}>
           {project.name}
           {project.archived && (
             <span style={{ 
               marginLeft: 12, 
               padding: '4px 12px', 
-              background: '#f3f4f6', 
-              color: '#6b7280', 
+              background: 'rgba(107, 114, 128, 0.2)', 
+              color: headerColors.text, 
               borderRadius: 6, 
               fontSize: 13, 
               fontWeight: 600,
@@ -59,9 +86,9 @@ export default function ProjectHeader({
             style={{
               padding: '8px 12px',
               borderRadius: 8,
-              border: '1px solid var(--border)',
-              background: 'var(--surface)',
-              color: 'var(--text)',
+              border: `1px solid rgba(0, 0, 0, 0.1)`,
+              background: 'rgba(255, 255, 255, 0.2)',
+              color: headerColors.text,
               fontSize: 13,
               fontWeight: 600,
               cursor: 'pointer',
@@ -71,12 +98,10 @@ export default function ProjectHeader({
               gap: 6
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--bg-secondary)'
-              e.currentTarget.style.borderColor = 'var(--primary)'
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'var(--surface)'
-              e.currentTarget.style.borderColor = 'var(--border)'
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
             }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -255,9 +280,9 @@ export default function ProjectHeader({
           display: 'flex', 
           gap: 4, 
           padding: '4px 8px',
-          background: 'var(--bg-secondary)',
+          background: 'rgba(255, 255, 255, 0.15)',
           borderRadius: 8,
-          border: '1px solid var(--border)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
           marginLeft: 'auto'
         }}>
           {[
@@ -275,8 +300,8 @@ export default function ProjectHeader({
                   padding: '6px 10px',
                   borderRadius: 6,
                   border: 'none',
-                  background: currentView === view.id ? 'var(--primary)' : 'transparent',
-                  color: currentView === view.id ? 'white' : 'var(--text-secondary)',
+                  background: currentView === view.id ? 'rgba(255, 255, 255, 0.3)' : 'transparent',
+                  color: headerColors.text,
                   cursor: 'pointer',
                   fontSize: 13,
                   fontWeight: 600,
@@ -284,18 +309,19 @@ export default function ProjectHeader({
                   minWidth: 32,
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  opacity: currentView === view.id ? 1 : 0.8
                 }}
                 onMouseEnter={(e) => {
                   if (currentView !== view.id) {
-                    e.currentTarget.style.background = 'var(--surface)'
-                    e.currentTarget.style.color = 'var(--text)'
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                    e.currentTarget.style.opacity = '1'
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (currentView !== view.id) {
                     e.currentTarget.style.background = 'transparent'
-                    e.currentTarget.style.color = 'var(--text-secondary)'
+                    e.currentTarget.style.opacity = '0.8'
                   }
                 }}
               >
