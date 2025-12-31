@@ -117,12 +117,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       // Seat capacity warnings
       if (type === 'capacity') {
+        // Fetch all organizations and filter in JavaScript
         const orgs = await prisma.organization.findMany({
-          where: {
-            OR: [
-              { seatsUsed: { gte: prisma.raw('seatsAllowed') } }
-            ]
-          },
           select: {
             id: true,
             name: true,
