@@ -25,9 +25,9 @@ export function FeatureGate({
   }
 
   // User has access to the feature
-  if (hasAccess) {
-    return <>{children}</>
-  }
+  if (hasAccess) { 
+    return <>{children}</> 
+  } 
 
   // Show fallback if provided
   if (fallback) {
@@ -35,22 +35,15 @@ export function FeatureGate({
   }
 
   // Show upgrade prompt
-  if (showUpgrade) {
-    return (
-      <div className="feature-gate-overlay">
-        <div className="feature-gate-content">
-          <div className="feature-gate-icon">🔒</div>
-          <h3 className="feature-gate-title">Premium Feature</h3>
-          <p className="feature-gate-description">
-            This feature is available on {getUpgradePlan(feature, currentPlan)} and higher plans.
-          </p>
-          <Link href="/pricing" className="feature-gate-button">
-            Upgrade Now
-          </Link>
-        </div>
-      </div>
-    )
-  }
+  if (showUpgrade) { 
+    // Render a compact non-blocking fallback by default. 
+    // For places where the full overlay is desired, callers should render it explicitly. 
+    return ( 
+      <span className="feature-gate-inline"> 
+        <span className="lock-badge">🔒</span> 
+      </span> 
+    ) 
+  } 
 
   // Hide the feature completely
   return null

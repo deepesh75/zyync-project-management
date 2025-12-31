@@ -25,6 +25,7 @@ const ADMIN_EMAIL = 'deepesh1234.dc@gmail.com'
 // Plan feature matrix
 const PLAN_FEATURES: Record<PlanType, Feature[]> = {
   free: [
+    'unlimited_projects', // Allow unlimited projects on free plan
     'unlimited_tasks', // Basic features for free users
     'calendar_view',
     'table_view'

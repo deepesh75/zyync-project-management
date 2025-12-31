@@ -14,6 +14,7 @@ import { useWorkflows } from '../../hooks/useWorkflows'
 import ProjectHeader from '../../components/project/ProjectHeader'
 import KanbanBoard from '../../components/project/KanbanBoard'
 import { FeatureGate } from '../../components/FeatureGate'
+import { useFeatureAccess } from '../../lib/permissions'
 
 // Lazy load heavy modals and components
 const AdvancedFilterUI = dynamic(() => import('../../components/AdvancedFilterUI'), { ssr: false })
@@ -127,6 +128,7 @@ export default function ProjectPage() {
     dueDate: null as { from?: string; to?: string; isOverdue?: boolean } | null
   })
   const { presets, loaded: presetsLoaded, savePreset, deletePreset } = useFilterPresets()
+  const canUseAdvancedFilters = useFeatureAccess('advanced_filters')
   
   // Filter states
   const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null)
@@ -1142,7 +1144,7 @@ export default function ProjectPage() {
           </button>
 
           {/* Advanced Filters Button */}
-          <FeatureGate feature="advanced_filters">
+          {canUseAdvancedFilters ? (
             <button
               onClick={() => setShowAdvancedFilter(true)}
               style={{
@@ -1175,7 +1177,34 @@ export default function ProjectPage() {
               </svg>
               Advanced
             </button>
-          </FeatureGate>
+          ) : (
+            <button
+              disabled
+              title="Available on Pro"
+              style={{
+                padding: '10px 16px',
+                borderRadius: 8,
+                border: '1px solid var(--border)',
+                background: 'var(--surface)',
+                color: 'var(--text-secondary)',
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: 'default',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                opacity: 0.9
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 6h18"></path>
+                <path d="M7 12h10"></path>
+                <path d="M11 18h2"></path>
+              </svg>
+              Advanced 🔒
+            </button>
+          )}
         </div>
 
         {/* Background Picker Modal */}

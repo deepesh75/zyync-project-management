@@ -342,3 +342,28 @@ button:focus-visible {
   color: white;
   text-decoration: none;
 }
+
+/* Compact inline feature-gate fallback */
+.feature-gate-inline {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 4px 8px;
+	border-radius: 8px;
+	background: var(--primary-light);
+	color: var(--text);
+	font-weight: 600;
+	font-size: 13px;
+}
+
+.feature-gate-inline .lock-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	border-radius: 6px;
+	background: rgba(0,0,0,0.06);
+	color: var(--text);
+	font-size: 12px;
+}
