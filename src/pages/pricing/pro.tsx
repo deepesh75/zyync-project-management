@@ -20,7 +20,7 @@ export default function ProPricing() {
   const [paypalLoaded, setPaypalLoaded] = useState(false)
 
   const pricePerUserMonthly = 4
-  const pricePerUserAnnual = 40 // $40/year (save 17% vs monthly)
+  const pricePerUserAnnual = 36 // $36/year (save 25% vs monthly)
   const pricePerUser = billingCycle === 'monthly' ? pricePerUserMonthly : pricePerUserAnnual
   const subtotal = userCount * pricePerUser
   const discount = 0
@@ -193,7 +193,7 @@ export default function ProPricing() {
                     position: 'absolute', top: -8, right: -8, background: '#10b981', color: 'white',
                     padding: '2px 8px', borderRadius: 12, fontSize: 12, fontWeight: 700
                   }}>
-                    Save 17%
+                    Save 25%
                   </span>
                 </button>
               </div>
