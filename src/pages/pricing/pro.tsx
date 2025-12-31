@@ -19,9 +19,11 @@ export default function ProPricing() {
   const [loading, setLoading] = useState(false)
   const [paypalLoaded, setPaypalLoaded] = useState(false)
 
-  const pricePerUser = 4 // Monthly only for now
+  const pricePerUserMonthly = 4
+  const pricePerUserAnnual = 40 // $40/year (save 17% vs monthly)
+  const pricePerUser = billingCycle === 'monthly' ? pricePerUserMonthly : pricePerUserAnnual
   const subtotal = userCount * pricePerUser
-  const discount = 0 // No discount for monthly
+  const discount = 0
   const total = subtotal - discount
 
   // Load PayPal SDK
@@ -58,14 +60,10 @@ export default function ProPricing() {
             return Promise.reject('User not authenticated - redirecting to signup')
           }
 
-          // Check if annual plan is available
-          if (billingCycle === 'annual') {
-            alert('Annual billing is coming soon! Please select monthly billing for now.')
-            return Promise.reject('Annual plan not yet available')
-          }
-
-          // Use monthly plan ID
-          const planId = 'P-3N8118553R364412BNFAARJA'
+          // Select plan based on billing cycle
+          const planId = billingCycle === 'monthly' 
+            ? 'P-3N8118553R364412BNFAARJA'  // Monthly plan
+            : 'P-1PK53547FK456084XNFKSFJY'   // Annual plan
 
           console.log('Creating subscription with:', { planId, quantity: userCount })
 
@@ -84,7 +82,7 @@ export default function ProPricing() {
         onError: function(err: any) {
           console.error('PayPal error:', err)
           // Don't show alert for expected errors (like redirects)
-          if (err !== 'User not authenticated - redirecting to signup' && err !== 'Annual plan not yet available') {
+          if (err !== 'User not authenticated - redirecting to signup') {
             alert('There was an error processing your subscription. Please try again.')
           }
         },
@@ -180,24 +178,22 @@ export default function ProPricing() {
                     color: '#374151'
                   }}
                 >
-                  Monthly - ${4}/user
+                  Monthly - ${pricePerUserMonthly}/user/mo
                 </button>
                 <button
                   onClick={() => setBillingCycle('annual')}
-                  disabled={true}
                   style={{
                     flex: 1, padding: '12px 24px', borderRadius: 8, border: billingCycle === 'annual' ? '2px solid #6366f1' : '1px solid #d1d5db',
-                    background: billingCycle === 'annual' ? '#f0f4ff' : '#f5f5f5', cursor: 'not-allowed', fontWeight: 600,
-                    position: 'relative', color: '#9ca3af', opacity: 0.6
+                    background: billingCycle === 'annual' ? '#f0f4ff' : 'white', cursor: 'pointer', fontWeight: 600,
+                    position: 'relative', color: '#374151'
                   }}
-                  title="Annual billing coming soon"
                 >
-                  Annual - ${3}/user
+                  Annual - ${pricePerUserAnnual}/user/yr
                   <span style={{
                     position: 'absolute', top: -8, right: -8, background: '#10b981', color: 'white',
                     padding: '2px 8px', borderRadius: 12, fontSize: 12, fontWeight: 700
                   }}>
-                    Save 25%
+                    Save 17%
                   </span>
                 </button>
               </div>
@@ -209,11 +205,17 @@ export default function ProPricing() {
                 Pricing Summary
               </h3>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span>{userCount} users × ${pricePerUser}/month</span>
+                <span>{userCount} users × ${pricePerUser}/{billingCycle === 'monthly' ? 'month' : 'year'}</span>
                 <span>${subtotal.toFixed(2)}</span>
               </div>
+              {billingCycle === 'annual' && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, color: '#10b981', fontSize: 14 }}>
+                  <span>Annual savings vs monthly</span>
+                  <span>-${(userCount * pricePerUserMonthly * 12 - subtotal).toFixed(2)}</span>
+                </div>
+              )}
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 18, fontWeight: 700, borderTop: '1px solid #e5e7eb', paddingTop: 12 }}>
-                <span>Total per month</span>
+                <span>Total {billingCycle === 'monthly' ? 'per month' : 'per year'}</span>
                 <span>${total.toFixed(2)}</span>
               </div>
             </div>
