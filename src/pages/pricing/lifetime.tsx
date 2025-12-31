@@ -93,7 +93,7 @@ export default function LifetimePricing() {
                 $199
               </div>
               <div style={{ color: '#6b7280', fontSize: 16, marginTop: 4 }}>
-                One-time payment • Lifetime access
+                One-time payment • Up to 10 users • Lifetime access
               </div>
             </div>
 
@@ -104,13 +104,13 @@ export default function LifetimePricing() {
               </h3>
               <div style={{ fontSize: 14, color: '#4b5563', lineHeight: 1.6 }}>
                 <p style={{ margin: 0, marginBottom: 12 }}>
-                  <strong>Regular Pro pricing:</strong> $3/user/month = $36/user/year
+                  <strong>Regular Pro pricing:</strong> $4/user/month × 10 users = $40/month ($480/year)
                 </p>
                 <p style={{ margin: 0, marginBottom: 12 }}>
-                  <strong>With lifetime deal:</strong> Only $199 total (worth $720+ over 2 years)
+                  <strong>With lifetime deal:</strong> Only $199 total for up to 10 users (worth $2,400+ over 5 years)
                 </p>
                 <p style={{ margin: 0, fontSize: 16, fontWeight: 600, color: '#10b981' }}>
-                  Save over 80% compared to annual subscriptions!
+                  Save over 90% compared to subscriptions!
                 </p>
               </div>
             </div>
@@ -126,7 +126,7 @@ export default function LifetimePricing() {
                   '✅ Unlimited tasks',
                   '✅ All view types (Kanban, Table, Calendar, Timeline)',
                   '✅ Advanced workflow automation',
-                  '✅ Unlimited team members',
+                  '✅ Up to 10 team members',
                   '✅ Priority email support',
                   '✅ Custom task templates',
                   '✅ API access & integrations',
@@ -180,16 +180,16 @@ export default function LifetimePricing() {
                   How many users does this cover?
                 </h4>
                 <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>
-                  The lifetime deal covers unlimited users for your organization. Add as many team members as you need.
+                  The lifetime deal covers up to 10 users. If you need more than 10 users, you'll need to subscribe to our monthly ($4/user/month) or annual ($36/user/year) plans.
                 </p>
               </div>
 
               <div>
                 <h4 style={{ fontSize: 16, fontWeight: 600, margin: 0, marginBottom: 8, color: '#111827' }}>
-                  What if I need more features later?
+                  What if I need more than 10 users?
                 </h4>
                 <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>
-                  You can upgrade to Enterprise at any time. The lifetime Pro access remains yours forever.
+                  For teams larger than 10 users, please choose our Pro Monthly or Pro Annual plans from the pricing page. These plans support unlimited users with flexible scaling.
                 </p>
               </div>
 

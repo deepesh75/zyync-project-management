@@ -71,11 +71,13 @@ const plans = [
     name: 'Pro Lifetime',
     price: '$199',
     period: 'one-time',
-    description: 'One-time payment for Pro features',
+    description: 'One-time payment for up to 10 users',
     features: [
       'All Pro features',
+      'Up to 10 users',
       'No monthly payments',
-      'Lifetime access'
+      'Lifetime access',
+      'Need more users? Use monthly/annual plans'
     ],
     cta: 'Get Lifetime Access',
     highlight: false,
