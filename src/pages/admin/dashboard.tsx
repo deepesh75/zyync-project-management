@@ -18,9 +18,38 @@ export default function AdminDashboard() {
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'overview' | 'billing' | 'capacity' | 'revenue'>('overview')
   const [expandedOrg, setExpandedOrg] = useState<string | null>(null)
+  const [deleteModal, setDeleteModal] = useState<{ type: 'user' | 'organization', id: string, name: string, email?: string } | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   const toggleOrgDetails = (orgId: string) => {
     setExpandedOrg(expandedOrg === orgId ? null : orgId)
+  }
+
+  async function handleDelete() {
+    if (!deleteModal) return
+    
+    setDeleting(true)
+    try {
+      const endpoint = deleteModal.type === 'user' 
+        ? `/api/admin/users/${deleteModal.id}`
+        : `/api/admin/organizations/${deleteModal.id}`
+      
+      const res = await fetch(endpoint, { method: 'DELETE' })
+      const data = await res.json()
+      
+      if (res.ok) {
+        alert(`Successfully deleted ${deleteModal.type}: ${deleteModal.name}`)
+        setDeleteModal(null)
+        loadMetrics() // Reload data
+      } else {
+        alert(`Error: ${data.error || 'Failed to delete'}`)
+      }
+    } catch (error) {
+      console.error('Delete error:', error)
+      alert('An error occurred while deleting')
+    } finally {
+      setDeleting(false)
+    }
   }
 
   useEffect(() => {
@@ -203,7 +232,7 @@ export default function AdminDashboard() {
                       <th style={{ padding: 12, textAlign: 'center', fontSize: 13, fontWeight: 600, color: '#6b7280' }}>Members</th>
                       <th style={{ padding: 12, textAlign: 'center', fontSize: 13, fontWeight: 600, color: '#6b7280' }}>Pending</th>
                       <th style={{ padding: 12, textAlign: 'center', fontSize: 13, fontWeight: 600, color: '#6b7280' }}>Status</th>
-                      <th style={{ padding: 12, textAlign: 'center', fontSize: 13, fontWeight: 600, color: '#6b7280' }}>Actions</th>
+                      <th style={{ padding: 12, textAlign: 'center', fontSize: 13, fontWeight: 600, color: '#6b7280', minWidth: 180 }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -260,25 +289,46 @@ export default function AdminDashboard() {
                             </span>
                           </td>
                           <td style={{ padding: 12, textAlign: 'center' }}>
-                            <button
-                              onClick={() => toggleOrgDetails(org.id)}
-                              style={{
-                                padding: '8px 16px',
-                                background: expandedOrg === org.id ? '#4f46e5' : '#4f46e5',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: 8,
-                                fontSize: 13,
-                                cursor: 'pointer',
-                                fontWeight: 600,
-                                transition: 'all 0.2s',
-                                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-                              }}
-                              onMouseEnter={(e) => e.currentTarget.style.background = '#4338ca'}
-                              onMouseLeave={(e) => e.currentTarget.style.background = '#4f46e5'}
-                            >
-                              {expandedOrg === org.id ? '▲ Hide' : '▼ View'} Users
-                            </button>
+                            <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                              <button
+                                onClick={() => toggleOrgDetails(org.id)}
+                                style={{
+                                  padding: '8px 16px',
+                                  background: expandedOrg === org.id ? '#4f46e5' : '#4f46e5',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: 8,
+                                  fontSize: 13,
+                                  cursor: 'pointer',
+                                  fontWeight: 600,
+                                  transition: 'all 0.2s',
+                                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = '#4338ca'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = '#4f46e5'}
+                              >
+                                {expandedOrg === org.id ? '▲ Hide' : '▼ View'}
+                              </button>
+                              <button
+                                onClick={() => setDeleteModal({ type: 'organization', id: org.id, name: org.name })}
+                                style={{
+                                  padding: '8px 16px',
+                                  background: '#ef4444',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: 8,
+                                  fontSize: 13,
+                                  cursor: 'pointer',
+                                  fontWeight: 600,
+                                  transition: 'all 0.2s',
+                                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = '#dc2626'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = '#ef4444'}
+                              >
+                                🗑️ Delete
+                              </button>
+                            </div>
                           </td>
                         </tr>
                         {expandedOrg === org.id && (
@@ -302,6 +352,27 @@ export default function AdminDashboard() {
                                         }}
                                       >
                                         <div>
+                                          <button
+                                            onClick={() => setDeleteModal({ 
+                                              type: 'user', 
+                                              id: member.id, 
+                                              name: member.name || 'Unknown User',
+                                              email: member.email 
+                                            })}
+                                            style={{
+                                              padding: '4px 8px',
+                                              background: '#fee2e2',
+                                              color: '#ef4444',
+                                              border: 'none',
+                                              borderRadius: 6,
+                                              fontSize: 11,
+                                              cursor: 'pointer',
+                                              fontWeight: 600
+                                            }}
+                                            title="Delete user"
+                                          >
+                                            🗑️
+                                          </button>
                                           <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>
                                             {member.name || 'Unknown User'}
                                           </div>
@@ -485,6 +556,130 @@ export default function AdminDashboard() {
                   <h2 style={{ margin: 0, fontSize: 18, color: '#f59e0b' }}>⚡ Near Capacity (80%+)</h2>
                 </div>
                 <div style={{ padding: 20 }}>
+
+        {/* Delete Confirmation Modal */}
+        {deleteModal && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000
+          }}>
+            <div style={{
+              background: 'white',
+              borderRadius: 16,
+              padding: 32,
+              maxWidth: 500,
+              width: '90%',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+            }}>
+              <div style={{
+                width: 64,
+                height: 64,
+                margin: '0 auto 20px',
+                background: '#fee2e2',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 32
+              }}>
+                ⚠️
+              </div>
+              
+              <h2 style={{ fontSize: 24, marginBottom: 16, textAlign: 'center', color: '#111827' }}>
+                Delete {deleteModal.type === 'user' ? 'User' : 'Organization'}?
+              </h2>
+              
+              <div style={{
+                background: '#fef3c7',
+                border: '1px solid #f59e0b',
+                borderRadius: 8,
+                padding: 16,
+                marginBottom: 24
+              }}>
+                <p style={{ margin: 0, fontSize: 14, color: '#92400e', fontWeight: 600 }}>
+                  ⚠️ Warning: This action cannot be undone!
+                </p>
+              </div>
+
+              <div style={{ marginBottom: 24 }}>
+                <p style={{ fontSize: 16, color: '#374151', marginBottom: 12 }}>
+                  You are about to delete:
+                </p>
+                <div style={{
+                  background: '#f9fafb',
+                  padding: 16,
+                  borderRadius: 8,
+                  border: '1px solid #e5e7eb'
+                }}>
+                  <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 4 }}>
+                    {deleteModal.name}
+                  </div>
+                  {deleteModal.email && (
+                    <div style={{ fontSize: 14, color: '#6b7280', fontFamily: 'monospace' }}>
+                      {deleteModal.email}
+                    </div>
+                  )}
+                  <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 8 }}>
+                    Type: {deleteModal.type}
+                  </div>
+                </div>
+              </div>
+
+              <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 24, lineHeight: 1.6 }}>
+                {deleteModal.type === 'user' 
+                  ? 'This will permanently delete the user account and remove them from all organizations. All their data, tasks, and activities will be removed.'
+                  : 'This will permanently delete the organization along with all its projects, tasks, members, and data. All members will lose access.'}
+              </p>
+
+              <div style={{ display: 'flex', gap: 12 }}>
+                <button
+                  onClick={() => setDeleteModal(null)}
+                  disabled={deleting}
+                  style={{
+                    flex: 1,
+                    padding: '12px 24px',
+                    background: '#f3f4f6',
+                    color: '#111827',
+                    border: 'none',
+                    borderRadius: 8,
+                    fontSize: 16,
+                    fontWeight: 600,
+                    cursor: deleting ? 'not-allowed' : 'pointer',
+                    opacity: deleting ? 0.5 : 1
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  style={{
+                    flex: 1,
+                    padding: '12px 24px',
+                    background: '#ef4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 8,
+                    fontSize: 16,
+                    fontWeight: 600,
+                    cursor: deleting ? 'not-allowed' : 'pointer',
+                    opacity: deleting ? 0.5 : 1
+                  }}
+                >
+                  {deleting ? 'Deleting...' : 'Delete Permanently'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
                   {capacity.organizations.nearCapacity.map((org: any) => (
                     <div key={org.id} style={{ padding: 12, background: '#fef3c7', borderRadius: 8, marginBottom: 12 }}>
                       <div style={{ fontWeight: 600, marginBottom: 4 }}>{org.name}</div>
