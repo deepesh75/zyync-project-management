@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { FeatureGate } from '../FeatureGate'
 import type { Feature } from '../../lib/permissions'
+import { useFeatureAccess } from '../../lib/permissions'
 
 function getHeaderColorForBackground(bg: string): { text: string; background: string } {
   const darkBackgrounds = ['solid-dark', 'gradient-night', 'gradient-forest']
@@ -41,6 +42,11 @@ export default function ProjectHeader({
 }: ProjectHeaderProps) {
   const [showToolsMenu, setShowToolsMenu] = useState(false)
   const headerColors = getHeaderColorForBackground(project.background || 'gradient-purple')
+  const canUseTemplates = useFeatureAccess('templates')
+  const canUseWorkflows = useFeatureAccess('workflows')
+  const canUseCalendar = useFeatureAccess('calendar_view')
+  const canUseTable = useFeatureAccess('table_view')
+  const canUseTimeline = useFeatureAccess('timeline_view')
 
   return (
     <header style={{ 
@@ -231,9 +237,14 @@ export default function ProjectHeader({
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                   </svg>
-                  <FeatureGate feature="templates">
+                  {canUseTemplates ? (
                     <span>Templates</span>
-                  </FeatureGate>
+                  ) : (
+                    <span style={{ opacity: 0.8, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                      <span>Templates</span>
+                      <span style={{ fontSize: 12, background: '#f3f4f6', color: '#6b7280', padding: '2px 6px', borderRadius: 6 }}>🔒</span>
+                    </span>
+                  )}
                 </button>
               </div>
             </>
@@ -241,7 +252,7 @@ export default function ProjectHeader({
         </div>
 
         {/* Workflows Button */}
-        <FeatureGate feature="workflows">
+        {canUseWorkflows ? (
           <button
             onClick={onShowWorkflows}
             style={{
@@ -273,7 +284,32 @@ export default function ProjectHeader({
               </span>
             )}
           </button>
-        </FeatureGate>
+        ) : (
+          <button
+            disabled
+            title="Available on Pro"
+            style={{
+              padding: '8px 12px',
+              borderRadius: 8,
+              border: '1px solid var(--border)',
+              background: 'var(--surface)',
+              color: 'var(--text-secondary)',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'default',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              opacity: 0.9
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            Workflows 🔒
+          </button>
+        )}
 
         {/* View Switcher */}
         <div style={{ 
@@ -329,12 +365,37 @@ export default function ProjectHeader({
               </button>
             )
 
-            // Wrap premium views with FeatureGate
+            // Handle premium views inline to avoid full-screen overlays
             if (view.feature) {
+              let allowed = false
+              if (view.feature === 'calendar_view') allowed = canUseCalendar
+              if (view.feature === 'table_view') allowed = canUseTable
+              if (view.feature === 'timeline_view') allowed = canUseTimeline
+
+              if (allowed) return button
+
               return (
-                <FeatureGate key={view.id} feature={view.feature}>
-                  {button}
-                </FeatureGate>
+                <button
+                  key={view.id}
+                  disabled
+                  title="Available on Pro"
+                  style={{
+                    padding: '6px 10px',
+                    borderRadius: 6,
+                    border: 'none',
+                    background: 'transparent',
+                    color: 'rgba(255,255,255,0.35)',
+                    cursor: 'default',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    opacity: 0.7
+                  }}
+                >
+                  {view.icon}
+                </button>
               )
             }
 
