@@ -17,6 +17,11 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'overview' | 'billing' | 'capacity' | 'revenue'>('overview')
+  const [expandedOrg, setExpandedOrg] = useState<string | null>(null)
+
+  const toggleOrgDetails = (orgId: string) => {
+    setExpandedOrg(expandedOrg === orgId ? null : orgId)
+  }
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -198,61 +203,176 @@ export default function AdminDashboard() {
                       <th style={{ padding: 12, textAlign: 'center', fontSize: 13, fontWeight: 600, color: '#6b7280' }}>Members</th>
                       <th style={{ padding: 12, textAlign: 'center', fontSize: 13, fontWeight: 600, color: '#6b7280' }}>Pending</th>
                       <th style={{ padding: 12, textAlign: 'center', fontSize: 13, fontWeight: 600, color: '#6b7280' }}>Status</th>
+                      <th style={{ padding: 12, textAlign: 'center', fontSize: 13, fontWeight: 600, color: '#6b7280' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {metrics.seatUtilization.slice(0, 20).map((org: any) => (
-                      <tr key={org.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                        <td style={{ padding: 12, fontSize: 14 }}>{org.name}</td>
-                        <td style={{ padding: 12, fontSize: 14 }}>
-                          <span style={{
-                            padding: '4px 8px',
-                            borderRadius: 6,
-                            fontSize: 12,
-                            fontWeight: 600,
-                            background: org.planId === 'free' ? '#f3f4f6' : '#eef2ff',
-                            color: org.planId === 'free' ? '#6b7280' : '#4f46e5'
-                          }}>
-                            {org.planId || 'free'}
-                          </span>
-                        </td>
-                        <td style={{ padding: 12, textAlign: 'center', fontSize: 14 }}>
-                          {org.seatsUsed} / {org.seatsAllowed}
-                        </td>
-                        <td style={{ padding: 12, textAlign: 'center' }}>
-                          <div style={{ 
-                            background: '#f3f4f6', 
-                            borderRadius: 6, 
-                            overflow: 'hidden',
-                            height: 8,
-                            position: 'relative'
-                          }}>
-                            <div style={{
-                              width: `${Math.min(org.utilizationPercent, 100)}%`,
-                              height: '100%',
-                              background: org.utilizationPercent >= 100 ? '#ef4444' : org.utilizationPercent >= 80 ? '#f59e0b' : '#10b981',
-                              transition: 'width 0.3s'
-                            }}></div>
-                          </div>
-                          <span style={{ fontSize: 12, color: '#6b7280', marginTop: 4, display: 'block' }}>
-                            {org.utilizationPercent}%
-                          </span>
-                        </td>
-                        <td style={{ padding: 12, textAlign: 'center', fontSize: 14 }}>{org.actualMembers}</td>
-                        <td style={{ padding: 12, textAlign: 'center', fontSize: 14 }}>{org.pendingInvites}</td>
-                        <td style={{ padding: 12, textAlign: 'center' }}>
-                          <span style={{
-                            padding: '4px 8px',
-                            borderRadius: 6,
-                            fontSize: 12,
-                            fontWeight: 600,
-                            background: org.billingStatus === 'active' ? '#ecfdf5' : '#fef3c7',
-                            color: org.billingStatus === 'active' ? '#10b981' : '#f59e0b'
-                          }}>
-                            {org.billingStatus || 'active'}
-                          </span>
-                        </td>
-                      </tr>
+                      <React.Fragment key={org.id}>
+                        <tr style={{ borderBottom: '1px solid #f3f4f6' }}>
+                          <td style={{ padding: 12, fontSize: 14 }}>{org.name}</td>
+                          <td style={{ padding: 12, fontSize: 14 }}>
+                            <span style={{
+                              padding: '4px 8px',
+                              borderRadius: 6,
+                              fontSize: 12,
+                              fontWeight: 600,
+                              background: org.planId === 'free' ? '#f3f4f6' : '#eef2ff',
+                              color: org.planId === 'free' ? '#6b7280' : '#4f46e5'
+                            }}>
+                              {org.planId || 'free'}
+                            </span>
+                          </td>
+                          <td style={{ padding: 12, textAlign: 'center', fontSize: 14 }}>
+                            {org.seatsUsed} / {org.seatsAllowed}
+                          </td>
+                          <td style={{ padding: 12, textAlign: 'center' }}>
+                            <div style={{ 
+                              background: '#f3f4f6', 
+                              borderRadius: 6, 
+                              overflow: 'hidden',
+                              height: 8,
+                              position: 'relative'
+                            }}>
+                              <div style={{
+                                width: `${Math.min(org.utilizationPercent, 100)}%`,
+                                height: '100%',
+                                background: org.utilizationPercent >= 100 ? '#ef4444' : org.utilizationPercent >= 80 ? '#f59e0b' : '#10b981',
+                                transition: 'width 0.3s'
+                              }}></div>
+                            </div>
+                            <span style={{ fontSize: 12, color: '#6b7280', marginTop: 4, display: 'block' }}>
+                              {org.utilizationPercent}%
+                            </span>
+                          </td>
+                          <td style={{ padding: 12, textAlign: 'center', fontSize: 14 }}>{org.actualMembers}</td>
+                          <td style={{ padding: 12, textAlign: 'center', fontSize: 14 }}>{org.pendingInvites}</td>
+                          <td style={{ padding: 12, textAlign: 'center' }}>
+                            <span style={{
+                              padding: '4px 8px',
+                              borderRadius: 6,
+                              fontSize: 12,
+                              fontWeight: 600,
+                              background: org.billingStatus === 'active' ? '#ecfdf5' : '#fef3c7',
+                              color: org.billingStatus === 'active' ? '#10b981' : '#f59e0b'
+                            }}>
+                              {org.billingStatus || 'active'}
+                            </span>
+                          </td>
+                          <td style={{ padding: 12, textAlign: 'center' }}>
+                            <button
+                              onClick={() => toggleOrgDetails(org.id)}
+                              style={{
+                                padding: '6px 12px',
+                                background: '#f3f4f6',
+                                border: 'none',
+                                borderRadius: 6,
+                                fontSize: 12,
+                                cursor: 'pointer',
+                                fontWeight: 500
+                              }}
+                            >
+                              {expandedOrg === org.id ? 'Hide' : 'View'} Users
+                            </button>
+                          </td>
+                        </tr>
+                        {expandedOrg === org.id && (
+                          <tr style={{ borderBottom: '1px solid #f3f4f6' }}>
+                            <td colSpan={8} style={{ padding: 20, background: '#f9fafb' }}>
+                              <div style={{ marginBottom: 20 }}>
+                                <h3 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 600, color: '#111827' }}>
+                                  Active Members ({org.members?.length || 0})
+                                </h3>
+                                {org.members && org.members.length > 0 ? (
+                                  <div style={{ background: 'white', borderRadius: 8, border: '1px solid #e5e7eb' }}>
+                                    {org.members.map((member: any, idx: number) => (
+                                      <div 
+                                        key={member.id}
+                                        style={{
+                                          padding: '12px 16px',
+                                          borderBottom: idx < org.members.length - 1 ? '1px solid #f3f4f6' : 'none',
+                                          display: 'flex',
+                                          justifyContent: 'space-between',
+                                          alignItems: 'center'
+                                        }}
+                                      >
+                                        <div>
+                                          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>
+                                            {member.name || 'Unknown User'}
+                                          </div>
+                                          <div style={{ fontSize: 13, color: '#6b7280', fontFamily: 'monospace' }}>
+                                            {member.email}
+                                          </div>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                          <span style={{
+                                            padding: '4px 8px',
+                                            borderRadius: 6,
+                                            fontSize: 11,
+                                            fontWeight: 600,
+                                            background: member.role === 'admin' ? '#dbeafe' : '#f3f4f6',
+                                            color: member.role === 'admin' ? '#1e40af' : '#6b7280'
+                                          }}>
+                                            {member.role}
+                                          </span>
+                                          <span style={{ fontSize: 12, color: '#9ca3af' }}>
+                                            {new Date(member.joinedAt).toLocaleDateString()}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div style={{ padding: 12, color: '#6b7280', fontSize: 14 }}>No active members</div>
+                                )}
+                              </div>
+
+                              {org.pendingInvitations && org.pendingInvitations.length > 0 && (
+                                <div>
+                                  <h3 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 600, color: '#111827' }}>
+                                    Pending Invitations ({org.pendingInvitations.length})
+                                  </h3>
+                                  <div style={{ background: 'white', borderRadius: 8, border: '1px solid #e5e7eb' }}>
+                                    {org.pendingInvitations.map((inv: any, idx: number) => (
+                                      <div 
+                                        key={inv.id}
+                                        style={{
+                                          padding: '12px 16px',
+                                          borderBottom: idx < org.pendingInvitations.length - 1 ? '1px solid #f3f4f6' : 'none',
+                                          display: 'flex',
+                                          justifyContent: 'space-between',
+                                          alignItems: 'center'
+                                        }}
+                                      >
+                                        <div>
+                                          <div style={{ fontSize: 13, color: '#6b7280', fontFamily: 'monospace' }}>
+                                            {inv.email}
+                                          </div>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                          <span style={{
+                                            padding: '4px 8px',
+                                            borderRadius: 6,
+                                            fontSize: 11,
+                                            fontWeight: 600,
+                                            background: '#fef3c7',
+                                            color: '#f59e0b'
+                                          }}>
+                                            pending
+                                          </span>
+                                          <span style={{ fontSize: 12, color: '#9ca3af' }}>
+                                            Expires {new Date(inv.expiresAt).toLocaleDateString()}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     ))}
                   </tbody>
                 </table>

@@ -37,6 +37,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             paypalCustomerId: true,
             trialEndsAt: true,
             createdAt: true,
+            members: {
+              select: {
+                id: true,
+                role: true,
+                joinedAt: true,
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true
+                  }
+                }
+              },
+              orderBy: { joinedAt: 'desc' }
+            },
+            invitations: {
+              where: {
+                acceptedAt: null,
+                expiresAt: { gt: new Date() }
+              },
+              select: {
+                id: true,
+                email: true,
+                role: true,
+                createdAt: true,
+                expiresAt: true
+              }
+            },
             _count: {
               select: {
                 members: true,
@@ -75,7 +103,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             actualMembers: o._count.members,
             pendingInvites: o._count.invitations,
             billingStatus: o.billingStatus,
-            paypalSubscriptionId: o.paypalSubscriptionId
+            paypalSubscriptionId: o.paypalSubscriptionId,
+            members: o.members.map(m => ({
+              id: m.id,
+              name: m.user.name,
+              email: m.user.email,
+              role: m.role,
+              joinedAt: m.joinedAt
+            })),
+            pendingInvitations: o.invitations.map(inv => ({
+              id: inv.id,
+              email: inv.email,
+              role: inv.role,
+              createdAt: inv.createdAt,
+              expiresAt: inv.expiresAt
+            }))
           })),
           atCapacity: orgs.filter(o => o.seatsUsed >= o.seatsAllowed).length,
           overCapacity: orgs.filter(o => o.seatsUsed > o.seatsAllowed).length
