@@ -3,6 +3,7 @@ import { prisma } from '../../../../../lib/prisma'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '../../../auth/[...nextauth]'
 import { invalidateCache } from '../../../../../lib/redis'
+import { syncSeatsUsed } from '../../../../../lib/seats'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions)
@@ -72,6 +73,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await prisma.organizationMember.delete({
       where: { id: memberId }
     })
+
+    // Sync seats after member removal
+    try {
+      await syncSeatsUsed(id)
+    } catch (err) {
+      console.warn('Failed to sync seats after member removal (non-fatal)', err)
+    }
 
     // Invalidate cache
     await invalidateCache(`organization:${id}`)

@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '../../auth/[...nextauth]'
 import crypto from 'crypto'
 import { sendInvitationEmail } from '../../../../lib/email'
+import { checkSeatAvailability, incrementSeatsUsed } from '../../../../lib/seats'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions)
@@ -74,6 +75,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'An invitation has already been sent to this email' })
     }
 
+    // Check seat availability
+    const seatCheck = await checkSeatAvailability(id)
+    if (!seatCheck.allowed) {
+      return res.status(403).json({
+        error: seatCheck.message || 'No seats available',
+        seatsUsed: seatCheck.seatsUsed,
+        seatsAllowed: seatCheck.seatsAllowed,
+        upgradeRequired: true
+      })
+    }
+
     // Create invitation token
     const token = crypto.randomBytes(32).toString('hex')
     const expiresAt = new Date()
@@ -93,6 +105,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         invitedBy: true
       }
     })
+
+    // Increment seats used (pending invite counts as used seat)
+    await incrementSeatsUsed(id)
 
     // Build base URL: prefer NEXTAUTH_URL, otherwise derive from request host
     const host = req.headers.host

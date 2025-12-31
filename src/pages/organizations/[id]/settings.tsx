@@ -38,7 +38,17 @@ export default function OrganizationSettings() {
       const data = await res.json()
 
       if (!res.ok) {
-        alert(data.error || 'Failed to send invitation')
+        // Check if it's a seat limit error
+        if (data.upgradeRequired) {
+          const goToBilling = confirm(
+            `${data.error}\n\nYou're using ${data.seatsUsed} of ${data.seatsAllowed} seats.\n\nWould you like to add more seats now?`
+          )
+          if (goToBilling) {
+            router.push(`/organizations/${id}/billing`)
+          }
+        } else {
+          alert(data.error || 'Failed to send invitation')
+        }
         setInviting(false)
         return
       }

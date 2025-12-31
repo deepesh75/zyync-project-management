@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '../../../lib/prisma'
+import { syncSeatsUsed } from '../../../lib/seats'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end()
@@ -17,13 +18,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     await prisma.invitation.update({ where: { id: invite.id }, data: { acceptedAt: new Date() } })
 
-    // Update seats count for org
+    // Sync seats count for org (this will count active members + pending invites)
     try {
+      await syncSeatsUsed(invite.organizationId)
+      
+      // Also update legacy seats field for backward compatibility
       const memberCount = await prisma.organizationMember.count({ where: { organizationId: invite.organizationId } })
       await prisma.organization.update({ where: { id: invite.organizationId }, data: { seats: memberCount } })
-
-      // Note: PayPal subscription updates would be handled in webhook events
-      // (user seat quantity updates are typically handled via PayPal billing cycles)
     } catch (err) {
       console.warn('Failed to sync seats (non-fatal)', err)
     }

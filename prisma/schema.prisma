@@ -11,13 +11,26 @@ model Organization {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
+  
   // PayPal billing/customer info
   paypalCustomerId      String?
   paypalSubscriptionId  String?
   paypalPlanId          String?
   planId                String?
-  seats                 Int      @default(1)
+  
+  // Seat management
+  seatsAllowed          Int      @default(1)  // Total seats purchased
+  seatsUsed             Int      @default(0)  // Currently occupied seats (active members + pending invites)
+  perSeatPriceCents     Int?                  // Price per additional seat in cents
+  
+  // Billing status tracking
+  billingStatus         String?  @default("active") // "active", "past_due", "canceled", "trialing"
+  billingCycleAnchor    DateTime?                    // When the current billing cycle started
   trialEndsAt           DateTime?
+  
+  // Legacy field for backward compatibility
+  seats                 Int      @default(1)
+  
   createdAt DateTime @default(now())
   members   OrganizationMember[]
   projects  Project[]
