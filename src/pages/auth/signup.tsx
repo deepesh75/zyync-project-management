@@ -8,6 +8,7 @@ export default function SignUpPage() {
   const [name, setName] = useState('')
   const [organizationName, setOrganizationName] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
   const router = useRouter()
 
   async function submit(e: React.FormEvent) {
@@ -20,12 +21,85 @@ export default function SignUpPage() {
       body: JSON.stringify({ email, password, name, organizationName }) 
     })
     
+    const data = await res.json()
+    
     if (res.ok) {
-      router.push('/auth/signin?message=Account created! Please sign in.')
+      setSuccess(true)
+      // Don't redirect automatically - show success message
     } else {
-      const j = await res.json().catch(() => ({}))
-      setError(j.error || 'Signup failed')
+      setError(data.error || 'Signup failed')
     }
+  }
+
+  if (success) {
+    return (
+      <>
+        <Navbar />
+        <main style={{ padding: 24, maxWidth: 500, margin: '60px auto' }}>
+          <div style={{
+            background: '#ecfdf5',
+            border: '1px solid #10b981',
+            borderRadius: 12,
+            padding: 32,
+            textAlign: 'center'
+          }}>
+            <div style={{
+              width: 64,
+              height: 64,
+              margin: '0 auto 20px',
+              background: '#10b981',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 32,
+              color: 'white'
+            }}>
+              ✓
+            </div>
+            <h1 style={{ fontSize: 24, marginBottom: 16, color: '#111827' }}>Check your email!</h1>
+            <p style={{ fontSize: 16, color: '#6b7280', marginBottom: 24 }}>
+              We've sent a verification link to <strong>{email}</strong>
+            </p>
+            <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 32 }}>
+              Click the link in the email to verify your account and complete the signup process.
+            </p>
+            <button
+              onClick={async () => {
+                setError(null)
+                const res = await fetch('/api/auth/resend-verification', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ email })
+                })
+                if (res.ok) {
+                  alert('Verification email resent! Check your inbox.')
+                } else {
+                  const data = await res.json()
+                  setError(data.error || 'Failed to resend email')
+                }
+              }}
+              style={{
+                padding: '10px 24px',
+                background: '#f3f4f6',
+                color: '#111827',
+                border: 'none',
+                borderRadius: 8,
+                cursor: 'pointer',
+                fontWeight: 600,
+                fontSize: 14
+              }}
+            >
+              Resend verification email
+            </button>
+            {error && <div style={{ color: '#ef4444', fontSize: 14, marginTop: 16 }}>{error}</div>}
+          </div>
+          <p style={{ marginTop: 24, textAlign: 'center', fontSize: 14, color: '#6b7280' }}>
+            Already verified? <a href="/auth/signin" style={{ color: '#6366f1', fontWeight: 600 }}>Sign in</a>
+          </p>
+        </main>
+      </>
+    )
   }
 
   return (

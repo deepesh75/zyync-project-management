@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '../../../lib/prisma'
 import { hash } from 'bcryptjs'
+import { generateVerificationToken, sendVerificationEmail } from '../../../lib/email-verification'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end()
@@ -14,6 +15,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (exists) return res.status(409).json({ error: 'User exists' })
 
   const passwordHash = await hash(password, 10)
+
+  // Generate email verification token
+  const verificationToken = await generateVerificationToken()
+  const verificationExpiry = new Date()
+  verificationExpiry.setHours(verificationExpiry.getHours() + 24) // 24 hour expiry
 
   // Check if there's an invitation token
   let organizationId: string | undefined
@@ -49,9 +55,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     data: { 
       email, 
       passwordHash, 
-      name 
+      name,
+      emailVerified: false,
+      emailVerificationToken: verificationToken,
+      emailVerificationExpiry: verificationExpiry
     } 
   })
+
+  // Send verification email
+  try {
+    await sendVerificationEmail(email, verificationToken, name)
+  } catch (error) {
+    console.error('Failed to send verification email:', error)
+    // Don't fail signup if email fails, user can request resend
+  }
 
   // If invitation, add user to organization and mark invitation as accepted
   if (invitationToken && organizationId) {
@@ -97,8 +114,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   return res.status(201).json({ 
-    id: user.id, 
-    email: user.email, 
-    name: user.name 
+    id: user.id,
+    message: 'Account created! Please check your email to verify your account.'
   })
 }

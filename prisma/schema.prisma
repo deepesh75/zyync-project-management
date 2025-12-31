@@ -74,6 +74,9 @@ model User {
   /// hashed password for Credentials auth
   passwordHash String?
   name      String?
+  emailVerified Boolean  @default(false)
+  emailVerificationToken String? @unique
+  emailVerificationExpiry DateTime?
   createdAt DateTime @default(now())
   projects  Project[]
   assignedTasks Task[] @relation("UserAssignedTasks")

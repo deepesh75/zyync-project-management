@@ -7,14 +7,45 @@ export default function SignInPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [showResendVerification, setShowResendVerification] = useState(false)
   const router = useRouter()
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    setShowResendVerification(false)
+    
     const res = await signIn('credentials', { redirect: false, email, password })
-    if (res?.error) setError(res.error)
-    else router.push('/')
+    
+    if (res?.error) {
+      setError(res.error)
+      // Check if error is about email verification
+      if (res.error.includes('verify your email')) {
+        setShowResendVerification(true)
+      }
+    } else {
+      router.push('/')
+    }
+  }
+
+  async function resendVerification() {
+    try {
+      const res = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      })
+      
+      const data = await res.json()
+      
+      if (res.ok) {
+        alert('Verification email sent! Please check your inbox.')
+      } else {
+        alert(data.error || 'Failed to send verification email')
+      }
+    } catch (error) {
+      alert('An error occurred. Please try again.')
+    }
   }
 
   return (
@@ -42,7 +73,31 @@ export default function SignInPage() {
           >
             Sign in
           </button>
-          {error && <div style={{ color: '#ef4444', fontSize: 14 }}>{error}</div>}
+          {error && (
+            <div>
+              <div style={{ color: '#ef4444', fontSize: 14 }}>{error}</div>
+              {showResendVerification && (
+                <button
+                  type="button"
+                  onClick={resendVerification}
+                  style={{
+                    marginTop: 12,
+                    padding: '8px 16px',
+                    background: '#f3f4f6',
+                    color: '#111827',
+                    border: 'none',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    width: '100%'
+                  }}
+                >
+                  Resend verification email
+                </button>
+              )}
+            </div>
+          )}
         </form>
         <p style={{ marginTop: 24, textAlign: 'center', fontSize: 14 }}>
           No account? <a href="/auth/signup" style={{ color: '#6366f1' }}>Sign up</a>
