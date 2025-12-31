@@ -263,16 +263,21 @@ export default function AdminDashboard() {
                             <button
                               onClick={() => toggleOrgDetails(org.id)}
                               style={{
-                                padding: '6px 12px',
-                                background: '#f3f4f6',
+                                padding: '8px 16px',
+                                background: expandedOrg === org.id ? '#4f46e5' : '#4f46e5',
+                                color: 'white',
                                 border: 'none',
-                                borderRadius: 6,
-                                fontSize: 12,
+                                borderRadius: 8,
+                                fontSize: 13,
                                 cursor: 'pointer',
-                                fontWeight: 500
+                                fontWeight: 600,
+                                transition: 'all 0.2s',
+                                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
                               }}
+                              onMouseEnter={(e) => e.currentTarget.style.background = '#4338ca'}
+                              onMouseLeave={(e) => e.currentTarget.style.background = '#4f46e5'}
                             >
-                              {expandedOrg === org.id ? 'Hide' : 'View'} Users
+                              {expandedOrg === org.id ? '▲ Hide' : '▼ View'} Users
                             </button>
                           </td>
                         </tr>
