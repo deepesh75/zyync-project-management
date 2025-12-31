@@ -355,7 +355,7 @@ export default function AdminDashboard() {
                                           <button
                                             onClick={() => setDeleteModal({ 
                                               type: 'user', 
-                                              id: member.id, 
+                                              id: member.userId, 
                                               name: member.name || 'Unknown User',
                                               email: member.email 
                                             })}

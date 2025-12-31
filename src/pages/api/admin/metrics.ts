@@ -106,6 +106,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             paypalSubscriptionId: o.paypalSubscriptionId,
             members: o.members.map(m => ({
               id: m.id,
+              userId: m.user.id,
               name: m.user.name,
               email: m.user.email,
               role: m.role,
