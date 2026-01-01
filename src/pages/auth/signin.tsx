@@ -7,6 +7,7 @@ export default function SignInPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
   const [showResendVerification, setShowResendVerification] = useState(false)
   const router = useRouter()
 
@@ -14,8 +15,11 @@ export default function SignInPage() {
     e.preventDefault()
     setError(null)
     setShowResendVerification(false)
+    setLoading(true)
     
     const res = await signIn('credentials', { redirect: false, email, password })
+    
+    setLoading(false)
     
     if (res?.error) {
       setError(res.error)
@@ -68,10 +72,19 @@ export default function SignInPage() {
             style={{ padding: 10, borderRadius: 6, border: '1px solid #d1d5db' }}
           />
           <button 
-            type="submit" 
-            style={{ padding: 10, background: '#6366f1', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}
+            type="submit"
+            disabled={loading}
+            style={{ 
+              padding: 10, 
+              background: loading ? '#9ca3af' : '#6366f1', 
+              color: 'white', 
+              border: 'none', 
+              borderRadius: 6, 
+              cursor: loading ? 'not-allowed' : 'pointer', 
+              fontWeight: 600 
+            }}
           >
-            Sign in
+            {loading ? 'Signing in...' : 'Sign in'}
           </button>
           {error && (
             <div>

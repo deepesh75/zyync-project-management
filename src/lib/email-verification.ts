@@ -24,41 +24,62 @@ export async function sendVerificationEmail(email: string, token: string, name?:
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Verify your email</title>
           </head>
-          <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-              <h1 style="color: white; margin: 0; font-size: 28px;">Verify Your Email</h1>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #1f2937; max-width: 600px; margin: 0 auto; padding: 0; background: #f3f4f6;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+              <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); padding: 15px 25px; border-radius: 50px; display: inline-block; margin-bottom: 20px;">
+                <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;">Zyync</h1>
+              </div>
+              <h2 style="color: white; margin: 10px 0 0 0; font-size: 22px; font-weight: 600;">Welcome aboard! 🎉</h2>
             </div>
             
-            <div style="background: #f9fafb; padding: 40px 30px; border-radius: 0 0 10px 10px;">
-              <p style="font-size: 16px; margin-bottom: 20px;">Hi ${name || 'there'},</p>
+            <div style="background: white; padding: 40px 30px;">
+              <p style="font-size: 16px; margin-bottom: 10px; color: #374151;">Hi <strong>${name || 'there'}</strong>,</p>
               
-              <p style="font-size: 16px; margin-bottom: 30px;">
-                Thank you for signing up! Please verify your email address by clicking the button below:
+              <p style="font-size: 16px; margin-bottom: 30px; color: #4b5563;">
+                Thanks for signing up for Zyync! We're excited to help you and your team manage projects more efficiently.
+              </p>
+              
+              <p style="font-size: 16px; margin-bottom: 30px; color: #4b5563;">
+                To get started, please verify your email address by clicking the button below:
               </p>
               
               <div style="text-align: center; margin: 40px 0;">
                 <a href="${verificationUrl}" 
-                   style="background: #4f46e5; color: white; padding: 14px 40px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.3);">
-                  Verify Email Address
+                   style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 48px; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 16px; display: inline-block; box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4); letter-spacing: 0.5px; text-transform: uppercase;">
+                  Verify Email →
                 </a>
               </div>
               
-              <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">
-                Or copy and paste this link into your browser:
-              </p>
-              <p style="font-size: 13px; color: #4f46e5; word-break: break-all; background: white; padding: 12px; border-radius: 6px; border: 1px solid #e5e7eb;">
-                ${verificationUrl}
-              </p>
+              <div style="background: #f9fafb; border-left: 4px solid #6366f1; padding: 20px; margin: 30px 0; border-radius: 6px;">
+                <p style="font-size: 14px; color: #6b7280; margin: 0 0 10px 0; font-weight: 600;">
+                  Or copy and paste this link:
+                </p>
+                <p style="font-size: 13px; color: #4f46e5; word-break: break-all; margin: 0; font-family: monospace;">
+                  ${verificationUrl}
+                </p>
+              </div>
+              
+              <div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #f3f4f6;">
+                <p style="font-size: 14px; color: #6b7280; margin: 0 0 15px 0;">
+                  <strong>What's next?</strong>
+                </p>
+                <ul style="font-size: 14px; color: #4b5563; padding-left: 20px; margin: 0;">
+                  <li style="margin-bottom: 8px;">Create your first project</li>
+                  <li style="margin-bottom: 8px;">Invite your team members</li>
+                  <li style="margin-bottom: 8px;">Explore Kanban, Calendar, and Timeline views</li>
+                </ul>
+              </div>
               
               <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-                <p style="font-size: 13px; color: #9ca3af; margin: 0;">
-                  This verification link will expire in 24 hours. If you didn't create an account, you can safely ignore this email.
+                <p style="font-size: 12px; color: #9ca3af; margin: 0;">
+                  ⚠️ This verification link expires in 24 hours. If you didn't create an account, you can safely ignore this email.
                 </p>
               </div>
             </div>
             
-            <div style="text-align: center; margin-top: 30px; color: #9ca3af; font-size: 12px;">
-              <p>© ${new Date().getFullYear()} Zyync. All rights reserved.</p>
+            <div style="text-align: center; padding: 30px 20px; background: #f9fafb;">
+              <p style="color: #6b7280; font-size: 13px; margin: 0 0 5px 0;">Need help? Email us at support@zyync.com</p>
+              <p style="color: #9ca3af; font-size: 12px; margin: 0;">© ${new Date().getFullYear()} Zyync. All rights reserved.</p>
             </div>
           </body>
         </html>

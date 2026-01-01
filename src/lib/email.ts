@@ -27,40 +27,63 @@ export async function sendInvitationEmail({
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
           </head>
-          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-              <h1 style="color: white; margin: 0; font-size: 28px;">Zyync</h1>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #1f2937; max-width: 600px; margin: 0 auto; padding: 0; background: #f3f4f6;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+              <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); padding: 15px 25px; border-radius: 50px; display: inline-block; margin-bottom: 20px;">
+                <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;">Zyync</h1>
+              </div>
+              <h2 style="color: white; margin: 10px 0 0 0; font-size: 22px; font-weight: 600;">You've been invited! 🎊</h2>
             </div>
             
-            <div style="background: #ffffff; padding: 40px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
-              <h2 style="color: #1f2937; margin-top: 0;">You've been invited!</h2>
+            <div style="background: white; padding: 40px 30px;">
+              <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-left: 4px solid #0ea5e9; padding: 20px; margin-bottom: 30px; border-radius: 8px;">
+                <p style="color: #0c4a6e; font-size: 16px; margin: 0; font-weight: 600;">
+                  <strong style="color: #0369a1;">${inviterName}</strong> has invited you to join
+                </p>
+                <p style="color: #075985; font-size: 20px; margin: 8px 0 0 0; font-weight: 700;">
+                  ${organizationName}
+                </p>
+              </div>
               
-              <p style="color: #4b5563; font-size: 16px;">
-                <strong>${inviterName}</strong> has invited you to join <strong>${organizationName}</strong> on Zyync.
+              <p style="color: #4b5563; font-size: 16px; margin-bottom: 20px;">
+                Join your team on Zyync to collaborate on projects, track tasks, and get work done more efficiently.
               </p>
               
-              <p style="color: #4b5563; font-size: 16px;">
-                Zyync is a modern project management tool that helps teams collaborate and get work done efficiently.
-              </p>
+              <div style="background: #f9fafb; border-radius: 12px; padding: 25px; margin: 30px 0;">
+                <p style="font-size: 14px; color: #6b7280; margin: 0 0 15px 0; font-weight: 600;">What you'll get:</p>
+                <ul style="font-size: 14px; color: #4b5563; padding-left: 20px; margin: 0;">
+                  <li style="margin-bottom: 8px;">🎯 Kanban boards, Calendar & Timeline views</li>
+                  <li style="margin-bottom: 8px;">⚡ Real-time collaboration with your team</li>
+                  <li style="margin-bottom: 8px;">📊 Task tracking and project management</li>
+                  <li style="margin-bottom: 8px;">🔔 Notifications and @mentions</li>
+                </ul>
+              </div>
               
-              <div style="margin: 30px 0; text-align: center;">
-                <a href="${inviteLink}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">
-                  Accept Invitation
+              <div style="text-align: center; margin: 40px 0;">
+                <a href="${inviteLink}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 48px; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 16px; box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4); letter-spacing: 0.5px; text-transform: uppercase;">
+                  Accept Invitation →
                 </a>
               </div>
               
-              <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
-                Or copy and paste this link into your browser:
-              </p>
-              <p style="color: #6366f1; font-size: 14px; word-break: break-all;">
-                ${inviteLink}
-              </p>
+              <div style="background: #f9fafb; border-left: 4px solid #6366f1; padding: 20px; margin: 30px 0; border-radius: 6px;">
+                <p style="font-size: 14px; color: #6b7280; margin: 0 0 10px 0; font-weight: 600;">
+                  Or copy and paste this link:
+                </p>
+                <p style="font-size: 13px; color: #4f46e5; word-break: break-all; margin: 0; font-family: monospace;">
+                  ${inviteLink}
+                </p>
+              </div>
               
-              <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-              
-              <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-                This invitation was sent to ${to}. If you didn't expect this invitation, you can safely ignore this email.
-              </p>
+              <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+                  This invitation was sent to ${to}. If you didn't expect this invitation, you can safely ignore this email.
+                </p>
+              </div>
+            </div>
+            
+            <div style="text-align: center; padding: 30px 20px; background: #f9fafb;">
+              <p style="color: #6b7280; font-size: 13px; margin: 0 0 5px 0;">Need help? Email us at support@zyync.com</p>
+              <p style="color: #9ca3af; font-size: 12px; margin: 0;">© ${new Date().getFullYear()} Zyync. All rights reserved.</p>
             </div>
           </body>
         </html>
