@@ -862,7 +862,7 @@ export default function ProjectPage() {
   return (
     <>
       <Navbar />
-      <main style={{ 
+      <main className="project-main" style={{ 
         padding: '16px 20px', 
         height: 'calc(100vh - 80px)', 
         display: 'flex', 
@@ -952,7 +952,7 @@ export default function ProjectPage() {
             </div>
 
             {/* Detailed Filters */}
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+            <div className="filters-row" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
               {/* Assignee Filter */}
               <select
                 value={assigneeFilter || ''}
@@ -1055,7 +1055,7 @@ export default function ProjectPage() {
         )}
 
         {/* Toolbar */}
-        <div style={{ 
+        <div className="toolbar" style={{ 
           marginBottom: 16, 
           flexShrink: 0,
           display: 'flex',

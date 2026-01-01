@@ -367,3 +367,40 @@ button:focus-visible {
 	color: var(--text);
 	font-size: 12px;
 }
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .project-main {
+    padding: 12px !important;
+    height: calc(100vh - 60px) !important;
+  }
+  
+  .kanban {
+    gap: 12px !important;
+    padding-bottom: 12px !important;
+  }
+  
+  .kanban section {
+    flex: 0 0 85vw !important;
+    min-width: 85vw !important;
+  }
+  
+  .toolbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  
+  .toolbar > * {
+    width: 100% !important;
+    max-width: none !important;
+  }
+  
+  .filters-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  
+  .filters-row > * {
+    width: 100% !important;
+  }
+}

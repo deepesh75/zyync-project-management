@@ -123,9 +123,37 @@ export default function Pricing() {
   return (
     <>
       <Navbar />
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .pricing-hero {
+            padding: 40px 20px !important;
+          }
+          .pricing-hero h1 {
+            font-size: 28px !important;
+          }
+          .pricing-hero p {
+            font-size: 16px !important;
+          }
+          .pricing-cards {
+            grid-template-columns: 1fr !important;
+            gap: 24px !important;
+            padding: 40px 20px !important;
+          }
+          .pricing-card {
+            transform: none !important;
+            padding: 24px !important;
+          }
+          .pricing-card:hover {
+            transform: none !important;
+          }
+          .price {
+            font-size: 36px !important;
+          }
+        }
+      `}</style>
       <main style={{ fontFamily: 'inherit', minHeight: 'calc(100vh - 60px)' }}>
         {/* Hero Section */}
-        <section style={{ 
+        <section className="pricing-hero" style={{ 
           padding: '80px 24px', 
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           color: 'white',
@@ -136,7 +164,7 @@ export default function Pricing() {
         </section>
 
         {/* Pricing Cards */}
-        <section style={{ 
+        <section className="pricing-cards" style={{ 
           padding: '80px 24px', 
           maxWidth: 1200, 
           margin: '0 auto'
@@ -152,6 +180,7 @@ export default function Pricing() {
             {plans.filter(plan => plan.id !== 'pro_lifetime').map((plan) => (
               <div
                 key={plan.name}
+                className="pricing-card"
                 style={{
                   background: 'white',
                   border: plan.highlight ? '3px solid #6366f1' : '1px solid #e5e7eb',
@@ -202,7 +231,7 @@ export default function Pricing() {
                 </p>
 
                 <div style={{ marginBottom: 32 }}>
-                  <div style={{ fontSize: 48, fontWeight: 800, color: '#111827', margin: 0 }}>
+                  <div className="price" style={{ fontSize: 48, fontWeight: 800, color: '#111827', margin: 0 }}>
                     {plan.price}
                   </div>
                   <div style={{ color: '#6b7280', fontSize: 14, marginTop: 4 }}>
