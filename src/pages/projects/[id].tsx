@@ -885,7 +885,7 @@ export default function ProjectPage() {
 
         {/* Filters Dropdown */}
         {showFilters && (
-          <div style={{ 
+          <div className="filters-dropdown" style={{ 
             marginBottom: 16, 
             flexShrink: 0,
             background: 'var(--card-bg)',
@@ -897,7 +897,7 @@ export default function ProjectPage() {
             gap: 12
           }}>
             {/* Quick Filters */}
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div className="filters-row" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button
                 onClick={() => setQuickFilter(quickFilter === 'my-tasks' ? '' : 'my-tasks')}
                 style={{
