@@ -11,6 +11,7 @@ export default function Navbar() {
   const router = useRouter()
   const { theme, toggleTheme } = useTheme()
   const [showNotifications, setShowNotifications] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const notifRef = useRef<HTMLDivElement>(null)
 
   // Use SWR hook for notifications with auto-polling - only when authenticated
@@ -85,7 +86,35 @@ export default function Navbar() {
   }
 
   return (
-    <nav style={{
+    <>
+    <style jsx>{`
+      @media (max-width: 768px) {
+        .navbar {
+          padding: 12px 16px !important;
+        }
+        .nav-links {
+          display: none !important;
+        }
+        .mobile-menu-btn {
+          display: flex !important;
+        }
+        .desktop-user-info {
+          display: none !important;
+        }
+        .mobile-user-info {
+          display: flex !important;
+        }
+      }
+      @media (min-width: 769px) {
+        .mobile-menu-btn {
+          display: none !important;
+        }
+        .mobile-user-info {
+          display: none !important;
+        }
+      }
+    `}</style>
+    <nav className="navbar" style={{
       background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
       padding: '18px 40px',
@@ -108,7 +137,7 @@ export default function Navbar() {
         }}>
           Zyync
         </Link>
-        <div style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
+        <div className="nav-links" style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
           {session && (
             <>
               <Link href="/" prefetch={true} style={{ 
@@ -156,8 +185,27 @@ export default function Navbar() {
         </div>
       </div>
       
+      {/* Mobile Menu Button */}
+      <button 
+        className="mobile-menu-btn"
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        style={{
+          display: 'none',
+          background: 'rgba(255, 255, 255, 0.2)',
+          border: 'none',
+          borderRadius: 8,
+          padding: '8px 12px',
+          cursor: 'pointer',
+          color: 'white'
+        }}
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+      </button>
+
       {session && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+        <div className="desktop-user-info" style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <span style={{ 
             fontSize: 14, 
             color: 'white', 
@@ -453,6 +501,55 @@ export default function Navbar() {
           </button>
         </div>
       )}
+
+      {/* Mobile User Info - Compact */}
+      {session && (
+        <div className="mobile-user-info" style={{ display: 'none', alignItems: 'center', gap: 12 }}>
+          {/* Notifications Bell */}
+          <div ref={notifRef} style={{ position: 'relative' }}>
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              style={{
+                padding: '8px',
+                background: 'rgba(255, 255, 255, 0.25)',
+                border: 'none',
+                borderRadius: 8,
+                cursor: 'pointer',
+                color: 'white',
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+              </svg>
+              {unreadCount > 0 && (
+                <span style={{
+                  position: 'absolute',
+                  top: -4,
+                  right: -4,
+                  background: '#ef4444',
+                  color: 'white',
+                  borderRadius: '50%',
+                  width: 18,
+                  height: 18,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 10,
+                  fontWeight: 700
+                }}>
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
       {!session && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <Link href="/auth/signin" style={{
@@ -501,5 +598,117 @@ export default function Navbar() {
         </div>
       )}
     </nav>
+
+    {/* Mobile Menu Dropdown */}
+    {session && mobileMenuOpen && (
+      <div style={{
+        position: 'fixed',
+        top: 60,
+        left: 0,
+        right: 0,
+        background: 'white',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        zIndex: 99,
+        padding: '20px',
+        animation: 'slideDown 0.3s ease'
+      }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <Link 
+            href="/" 
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ 
+              color: '#111827', 
+              textDecoration: 'none', 
+              fontSize: 16, 
+              fontWeight: 600,
+              padding: '12px 16px',
+              borderRadius: 8,
+              background: '#f3f4f6',
+              display: 'block'
+            }}>
+            📊 Projects
+          </Link>
+          <Link 
+            href="/pricing" 
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ 
+              color: '#111827', 
+              textDecoration: 'none', 
+              fontSize: 16, 
+              fontWeight: 600,
+              padding: '12px 16px',
+              borderRadius: 8,
+              background: '#f3f4f6',
+              display: 'block'
+            }}>
+            💰 Pricing
+          </Link>
+          <div style={{
+            padding: '12px 16px',
+            background: '#f9fafb',
+            borderRadius: 8,
+            fontSize: 14,
+            color: '#6b7280'
+          }}>
+            {session.user?.email}
+          </div>
+          {planDisplay && (
+            <div style={{
+              padding: '10px 16px',
+              background: planDisplay.bgColor,
+              borderRadius: 8,
+              fontSize: 14,
+              fontWeight: 600,
+              color: planDisplay.color,
+              textAlign: 'center'
+            }}>
+              {planDisplay.name} Plan
+            </div>
+          )}
+          <button 
+            onClick={() => {
+              toggleTheme()
+              setMobileMenuOpen(false)
+            }}
+            style={{
+              padding: '12px 16px',
+              background: '#f3f4f6',
+              color: '#111827',
+              border: 'none',
+              borderRadius: 8,
+              fontSize: 16,
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8
+            }}>
+            {theme === 'dark' ? '☀️' : '🌙'} {theme === 'dark' ? 'Light' : 'Dark'} Mode
+          </button>
+          <button 
+            onClick={() => {
+              signOut({ callbackUrl: '/' })
+              setMobileMenuOpen(false)
+            }}
+            style={{
+              padding: '12px 16px',
+              background: '#ef4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: 8,
+              fontSize: 16,
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              justifyContent: 'center'
+            }}>
+            🚪 Sign out
+          </button>
+        </div>
+      </div>
+    )}
+    </>
   )
 }

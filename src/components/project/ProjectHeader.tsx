@@ -49,19 +49,39 @@ export default function ProjectHeader({
   const canUseTimeline = useFeatureAccess('timeline_view')
 
   return (
-    <header style={{ 
-      marginBottom: 16, 
-      display: 'flex', 
-      justifyContent: 'space-between', 
-      alignItems: 'center', 
-      flexShrink: 0, 
-      gap: 16, 
-      flexWrap: 'wrap',
-      padding: '12px 16px',
-      borderRadius: 12,
-      background: headerColors.background,
-      transition: 'all 0.3s ease'
-    }}>
+    <>
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .project-header {
+            padding: 12px !important;
+          }
+          .project-header h1 {
+            font-size: 18px !important;
+          }
+          .header-actions {
+            width: 100%;
+            justify-content: flex-start !important;
+          }
+          .view-buttons {
+            order: -1;
+            width: 100%;
+            margin-bottom: 8px;
+          }
+        }
+      `}</style>
+      <header className="project-header" style={{ 
+        marginBottom: 16, 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        flexShrink: 0, 
+        gap: 16, 
+        flexWrap: 'wrap',
+        padding: '12px 16px',
+        borderRadius: 12,
+        background: headerColors.background,
+        transition: 'all 0.3s ease'
+      }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <a href="/" style={{ color: headerColors.text, textDecoration: 'none', fontSize: 14, display: 'flex', alignItems: 'center', gap: 4, transition: 'opacity 0.2s', opacity: 0.8 }}
           onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
@@ -84,7 +104,7 @@ export default function ProjectHeader({
         </h1>
       </div>
       
-      <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+      <div className="header-actions" style={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
         {/* Tools Dropdown Menu */}
         <div style={{ position: 'relative' }}>
           <button
@@ -312,7 +332,7 @@ export default function ProjectHeader({
         )}
 
         {/* View Switcher */}
-        <div style={{ 
+        <div className="view-buttons" style={{ 
           display: 'flex', 
           gap: 4, 
           padding: '4px 8px',
@@ -439,5 +459,6 @@ export default function ProjectHeader({
         </button>
       </div>
     </header>
+    </>
   )
 }

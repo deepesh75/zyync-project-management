@@ -175,12 +175,45 @@ export default function OrganizationSettings() {
   return (
     <>
       <Navbar />
-      <main style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .settings-main {
+            padding: 16px !important;
+          }
+          .settings-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 8px !important;
+          }
+          .settings-actions {
+            flex-direction: column !important;
+            width: 100%;
+          }
+          .settings-actions a {
+            width: 100% !important;
+            text-align: center;
+          }
+          .member-item {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 12px !important;
+          }
+          .invite-form {
+            flex-direction: column !important;
+          }
+          .invite-form input,
+          .invite-form select,
+          .invite-form button {
+            width: 100% !important;
+          }
+        }
+      `}</style>
+      <main className="settings-main" style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
         <div style={{ marginBottom: 16 }}>
           <a href="/" style={{ color: '#6366f1', textDecoration: 'none', fontSize: 14 }}>← Back to Projects</a>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+        <div className="settings-header" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
           <h1 style={{ margin: 0 }}>{organization.name}</h1>
           <span style={{
             padding: '6px 14px',
@@ -197,7 +230,7 @@ export default function OrganizationSettings() {
         <p style={{ color: '#6b7280' }}>Manage your organization settings and team members</p>
         
         {isAdmin && (
-          <div style={{ marginTop: 16, marginBottom: 24, display: 'flex', gap: 12 }}>
+          <div className="settings-actions" style={{ marginTop: 16, marginBottom: 24, display: 'flex', gap: 12 }}>
             <a href={`/organizations/${organization.id}/billing`} style={{ 
               padding: '12px 20px', 
               background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', 
@@ -244,7 +277,7 @@ export default function OrganizationSettings() {
               const isAdmin = userMembership?.role === 'admin'
               
               return (
-                <div key={member.id} style={{ padding: 16, borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
+                <div key={member.id} className="member-item" style={{ padding: 16, borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600 }}>
                       {member.user.name || member.user.email}
@@ -457,7 +490,7 @@ export default function OrganizationSettings() {
             <h2 style={{ fontSize: 20, marginBottom: 16 }}>Invite Team Member</h2>
             
             <form onSubmit={handleInvite} style={{ background: 'white', padding: 24, borderRadius: 8, border: '1px solid #e5e7eb' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 150px auto', gap: 12, alignItems: 'end' }}>
+              <div className="invite-form" style={{ display: 'grid', gridTemplateColumns: '1fr 150px auto', gap: 12, alignItems: 'end' }}>
                 <div>
                   <label style={{ display: 'block', marginBottom: 6, fontWeight: 600 }}>Email</label>
                   <input

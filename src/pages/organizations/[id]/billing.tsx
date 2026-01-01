@@ -152,13 +152,36 @@ export default function OrganizationBilling() {
   return (
     <>
       <Navbar />
-      <main style={{ padding: 24, maxWidth: 900, margin: '0 auto' }}>
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .billing-main {
+            padding: 16px !important;
+          }
+          .plan-overview,
+          .seat-management,
+          .payment-section {
+            padding: 16px !important;
+          }
+          .billing-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .seat-actions {
+            flex-direction: column !important;
+            align-items: stretch !important;
+          }
+          .seat-actions input,
+          .seat-actions button {
+            width: 100% !important;
+          }
+        }
+      `}</style>
+      <main className="billing-main" style={{ padding: 24, maxWidth: 900, margin: '0 auto' }}>
         <a href={`/organizations/${organization.id}/settings`} style={{ color: '#6366f1', textDecoration: 'none', fontSize: 14 }}>← Back to Settings</a>
         <h1 style={{ marginTop: 16 }}>{organization.name} — Billing & Seats</h1>
         <p style={{ color: '#6b7280' }}>Manage your subscription, team seats, and billing settings.</p>
 
         {/* Current Plan Overview */}
-        <section style={{ marginTop: 24, background: 'white', padding: 24, borderRadius: 12, border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+        <section className="plan-overview" style={{ marginTop: 24, background: 'white', padding: 24, borderRadius: 12, border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
           <h2 style={{ marginTop: 0, fontSize: 18, display: 'flex', alignItems: 'center', gap: 8 }}>
             Current Plan
             <span style={{ 
@@ -173,7 +196,7 @@ export default function OrganizationBilling() {
             </span>
           </h2>
           
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20, marginTop: 16 }}>
+          <div className="billing-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20, marginTop: 16 }}>
             <div>
               <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 4 }}>Status</div>
               <div style={{ 

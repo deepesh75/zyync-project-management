@@ -192,7 +192,33 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      <main style={{ 
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .home-main {
+            padding: 20px 16px !important;
+          }
+          .home-title {
+            font-size: 20px !important;
+          }
+          .org-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .project-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .create-form {
+            flex-direction: column !important;
+            gap: 12px !important;
+          }
+          .create-form input,
+          .create-form select,
+          .create-form button {
+            width: 100% !important;
+            max-width: none !important;
+          }
+        }
+      `}</style>
+      <main className="home-main" style={{ 
         padding: '32px 24px', 
         fontFamily: 'inherit', 
         maxWidth: 1400, 
@@ -203,7 +229,7 @@ export default function Home() {
         {/* Organizations Section */}
         {organizations && organizations.length > 0 && (
           <section style={{ marginBottom: 40 }}>
-            <h2 style={{ 
+            <h2 className="home-title" style={{ 
               margin: 0, 
               marginBottom: 20, 
               fontSize: 22, 
@@ -211,7 +237,7 @@ export default function Home() {
               color: 'var(--text)',
               letterSpacing: '-0.02em'
             }}>Your Organizations</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
+            <div className="org-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
               {organizations.map((org: any) => (
                 <div key={org.id} style={{ 
                   background: 'var(--surface)', 
@@ -290,7 +316,7 @@ export default function Home() {
         )}
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <h1 style={{ 
+          <h1 className="home-title" style={{ 
             margin: 0, 
             fontSize: 24, 
             fontWeight: 700, 
@@ -321,7 +347,7 @@ export default function Home() {
           </label>
         </div>
         
-        <div style={{ 
+        <div className="create-form" style={{ 
           marginBottom: 32, 
           display: 'flex', 
           gap: 12, 
@@ -393,7 +419,7 @@ export default function Home() {
             ✨ Create Project
           </button>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+        <div className="project-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
           {projects && projects.map((p: any) => {
             // Get unique users from project tasks
             const projectUsers = new Map()
