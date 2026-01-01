@@ -216,6 +216,31 @@ export default function AdminDashboard() {
               />
             </div>
 
+            {/* Subscription Breakdown */}
+            {metrics.subscriptions && (
+              <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e5e7eb', padding: 24, marginBottom: 32 }}>
+                <h2 style={{ margin: '0 0 20px 0', fontSize: 18, fontWeight: 700 }}>Subscription Breakdown</h2>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+                  <div style={{ padding: 16, background: '#f0f9ff', borderRadius: 8 }}>
+                    <div style={{ fontSize: 12, color: '#0369a1', fontWeight: 600, marginBottom: 4 }}>Monthly Subscriptions</div>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: '#0c4a6e' }}>{metrics.subscriptions.monthly}</div>
+                  </div>
+                  <div style={{ padding: 16, background: '#f0fdf4', borderRadius: 8 }}>
+                    <div style={{ fontSize: 12, color: '#15803d', fontWeight: 600, marginBottom: 4 }}>Annual Subscriptions</div>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: '#166534' }}>{metrics.subscriptions.annual}</div>
+                  </div>
+                  <div style={{ padding: 16, background: '#fef3c7', borderRadius: 8 }}>
+                    <div style={{ fontSize: 12, color: '#b45309', fontWeight: 600, marginBottom: 4 }}>Lifetime Purchases</div>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: '#92400e' }}>{metrics.subscriptions.lifetime}</div>
+                  </div>
+                  <div style={{ padding: 16, background: '#ede9fe', borderRadius: 8 }}>
+                    <div style={{ fontSize: 12, color: '#6b21a8', fontWeight: 600, marginBottom: 4 }}>Total Paid Plans</div>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: '#581c87' }}>{metrics.subscriptions.total}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Seat Utilization Table */}
             <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
               <div style={{ padding: 20, borderBottom: '1px solid #e5e7eb' }}>

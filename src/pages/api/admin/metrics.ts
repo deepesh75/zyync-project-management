@@ -29,6 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             name: true,
             slug: true,
             planId: true,
+            paypalPlanId: true,
             seatsAllowed: true,
             seatsUsed: true,
             billingStatus: true,
@@ -86,6 +87,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             free: orgs.filter(o => o.planId === 'free' || !o.planId).length,
             pro: orgs.filter(o => o.planId?.includes('pro') || o.planId?.includes('P-')).length,
             enterprise: orgs.filter(o => o.planId?.includes('enterprise')).length
+          },
+          subscriptions: {
+            monthly: orgs.filter(o => o.paypalPlanId === 'P-3N8118553R364412BNFAARJA' || o.planId === 'pro_monthly').length,
+            annual: orgs.filter(o => o.paypalPlanId === 'P-1PK53547FK456084XNFKSFJY' || o.planId === 'pro_annual').length,
+            lifetime: orgs.filter(o => o.planId === 'pro_lifetime').length,
+            total: orgs.filter(o => o.paypalSubscriptionId || o.planId?.includes('pro')).length
           },
           byBillingStatus: {
             active: orgs.filter(o => o.billingStatus === 'active').length,

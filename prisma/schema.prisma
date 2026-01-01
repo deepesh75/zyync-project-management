@@ -25,6 +25,7 @@ model Organization {
   
   // Billing status tracking
   billingStatus         String?  @default("active") // "active", "past_due", "canceled", "trialing"
+  billingInterval       String?                      // "monthly", "annual", "lifetime"
   billingCycleAnchor    DateTime?                    // When the current billing cycle started
   trialEndsAt           DateTime?
   
