@@ -143,25 +143,42 @@ export default function LifetimePricing() {
             </div>
 
             {/* Purchase Button */}
-            <button
-              onClick={handlePurchase}
-              disabled={loading}
-              style={{
-                width: '100%',
-                padding: '16px 32px',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: 12,
-                fontSize: 18,
-                fontWeight: 700,
-                cursor: loading ? 'not-allowed' : 'pointer',
-                boxShadow: '0 8px 24px rgba(102, 126, 234, 0.3)',
-                transition: 'all 0.3s ease'
-              }}
-            >
-              {loading ? 'Processing...' : 'Get Lifetime Access - $199'}
-            </button>
+            {!session ? (
+              <button
+                onClick={() => router.push('/auth/signup?plan=pro_lifetime')}
+                style={{
+                  width: '100%',
+                  padding: '16px 32px',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 12,
+                  fontSize: 18,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  boxShadow: '0 8px 24px rgba(102, 126, 234, 0.3)',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Create an account to purchase
+              </button>
+            ) : (
+              <div style={{ textAlign: 'center' }}>
+                <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+                  <input type="hidden" name="cmd" value="_s-xclick" />
+                  <input type="hidden" name="hosted_button_id" value="ULGAXDGFUDEG2" />
+                  <input type="hidden" name="currency_code" value="USD" />
+                  <input
+                    type="image"
+                    src="https://www.paypalobjects.com/en_US/i/btn/btn_buynowCC_LG.gif"
+                    name="submit"
+                    title="PayPal - The safer, easier way to pay online!"
+                    alt="Buy Now"
+                    style={{ border: 0 }}
+                  />
+                </form>
+              </div>
+            )}
 
             <p style={{ fontSize: 14, color: '#6b7280', textAlign: 'center', marginTop: 16 }}>
               Secure payment via PayPal • Instant access • 30-day money-back guarantee
