@@ -88,6 +88,11 @@ export default function Navbar() {
   return (
     <>
     <style jsx>{`
+      .navbar {
+        max-width: 100vw;
+        overflow-x: hidden;
+        box-sizing: border-box;
+      }
       @media (max-width: 768px) {
         .navbar {
           padding: 12px 16px !important;
@@ -124,7 +129,10 @@ export default function Navbar() {
       position: 'sticky',
       top: 0,
       zIndex: 100,
-      backdropFilter: 'blur(12px)'
+      backdropFilter: 'blur(12px)',
+      width: '100%',
+      maxWidth: '100vw',
+      boxSizing: 'border-box'
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 40 }}>
         <Link href="/" style={{ 
