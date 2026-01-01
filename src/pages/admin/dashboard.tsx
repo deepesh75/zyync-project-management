@@ -137,8 +137,50 @@ export default function AdminDashboard() {
   return (
     <>
       <Navbar />
-      <main style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .admin-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 16px !important;
+          }
+          .admin-header h1 {
+            font-size: 24px !important;
+          }
+          .tab-nav {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+          }
+          .tab-nav button {
+            white-space: nowrap !important;
+            padding: 12px 16px !important;
+            font-size: 13px !important;
+          }
+          .stat-cards {
+            grid-template-columns: 1fr !important;
+          }
+          .subscription-cards {
+            grid-template-columns: 1fr !important;
+          }
+          .table-container {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+          }
+          .table-container table {
+            min-width: 800px !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .admin-main {
+            padding: 16px !important;
+          }
+          .stat-card {
+            padding: 16px !important;
+          }
+        }
+      `}</style>
+      <main className="admin-main" style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>
+        <div className="admin-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
           <div>
             <h1 style={{ margin: 0, fontSize: 28 }}>Admin Dashboard</h1>
             <p style={{ color: '#6b7280', margin: '8px 0 0' }}>Monitor seat usage, billing, and revenue</p>
@@ -161,7 +203,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Tab Navigation */}
-        <div style={{ 
+        <div className="tab-nav" style={{ 
           display: 'flex', 
           gap: 8, 
           borderBottom: '2px solid #e5e7eb',
@@ -192,7 +234,7 @@ export default function AdminDashboard() {
         {activeTab === 'overview' && metrics && (
           <div>
             {/* Summary Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 20, marginBottom: 32 }}>
+            <div className="stat-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 20, marginBottom: 32 }}>
               <StatCard
                 title="Total Organizations"
                 value={metrics.totalOrgs}
@@ -220,7 +262,7 @@ export default function AdminDashboard() {
             {metrics.subscriptions && (
               <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e5e7eb', padding: 24, marginBottom: 32 }}>
                 <h2 style={{ margin: '0 0 20px 0', fontSize: 18, fontWeight: 700 }}>Subscription Breakdown</h2>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+                <div className="subscription-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
                   <div style={{ padding: 16, background: '#f0f9ff', borderRadius: 8 }}>
                     <div style={{ fontSize: 12, color: '#0369a1', fontWeight: 600, marginBottom: 4 }}>Monthly Subscriptions</div>
                     <div style={{ fontSize: 28, fontWeight: 700, color: '#0c4a6e' }}>{metrics.subscriptions.monthly}</div>
@@ -246,7 +288,7 @@ export default function AdminDashboard() {
               <div style={{ padding: 20, borderBottom: '1px solid #e5e7eb' }}>
                 <h2 style={{ margin: 0, fontSize: 18 }}>Organization Seat Utilization</h2>
               </div>
-              <div style={{ overflowX: 'auto' }}>
+              <div className="table-container" style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead style={{ background: '#f9fafb' }}>
                     <tr>

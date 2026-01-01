@@ -105,10 +105,43 @@ export default function ProPricing() {
   return (
     <>
       <Navbar />
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .pricing-header h1 {
+            font-size: 24px !important;
+          }
+          .pricing-header p {
+            font-size: 14px !important;
+          }
+          .plan-config {
+            padding: 20px !important;
+          }
+          .billing-buttons {
+            flex-direction: column !important;
+          }
+          .billing-buttons button {
+            padding: 16px 20px !important;
+            font-size: 14px !important;
+          }
+          .billing-buttons button span {
+            top: -6px !important;
+            right: 4px !important;
+          }
+          .user-controls {
+            justify-content: center !important;
+          }
+          .pricing-summary {
+            font-size: 14px !important;
+          }
+          .pricing-summary .total {
+            font-size: 16px !important;
+          }
+        }
+      `}</style>
       <main style={{ fontFamily: 'inherit', minHeight: 'calc(100vh - 60px)', background: '#f8fafc' }}>
         <div style={{ maxWidth: 800, margin: '0 auto', padding: '40px 24px' }}>
           {/* Header */}
-          <div style={{ textAlign: 'center', marginBottom: 40 }}>
+          <div className="pricing-header" style={{ textAlign: 'center', marginBottom: 40 }}>
             <Link href="/pricing" style={{ color: '#6366f1', textDecoration: 'none', fontSize: 14 }}>
               ← Back to Pricing
             </Link>
@@ -121,7 +154,7 @@ export default function ProPricing() {
           </div>
 
           {/* Plan Configuration */}
-          <div style={{ background: 'white', borderRadius: 16, padding: 32, boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)', marginBottom: 24 }}>
+          <div className="plan-config" style={{ background: 'white', borderRadius: 16, padding: 32, boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)', marginBottom: 24 }}>
             <h2 style={{ fontSize: 24, fontWeight: 700, margin: 0, marginBottom: 24, color: '#111827' }}>
               Configure Your Plan
             </h2>
@@ -131,7 +164,7 @@ export default function ProPricing() {
               <label style={{ display: 'block', fontSize: 16, fontWeight: 600, color: '#374151', marginBottom: 12 }}>
                 Number of Users
               </label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div className="user-controls" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                 <button
                   onClick={() => setUserCount(Math.max(1, userCount - 1))}
                   style={{
@@ -169,7 +202,7 @@ export default function ProPricing() {
               <label style={{ display: 'block', fontSize: 16, fontWeight: 600, color: '#374151', marginBottom: 12 }}>
                 Billing Cycle
               </label>
-              <div style={{ display: 'flex', gap: 12 }}>
+              <div className="billing-buttons" style={{ display: 'flex', gap: 12 }}>
                 <button
                   onClick={() => setBillingCycle('monthly')}
                   style={{
@@ -200,7 +233,7 @@ export default function ProPricing() {
             </div>
 
             {/* Pricing Summary */}
-            <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: 24 }}>
+            <div className="pricing-summary" style={{ borderTop: '1px solid #e5e7eb', paddingTop: 24 }}>
               <h3 style={{ fontSize: 18, fontWeight: 700, margin: 0, marginBottom: 16, color: '#111827' }}>
                 Pricing Summary
               </h3>
@@ -214,7 +247,7 @@ export default function ProPricing() {
                   <span>-${(userCount * pricePerUserMonthly * 12 - subtotal).toFixed(2)}</span>
                 </div>
               )}
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 18, fontWeight: 700, borderTop: '1px solid #e5e7eb', paddingTop: 12 }}>
+              <div className="total" style={{ display: 'flex', justifyContent: 'space-between', fontSize: 18, fontWeight: 700, borderTop: '1px solid #e5e7eb', paddingTop: 12 }}>
                 <span>Total {billingCycle === 'monthly' ? 'per month' : 'per year'}</span>
                 <span>${total.toFixed(2)}</span>
               </div>
@@ -223,7 +256,7 @@ export default function ProPricing() {
 
           {/* PayPal Button */}
           <div style={{ textAlign: 'center' }}>
-            <div id="paypal-button-container" style={{ maxWidth: 400, margin: '0 auto' }}></div>
+            <div id="paypal-button-container" style={{ maxWidth: 400, margin: '0 auto', width: '100%' }}></div>
             {!paypalLoaded && (
               <div style={{ padding: '20px', color: '#6b7280', fontSize: '14px' }}>
                 Loading PayPal...

@@ -55,8 +55,19 @@ export default function SignInPage() {
   return (
     <>
       <Navbar />
-      <main style={{ padding: 24, maxWidth: 400, margin: '60px auto' }}>
-        <h1 style={{ marginBottom: 24 }}>Sign In</h1>
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .auth-container {
+            padding: 16px !important;
+            margin: 40px auto !important;
+          }
+          .auth-title {
+            font-size: 24px !important;
+          }
+        }
+      `}</style>
+      <main className="auth-container" style={{ padding: 24, maxWidth: 400, margin: '60px auto' }}>
+        <h1 className="auth-title" style={{ marginBottom: 24 }}>Sign In</h1>
         <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <input 
             placeholder="Email" 

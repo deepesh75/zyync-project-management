@@ -45,10 +45,35 @@ export default function LifetimePricing() {
   return (
     <>
       <Navbar />
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .lifetime-header h1 {
+            font-size: 24px !important;
+          }
+          .lifetime-header p {
+            font-size: 14px !important;
+          }
+          .pricing-card {
+            padding: 24px !important;
+          }
+          .price {
+            font-size: 48px !important;
+          }
+          .features-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .value-box {
+            padding: 16px !important;
+          }
+          .faq-section {
+            padding: 20px !important;
+          }
+        }
+      `}</style>
       <main style={{ fontFamily: 'inherit', minHeight: 'calc(100vh - 60px)', background: '#f8fafc' }}>
         <div style={{ maxWidth: 800, margin: '0 auto', padding: '40px 24px' }}>
           {/* Header */}
-          <div style={{ textAlign: 'center', marginBottom: 40 }}>
+          <div className="lifetime-header" style={{ textAlign: 'center', marginBottom: 40 }}>
             <Link href="/pricing" style={{ color: '#6366f1', textDecoration: 'none', fontSize: 14 }}>
               ← Back to Pricing
             </Link>
@@ -61,7 +86,7 @@ export default function LifetimePricing() {
           </div>
 
           {/* Pricing Card */}
-          <div style={{
+          <div className="pricing-card" style={{
             background: 'white',
             borderRadius: 16,
             padding: 40,
@@ -89,7 +114,7 @@ export default function LifetimePricing() {
             </div>
 
             <div style={{ textAlign: 'center', marginBottom: 32 }}>
-              <div style={{ fontSize: 64, fontWeight: 800, color: '#111827', margin: 0 }}>
+              <div className="price" style={{ fontSize: 64, fontWeight: 800, color: '#111827', margin: 0 }}>
                 $199
               </div>
               <div style={{ color: '#6b7280', fontSize: 16, marginTop: 4 }}>
@@ -98,7 +123,7 @@ export default function LifetimePricing() {
             </div>
 
             {/* Value Proposition */}
-            <div style={{ background: '#f0f4ff', borderRadius: 12, padding: 24, marginBottom: 32 }}>
+            <div className="value-box" style={{ background: '#f0f4ff', borderRadius: 12, padding: 24, marginBottom: 32 }}>
               <h3 style={{ fontSize: 18, fontWeight: 700, margin: 0, marginBottom: 16, color: '#111827' }}>
                 💰 Incredible Value
               </h3>
@@ -120,7 +145,7 @@ export default function LifetimePricing() {
               <h3 style={{ fontSize: 20, fontWeight: 700, margin: 0, marginBottom: 20, color: '#111827' }}>
                 Everything Included:
               </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="features-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 {[
                   '✅ Unlimited projects',
                   '✅ Unlimited tasks',
@@ -186,7 +211,7 @@ export default function LifetimePricing() {
           </div>
 
           {/* FAQ */}
-          <div style={{ background: 'white', borderRadius: 16, padding: 32, boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)' }}>
+          <div className="faq-section" style={{ background: 'white', borderRadius: 16, padding: 32, boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)' }}>
             <h3 style={{ fontSize: 20, fontWeight: 700, margin: 0, marginBottom: 24, color: '#111827' }}>
               Frequently Asked Questions
             </h3>

@@ -53,6 +53,34 @@ export default function OnboardingPage() {
   return (
     <>
       <Navbar />
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .onboarding-card {
+            padding: 30px 20px !important;
+            border-radius: 16px !important;
+          }
+          .welcome-title {
+            font-size: 24px !important;
+          }
+          .welcome-emoji {
+            font-size: 36px !important;
+          }
+          .feature-cards {
+            flex-direction: column !important;
+            gap: 12px !important;
+          }
+          .feature-card {
+            padding: 16px !important;
+          }
+          .feature-emoji {
+            font-size: 24px !important;
+            margin-bottom: 6px !important;
+          }
+          .org-title {
+            font-size: 22px !important;
+          }
+        }
+      `}</style>
       <main style={{ 
         minHeight: 'calc(100vh - 60px)', 
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -61,7 +89,7 @@ export default function OnboardingPage() {
         justifyContent: 'center',
         padding: 20
       }}>
-        <div style={{ 
+        <div className="onboarding-card" style={{ 
           maxWidth: 600, 
           width: '100%',
           background: 'white',
@@ -72,8 +100,8 @@ export default function OnboardingPage() {
           {step === 1 && (
             <>
               <div style={{ textAlign: 'center', marginBottom: 40 }}>
-                <div style={{ fontSize: 48, marginBottom: 20 }}>🎉</div>
-                <h1 style={{ fontSize: 32, fontWeight: 800, margin: '0 0 10px 0', color: '#111827' }}>
+                <div className="welcome-emoji" style={{ fontSize: 48, marginBottom: 20 }}>🎉</div>
+                <h1 className="welcome-title" style={{ fontSize: 32, fontWeight: 800, margin: '0 0 10px 0', color: '#111827' }}>
                   Welcome to Zyync!
                 </h1>
                 <p style={{ fontSize: 16, color: '#6b7280', margin: 0 }}>
@@ -82,17 +110,17 @@ export default function OnboardingPage() {
               </div>
 
               <div style={{ marginBottom: 30 }}>
-                <div style={{ display: 'flex', gap: 20, marginBottom: 30 }}>
-                  <div style={{ flex: 1, textAlign: 'center', padding: 20, background: '#f0f9ff', borderRadius: 12 }}>
-                    <div style={{ fontSize: 32, marginBottom: 10 }}>📊</div>
+                <div className="feature-cards" style={{ display: 'flex', gap: 20, marginBottom: 30 }}>
+                  <div className="feature-card" style={{ flex: 1, textAlign: 'center', padding: 20, background: '#f0f9ff', borderRadius: 12 }}>
+                    <div className="feature-emoji" style={{ fontSize: 32, marginBottom: 10 }}>📊</div>
                     <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#0369a1' }}>Create Projects</p>
                   </div>
-                  <div style={{ flex: 1, textAlign: 'center', padding: 20, background: '#f0fdf4', borderRadius: 12 }}>
-                    <div style={{ fontSize: 32, marginBottom: 10 }}>👥</div>
+                  <div className="feature-card" style={{ flex: 1, textAlign: 'center', padding: 20, background: '#f0fdf4', borderRadius: 12 }}>
+                    <div className="feature-emoji" style={{ fontSize: 32, marginBottom: 10 }}>👥</div>
                     <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#15803d' }}>Invite Team</p>
                   </div>
-                  <div style={{ flex: 1, textAlign: 'center', padding: 20, background: '#fef3c7', borderRadius: 12 }}>
-                    <div style={{ fontSize: 32, marginBottom: 10 }}>🚀</div>
+                  <div className="feature-card" style={{ flex: 1, textAlign: 'center', padding: 20, background: '#fef3c7', borderRadius: 12 }}>
+                    <div className="feature-emoji" style={{ fontSize: 32, marginBottom: 10 }}>🚀</div>
                     <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#b45309' }}>Get Organized</p>
                   </div>
                 </div>
@@ -154,8 +182,8 @@ export default function OnboardingPage() {
               </button>
 
               <div style={{ textAlign: 'center', marginBottom: 40 }}>
-                <div style={{ fontSize: 48, marginBottom: 20 }}>🏢</div>
-                <h2 style={{ fontSize: 28, fontWeight: 700, margin: '0 0 10px 0', color: '#111827' }}>
+                <div className="welcome-emoji" style={{ fontSize: 48, marginBottom: 20 }}>🏢</div>
+                <h2 className="org-title" style={{ fontSize: 28, fontWeight: 700, margin: '0 0 10px 0', color: '#111827' }}>
                   Create Your Organization
                 </h2>
                 <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>
