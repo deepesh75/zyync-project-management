@@ -2619,7 +2619,7 @@ export default function ProjectPage() {
       {selectedTask && (
         <div style={{ position: 'fixed', inset: 0, background: 'var(--modal-backdrop)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, animation: 'fadeIn 0.2s ease', padding: 16 }} onClick={() => setSelectedTask(null)}>
           <div style={{ width: '100%', maxWidth: 1100, background: 'var(--surface)', borderRadius: 16, maxHeight: 'calc(100vh - 32px)', overflowY: 'auto', border: '1px solid var(--border)', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', animation: 'slideUp 0.3s ease' }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid var(--border)', padding: '20px 24px', position: 'sticky', top: 0, background: 'var(--surface)', zIndex: 1 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid var(--border)', padding: '20px 24px', position: 'sticky', top: 0, background: 'var(--surface)', zIndex: 1, gap: 24 }}>
               <div style={{ display: 'flex', gap: 12, alignItems: 'center', flex: 1 }}>
                 <input
                   value={ (selectedTask as any).title }
@@ -2628,7 +2628,7 @@ export default function ProjectPage() {
                   placeholder="Task title"
                 />
                 {/* Color Picker Button */}
-                <div style={{ position: 'relative' }}>
+                <div style={{ position: 'relative', marginRight: 8 }}>
                   <button
                     onClick={() => setShowColorPicker(!showColorPicker)}
                     style={{
