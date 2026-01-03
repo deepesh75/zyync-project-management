@@ -3045,47 +3045,6 @@ export default function ProjectPage() {
                 </div>
 
                 <div style={{ marginBottom: 20 }}>
-                  <label style={{ display: 'block', marginBottom: 10, fontWeight: 700, fontSize: 13, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Cover Color</label>
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    {[
-                      { id: null, name: 'None', color: 'transparent', border: '2px dashed var(--border)' },
-                      { id: 'red', name: 'Red', color: '#ef4444' },
-                      { id: 'orange', name: 'Orange', color: '#f97316' },
-                      { id: 'yellow', name: 'Yellow', color: '#eab308' },
-                      { id: 'green', name: 'Green', color: '#22c55e' },
-                      { id: 'blue', name: 'Blue', color: '#3b82f6' },
-                      { id: 'purple', name: 'Purple', color: '#a855f7' },
-                      { id: 'pink', name: 'Pink', color: '#ec4899' },
-                      { id: 'gray', name: 'Gray', color: '#6b7280' }
-                    ].map(colorOption => (
-                      <button
-                        key={colorOption.id || 'none'}
-                        onClick={() => setSelectedTask({ ...(selectedTask as any), coverColor: colorOption.id })}
-                        style={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: 8,
-                          background: colorOption.color,
-                          border: (selectedTask as any).coverColor === colorOption.id ? '3px solid var(--primary)' : (colorOption.border || '1px solid var(--border)'),
-                          cursor: 'pointer',
-                          transition: 'all 0.2s',
-                          boxShadow: (selectedTask as any).coverColor === colorOption.id ? '0 0 0 3px var(--primary-light)' : 'none'
-                        }}
-                        title={colorOption.name}
-                        onMouseEnter={(e) => {
-                          if ((selectedTask as any).coverColor !== colorOption.id) {
-                            e.currentTarget.style.transform = 'scale(1.1)'
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = 'scale(1)'
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                <div style={{ marginBottom: 20 }}>
                   <label style={{ display: 'block', marginBottom: 10, fontWeight: 700, fontSize: 13, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Members</label>
                   
                   {/* Current members with remove button */}
