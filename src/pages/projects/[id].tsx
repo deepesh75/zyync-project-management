@@ -891,7 +891,7 @@ export default function ProjectPage() {
   if (!session) {
     return (
       <>
-        <Navbar />
+        <Navbar background={project?.background} />
         <main style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
           <h1>Project Details</h1>
           <p>Please sign in to view project details.</p>
@@ -915,7 +915,7 @@ export default function ProjectPage() {
 
   return (
     <>
-      <Navbar />
+      <Navbar background={project.background} />
       <main className="project-main" style={{ 
         padding: '16px 20px', 
         height: 'calc(100vh - 80px)', 

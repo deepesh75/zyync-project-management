@@ -6,7 +6,46 @@ import { useTheme } from '../contexts/ThemeContext'
 import { useNotifications } from '../hooks/useNotifications'
 import { useOrganization as useCurrentUserOrganization } from '../lib/permissions'
 
-export default function Navbar() {
+function getNavbarStyleForBackground(bg?: string): { background: string; textColor: string; opacity: string } {
+  if (!bg) {
+    // Default gradient navbar
+    return { 
+      background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)', 
+      textColor: 'white',
+      opacity: '0.95'
+    }
+  }
+  
+  const darkBackgrounds = ['solid-dark', 'gradient-night', 'gradient-forest', 'gradient-terminal', 'gradient-steel', 'gradient-twilight', 'gradient-royal', 'gradient-velvet', 'gradient-ice']
+  const lightBackgrounds = ['solid-light', 'solid-white', 'solid-cream', 'gradient-peach', 'gradient-aurora', 'gradient-mystic', 'gradient-crystal']
+  
+  if (darkBackgrounds.includes(bg)) {
+    return { 
+      background: 'rgba(0, 0, 0, 0.4)', 
+      textColor: '#ffffff',
+      opacity: '1'
+    }
+  }
+  if (lightBackgrounds.includes(bg)) {
+    return { 
+      background: 'rgba(255, 255, 255, 0.8)', 
+      textColor: '#1a1a1a',
+      opacity: '1'
+    }
+  }
+  // For colorful gradients, use semi-transparent dark background with white text
+  return { 
+    background: 'rgba(0, 0, 0, 0.3)', 
+    textColor: '#ffffff',
+    opacity: '0.95'
+  }
+}
+
+interface NavbarProps {
+  background?: string
+}
+
+export default function Navbar({ background }: NavbarProps) {
   const { data: session } = useSession()
   const router = useRouter()
   const { theme, toggleTheme } = useTheme()
@@ -120,7 +159,7 @@ export default function Navbar() {
       }
     `}</style>
     <nav className="navbar" style={{
-      background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+      background: getNavbarStyleForBackground(background).background,
       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
       padding: '18px 40px',
       display: 'flex',
@@ -138,7 +177,7 @@ export default function Navbar() {
         <Link href="/" style={{ 
           fontSize: 24, 
           fontWeight: 800, 
-          color: 'white', 
+          color: getNavbarStyleForBackground(background).textColor, 
           textDecoration: 'none', 
           letterSpacing: '-0.02em',
           textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
@@ -149,21 +188,21 @@ export default function Navbar() {
           {session && (
             <>
               <Link href="/" prefetch={true} style={{ 
-                color: 'white', 
+                color: getNavbarStyleForBackground(background).textColor, 
                 textDecoration: 'none', 
                 fontSize: 15, 
                 fontWeight: 600, 
-                opacity: 0.95, 
+                opacity: getNavbarStyleForBackground(background).opacity, 
                 transition: 'all 0.2s',
                 padding: '6px 0',
                 borderBottom: '2px solid transparent'
               }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.opacity = '1'
-                  e.currentTarget.style.borderBottomColor = 'white'
+                  e.currentTarget.style.borderBottomColor = getNavbarStyleForBackground(background).textColor
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.opacity = '0.95'
+                  e.currentTarget.style.opacity = getNavbarStyleForBackground(background).opacity
                   e.currentTarget.style.borderBottomColor = 'transparent'
                 }}>
                 Projects
@@ -171,21 +210,21 @@ export default function Navbar() {
             </>
           )}
           <Link href="/pricing" prefetch={true} style={{ 
-            color: 'white', 
+            color: getNavbarStyleForBackground(background).textColor, 
             textDecoration: 'none', 
             fontSize: 15, 
             fontWeight: 600, 
-            opacity: 0.95, 
+            opacity: getNavbarStyleForBackground(background).opacity, 
             transition: 'all 0.2s',
             padding: '6px 0',
             borderBottom: '2px solid transparent'
           }}
             onMouseEnter={(e) => {
               e.currentTarget.style.opacity = '1'
-              e.currentTarget.style.borderBottomColor = 'white'
+              e.currentTarget.style.borderBottomColor = getNavbarStyleForBackground(background).textColor
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.opacity = '0.95'
+              e.currentTarget.style.opacity = getNavbarStyleForBackground(background).opacity
               e.currentTarget.style.borderBottomColor = 'transparent'
             }}>
             Pricing
@@ -199,12 +238,12 @@ export default function Navbar() {
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         style={{
           display: 'none',
-          background: 'rgba(255, 255, 255, 0.2)',
+          background: background ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.2)',
           border: 'none',
           borderRadius: 8,
           padding: '8px 12px',
           cursor: 'pointer',
-          color: 'white'
+          color: getNavbarStyleForBackground(background).textColor
         }}
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -216,10 +255,10 @@ export default function Navbar() {
         <div className="desktop-user-info" style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <span style={{ 
             fontSize: 14, 
-            color: 'white', 
+            color: getNavbarStyleForBackground(background).textColor, 
             opacity: 0.9, 
             fontWeight: 500,
-            background: 'rgba(255, 255, 255, 0.15)',
+            background: background ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.15)',
             padding: '8px 16px',
             borderRadius: 10,
             backdropFilter: 'blur(8px)'
@@ -253,9 +292,9 @@ export default function Navbar() {
               onClick={() => setShowNotifications(!showNotifications)}
               style={{
                 padding: '10px 14px',
-                background: 'rgba(255, 255, 255, 0.25)',
-                color: 'white',
-                border: '1.5px solid rgba(255, 255, 255, 0.4)',
+                background: background ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)',
+                color: getNavbarStyleForBackground(background).textColor,
+                border: `1.5px solid ${background ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`,
                 borderRadius: 10,
                 cursor: 'pointer',
                 fontSize: 18,
@@ -266,12 +305,12 @@ export default function Navbar() {
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.35)'
+                e.currentTarget.style.background = background ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.35)'
                 e.currentTarget.style.transform = 'scale(1.08)'
                 e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)'
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)'
+                e.currentTarget.style.background = background ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)'
                 e.currentTarget.style.transform = 'scale(1)'
                 e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)'
               }}
@@ -428,9 +467,9 @@ export default function Navbar() {
             onClick={toggleTheme}
             style={{
               padding: '10px 14px',
-              background: 'rgba(255, 255, 255, 0.25)',
-              color: 'white',
-              border: '1.5px solid rgba(255, 255, 255, 0.4)',
+              background: background ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)',
+              color: getNavbarStyleForBackground(background).textColor,
+              border: `1.5px solid ${background ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`,
               borderRadius: 10,
               cursor: 'pointer',
               backdropFilter: 'blur(12px)',
@@ -442,12 +481,12 @@ export default function Navbar() {
               justifyContent: 'center'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.35)'
+              e.currentTarget.style.background = background ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.35)'
               e.currentTarget.style.transform = 'scale(1.08) rotate(15deg)'
               e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)'
+              e.currentTarget.style.background = background ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)'
               e.currentTarget.style.transform = 'scale(1) rotate(0deg)'
               e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)'
             }}
@@ -475,9 +514,9 @@ export default function Navbar() {
             onClick={() => signOut({ callbackUrl: '/' })}
             style={{
               padding: '10px 20px',
-              background: 'rgba(255, 255, 255, 0.25)',
-              color: 'white',
-              border: '1.5px solid rgba(255, 255, 255, 0.4)',
+              background: background ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)',
+              color: getNavbarStyleForBackground(background).textColor,
+              border: `1.5px solid ${background ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`,
               borderRadius: 10,
               cursor: 'pointer',
               fontSize: 14,
@@ -490,12 +529,12 @@ export default function Navbar() {
               gap: 8
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.35)'
+              e.currentTarget.style.background = background ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.35)'
               e.currentTarget.style.transform = 'translateY(-2px)'
               e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)'
+              e.currentTarget.style.background = background ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)'
               e.currentTarget.style.transform = 'translateY(0)'
               e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)'
             }}
@@ -561,11 +600,11 @@ export default function Navbar() {
       {!session && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <Link href="/auth/signin" style={{
-            color: 'white',
+            color: getNavbarStyleForBackground(background).textColor,
             textDecoration: 'none',
             fontSize: 14,
             fontWeight: 600,
-            opacity: 0.95,
+            opacity: getNavbarStyleForBackground(background).opacity,
             transition: 'all 0.3s',
             padding: '8px 0'
           }}
@@ -573,15 +612,15 @@ export default function Navbar() {
               e.currentTarget.style.opacity = '1'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.opacity = '0.95'
+              e.currentTarget.style.opacity = getNavbarStyleForBackground(background).opacity
             }}>
             Sign in
           </Link>
           <Link href="/auth/signup" style={{
             padding: '10px 20px',
-            background: 'rgba(255, 255, 255, 0.25)',
-            color: 'white',
-            border: '1.5px solid rgba(255, 255, 255, 0.4)',
+            background: background ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)',
+            color: getNavbarStyleForBackground(background).textColor,
+            border: `1.5px solid ${background ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`,
             borderRadius: 10,
             textDecoration: 'none',
             fontSize: 14,
@@ -592,12 +631,12 @@ export default function Navbar() {
             display: 'inline-block'
           }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.35)'
+              e.currentTarget.style.background = background ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.35)'
               e.currentTarget.style.transform = 'translateY(-2px)'
               e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)'
+              e.currentTarget.style.background = background ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)'
               e.currentTarget.style.transform = 'translateY(0)'
               e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)'
             }}>
