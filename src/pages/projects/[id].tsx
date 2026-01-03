@@ -2730,7 +2730,7 @@ export default function ProjectPage() {
                     background: 'transparent',
                     border: '1px solid #ef4444',
                     borderRadius: 8,
-                    padding: '8px 12px',
+                    padding: '10px 16px',
                     cursor: 'pointer',
                     color: '#ef4444',
                     fontSize: 14,
@@ -2799,7 +2799,7 @@ export default function ProjectPage() {
                     background: 'var(--surface)',
                     color: 'var(--text)',
                     border: '1px solid var(--border)',
-                    padding: '10px 20px',
+                    padding: '10px 16px',
                     borderRadius: 8,
                     fontWeight: 600,
                     fontSize: 14,
@@ -2875,13 +2875,16 @@ export default function ProjectPage() {
                     background: 'linear-gradient(to right, var(--gradient-start), var(--gradient-end))',
                     color: 'white',
                     border: 'none',
-                    padding: '10px 24px',
+                    padding: '10px 20px',
                     borderRadius: 8,
                     fontWeight: 600,
                     fontSize: 14,
                     cursor: 'pointer',
                     boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-2px)'
@@ -2892,7 +2895,12 @@ export default function ProjectPage() {
                     e.currentTarget.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.3)'
                   }}
                 >
-                  💾 Save
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                  </svg>
+                  Save
                 </button>
                 <button 
                   onClick={() => setSelectedTask(null)}
@@ -2900,12 +2908,15 @@ export default function ProjectPage() {
                     background: 'var(--surface)',
                     color: 'var(--text-secondary)',
                     border: '1px solid var(--border)',
-                    padding: '10px 20px',
+                    padding: '10px 16px',
                     borderRadius: 8,
                     fontWeight: 600,
                     fontSize: 14,
                     cursor: 'pointer',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = 'var(--hover-bg)'
@@ -2916,7 +2927,11 @@ export default function ProjectPage() {
                     e.currentTarget.style.color = 'var(--text-secondary)'
                   }}
                 >
-                  ✕ Close
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                  Close
                 </button>
               </div>
             </div>
