@@ -98,6 +98,8 @@ export default function ProjectPage() {
   const [cursorPosition, setCursorPosition] = useState(0)
   const [editingColumns, setEditingColumns] = useState(false)
   const [columns, setColumns] = useState<Array<{ id: string; name: string }>>([])
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deletingTask, setDeletingTask] = useState(false)
   const [newColumnName, setNewColumnName] = useState('')
   const [editingColumnId, setEditingColumnId] = useState<string | null>(null)
   const [addingColumn, setAddingColumn] = useState(false)
@@ -829,6 +831,35 @@ export default function ProjectPage() {
       }
     } catch (err) {
       console.error('Failed to remove member', err)
+    }
+  }
+
+  async function deleteTask() {
+    if (!selectedTask) return
+    
+    setDeletingTask(true)
+    try {
+      const res = await fetch(`/api/tasks/${selectedTask.id}`, { 
+        method: 'DELETE'
+      })
+      
+      if (!res.ok) {
+        alert('Failed to delete task')
+        setDeletingTask(false)
+        return
+      }
+      
+      // Close modal and confirmation
+      setSelectedTask(null)
+      setShowDeleteConfirm(false)
+      setDeletingTask(false)
+      
+      // Revalidate to update the UI
+      mutate()
+    } catch (err) {
+      console.error('Failed to delete task', err)
+      alert('Failed to delete task')
+      setDeletingTask(false)
     }
   }
 
@@ -2586,9 +2617,9 @@ export default function ProjectPage() {
 
       {/* Task detail modal */}
       {selectedTask && (
-        <div style={{ position: 'fixed', inset: 0, background: 'var(--modal-backdrop)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, animation: 'fadeIn 0.2s ease' }} onClick={() => setSelectedTask(null)}>
-          <div style={{ width: '90%', maxWidth: 1200, background: 'var(--surface)', borderRadius: 20, padding: 32, maxHeight: '90vh', overflowY: 'auto', border: '1px solid var(--border)', boxShadow: 'var(--shadow-xl)', animation: 'slideUp 0.3s ease' }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, paddingBottom: 20, borderBottom: '1px solid var(--border)' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--modal-backdrop)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, animation: 'fadeIn 0.2s ease', padding: 16 }} onClick={() => setSelectedTask(null)}>
+          <div style={{ width: '100%', maxWidth: 1100, background: 'var(--surface)', borderRadius: 16, maxHeight: 'calc(100vh - 32px)', overflowY: 'auto', border: '1px solid var(--border)', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', animation: 'slideUp 0.3s ease' }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid var(--border)', padding: '20px 24px', position: 'sticky', top: 0, background: 'var(--surface)', zIndex: 1 }}>
               <div style={{ display: 'flex', gap: 12, alignItems: 'center', flex: 1 }}>
                 <input
                   value={ (selectedTask as any).title }
@@ -2693,6 +2724,74 @@ export default function ProjectPage() {
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 10 }}>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  style={{
+                    background: 'transparent',
+                    border: '1px solid #ef4444',
+                    borderRadius: 8,
+                    padding: '8px 12px',
+                    cursor: 'pointer',
+                    color: '#ef4444',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#ef4444'
+                    e.currentTarget.style.color = 'white'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent'
+                    e.currentTarget.style.color = '#ef4444'
+                  }}
+                  title="Delete this task"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                  </svg>
+                  Delete
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  style={{
+                    background: 'transparent',
+                    border: '1px solid #ef4444',
+                    borderRadius: 8,
+                    padding: '8px 12px',
+                    cursor: 'pointer',
+                    color: '#ef4444',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#ef4444'
+                    e.currentTarget.style.color = 'white'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent'
+                    e.currentTarget.style.color = '#ef4444'
+                  }}
+                  title="Delete this task"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                  </svg>
+                  Delete
+                </button>
                 <button 
                   onClick={async () => {
                     if (!selectedTask) return
@@ -2857,20 +2956,20 @@ export default function ProjectPage() {
             </div>
 
             {/* Two-column layout */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: 24, padding: '0 24px 24px' }}>
               {/* Left column: Task details */}
               <div>
-                <div style={{ marginBottom: 20 }}>
-                  <label style={{ display: 'block', marginBottom: 10, fontWeight: 700, fontSize: 13, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Description</label>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, fontSize: 12, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Description</label>
                   <textarea
                     value={(selectedTask as any).description || ''}
                     onChange={(e) => setSelectedTask({ ...(selectedTask as any), description: e.target.value })}
-                    placeholder="Add a detailed description..."
-                    rows={4}
+                    placeholder="Add details..."
+                    rows={3}
                     style={{ 
                       width: '100%', 
-                      padding: '12px 14px', 
-                      borderRadius: 8,
+                      padding: '10px 12px', 
+                      borderRadius: 6,
                       border: '1px solid var(--border)',
                       background: 'var(--surface)',
                       color: 'var(--text)',
@@ -2892,15 +2991,15 @@ export default function ProjectPage() {
                   />
                 </div>
 
-                <div style={{ marginBottom: 20 }}>
-                  <label style={{ display: 'block', marginBottom: 10, fontWeight: 700, fontSize: 13, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</label>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, fontSize: 12, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</label>
                   <select 
                     value={(selectedTask as any).status || columns[0]?.id} 
                     onChange={(e) => setSelectedTask({ ...(selectedTask as any), status: e.target.value })} 
                     style={{ 
                       width: '100%', 
-                      padding: '10px 14px', 
-                      borderRadius: 8,
+                      padding: '8px 12px', 
+                      borderRadius: 6,
                       border: '1px solid var(--border)',
                       background: 'var(--surface)',
                       color: 'var(--text)',
@@ -2916,15 +3015,15 @@ export default function ProjectPage() {
                   </select>
                 </div>
 
-                <div style={{ marginBottom: 20 }}>
-                  <label style={{ display: 'block', marginBottom: 10, fontWeight: 700, fontSize: 13, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Priority</label>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, fontSize: 12, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Priority</label>
                   <select 
                     value={(selectedTask as any).priority || 'medium'} 
                     onChange={(e) => setSelectedTask({ ...(selectedTask as any), priority: e.target.value })} 
                     style={{ 
                       width: '100%', 
-                      padding: '10px 14px', 
-                      borderRadius: 8,
+                      padding: '8px 12px', 
+                      borderRadius: 6,
                       border: '1px solid var(--border)',
                       background: 'var(--surface)',
                       color: 'var(--text)',
@@ -2940,16 +3039,16 @@ export default function ProjectPage() {
                   </select>
                 </div>
 
-                <div style={{ marginBottom: 20 }}>
-                  <label style={{ display: 'block', marginBottom: 10, fontWeight: 700, fontSize: 13, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Due Date</label>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, fontSize: 12, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Due Date</label>
                   <input
                     type="date"
                     value={(selectedTask as any).dueDate ? new Date((selectedTask as any).dueDate).toISOString().split('T')[0] : ''}
                     onChange={(e) => setSelectedTask({ ...(selectedTask as any), dueDate: e.target.value ? new Date(e.target.value).toISOString() : null })}
                     style={{
                       width: '100%',
-                      padding: '10px 14px',
-                      borderRadius: 8,
+                      padding: '8px 12px',
+                      borderRadius: 6,
                       border: '1px solid var(--border)',
                       background: 'var(--surface)',
                       color: 'var(--text)',
@@ -3832,6 +3931,94 @@ export default function ProjectPage() {
             setShowTemplatesForColumn(null)
           }}
         />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.6)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 2000,
+          animation: 'fadeIn 0.2s ease'
+        }} onClick={() => setShowDeleteConfirm(false)}>
+          <div style={{
+            background: 'var(--surface)',
+            borderRadius: 12,
+            padding: 24,
+            maxWidth: 400,
+            width: '90%',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+            border: '1px solid var(--border)'
+          }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ marginBottom: 16 }}>
+              <h3 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>
+                Delete Task?
+              </h3>
+              <p style={{ margin: 0, fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                Are you sure you want to delete "{selectedTask?.title}"? This action cannot be undone.
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deletingTask}
+                style={{
+                  padding: '10px 20px',
+                  background: 'var(--surface)',
+                  color: 'var(--text-secondary)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 8,
+                  cursor: deletingTask ? 'not-allowed' : 'pointer',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  transition: 'all 0.2s',
+                  opacity: deletingTask ? 0.5 : 1
+                }}
+                onMouseEnter={(e) => {
+                  if (!deletingTask) {
+                    e.currentTarget.style.background = 'var(--hover-bg)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'var(--surface)'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={deleteTask}
+                disabled={deletingTask}
+                style={{
+                  padding: '10px 20px',
+                  background: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 8,
+                  cursor: deletingTask ? 'not-allowed' : 'pointer',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  transition: 'all 0.2s',
+                  opacity: deletingTask ? 0.6 : 1
+                }}
+                onMouseEnter={(e) => {
+                  if (!deletingTask) {
+                    e.currentTarget.style.background = '#dc2626'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#ef4444'
+                }}
+              >
+                {deletingTask ? 'Deleting...' : 'Delete Task'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </main>
     </>
