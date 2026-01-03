@@ -2632,23 +2632,26 @@ export default function ProjectPage() {
                   <button
                     onClick={() => setShowColorPicker(!showColorPicker)}
                     style={{
-                      background: 'var(--surface)',
-                      border: '1px solid var(--border)',
+                      background: 'var(--bg-secondary)',
+                      border: '2px solid var(--border)',
                       borderRadius: 8,
                       padding: 8,
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      transition: 'all 0.2s'
+                      transition: 'all 0.2s',
+                      color: 'var(--text)'
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.borderColor = 'var(--primary)'
                       e.currentTarget.style.background = 'var(--hover-bg)'
+                      e.currentTarget.style.transform = 'scale(1.05)'
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.borderColor = 'var(--border)'
-                      e.currentTarget.style.background = 'var(--surface)'
+                      e.currentTarget.style.background = 'var(--bg-secondary)'
+                      e.currentTarget.style.transform = 'scale(1)'
                     }}
                     title="Change card cover color"
                   >
