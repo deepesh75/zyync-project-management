@@ -41,10 +41,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if (req.method === 'DELETE') {
-    // Delete subtask
+    // Soft delete subtask
     try {
-      await prisma.subtask.delete({
-        where: { id: String(subtaskId) }
+      const user = await prisma.user.findUnique({
+        where: { email: session.user.email }
+      })
+
+      await prisma.subtask.update({
+        where: { id: String(subtaskId) },
+        data: {
+          deleted: true,
+          deletedAt: new Date(),
+          deletedBy: user?.id
+        }
       })
 
       return res.status(200).json({ message: 'Subtask deleted' })

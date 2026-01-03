@@ -433,7 +433,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'DELETE') {
     const session = await getServerSession(req, res, authOptions)
     if (!session || !session.user?.email) return res.status(401).json({ error: 'Unauthorized' })
-    await prisma.task.delete({ where: { id: String(id) } })
+    
+    const user = await prisma.user.findUnique({ where: { email: session.user.email } })
+    
+    // Get task details for logging
+    const task = await prisma.task.findUnique({ 
+      where: { id: String(id) },
+      select: { title: true, status: true }
+    })
+    
+    // Log the deletion
+    await prisma.activity.create({
+      data: {
+        taskId: String(id),
+        userId: user?.id,
+        action: 'deleted',
+        oldValue: task?.title,
+        createdAt: new Date()
+      }
+    })
+    
+    // Soft delete instead of hard delete
+    await prisma.task.update({ 
+      where: { id: String(id) },
+      data: {
+        deleted: true,
+        deletedAt: new Date(),
+        deletedBy: user?.id
+      }
+    })
+    
     return res.status(204).end()
   }
 

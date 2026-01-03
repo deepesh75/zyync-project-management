@@ -59,8 +59,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       where: { id: String(id) },
       include: {
         owner: true,
-        labels: true,
+        labels: {
+          where: { deleted: false }
+        },
         tasks: { 
+          where: { deleted: false },
           include: { 
             labels: {
               include: {
@@ -151,9 +154,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(403).json({ error: 'Only the project owner can delete this project' })
       }
 
-      // Delete the project (this will cascade delete tasks, labels, etc.)
-      await prisma.project.delete({
-        where: { id: String(id) }
+      // Soft delete the project and all its tasks
+      await prisma.project.update({
+        where: { id: String(id) },
+        data: {
+          deleted: true,
+          deletedAt: new Date(),
+          deletedBy: user.id
+        }
+      })
+      
+      // Also soft delete all tasks in the project
+      await prisma.task.updateMany({
+        where: { projectId: String(id) },
+        data: {
+          deleted: true,
+          deletedAt: new Date(),
+          deletedBy: user.id
+        }
       })
 
       // Invalidate cache for this project and projects list

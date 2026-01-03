@@ -10,7 +10,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!id || Array.isArray(id)) return res.status(400).json({ error: 'invalid id' })
 
   if (req.method === 'GET') {
-    const comments = await prisma.comment.findMany({ where: { taskId: String(id) }, include: { author: true }, orderBy: { createdAt: 'asc' } })
+    const comments = await prisma.comment.findMany({ 
+      where: { 
+        taskId: String(id),
+        deleted: false 
+      }, 
+      include: { author: true }, 
+      orderBy: { createdAt: 'asc' } 
+    })
     return res.status(200).json(comments)
   }
 

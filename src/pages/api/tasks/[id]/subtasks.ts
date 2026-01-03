@@ -19,7 +19,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Get all subtasks for a task
     try {
       const subtasks = await prisma.subtask.findMany({
-        where: { taskId: String(id) },
+        where: { 
+          taskId: String(id),
+          deleted: false 
+        },
         orderBy: { order: 'asc' }
       })
       return res.status(200).json(subtasks)

@@ -24,6 +24,7 @@ const ManageTemplates = dynamic(() => import('../../components/ManageTemplates')
 
 function getBackgroundStyle(bg: string): string {
   const backgrounds: Record<string, string> = {
+    // Original gradients
     'gradient-purple': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     'gradient-blue': 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
     'gradient-sunset': 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
@@ -36,6 +37,28 @@ function getBackgroundStyle(bg: string): string {
     'gradient-gold': 'linear-gradient(135deg, #f5a623 0%, #f7b731 100%)',
     'gradient-lavender': 'linear-gradient(135deg, #b993f3 0%, #9b7ebd 100%)',
     'gradient-peach': 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+    
+    // New creative gradients
+    'gradient-aurora': 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+    'gradient-cosmic': 'linear-gradient(135deg, #4158D0 0%, #C850C0 46%, #FFCC70 100%)',
+    'gradient-terminal': 'linear-gradient(135deg, #000000 0%, #0f9b0f 100%)',
+    'gradient-candy': 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 50%, #ff9a9e 100%)',
+    'gradient-neon': 'linear-gradient(135deg, #08AEEA 0%, #2AF598 100%)',
+    'gradient-fire': 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)',
+    'gradient-ice': 'linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%)',
+    'gradient-emerald': 'linear-gradient(135deg, #348f50 0%, #56b4d3 100%)',
+    'gradient-paradise': 'linear-gradient(135deg, #1FA2FF 0%, #12D8FA 50%, #A6FFCB 100%)',
+    'gradient-velvet': 'linear-gradient(135deg, #614385 0%, #516395 100%)',
+    'gradient-cherry': 'linear-gradient(135deg, #EB3349 0%, #F45C43 100%)',
+    'gradient-steel': 'linear-gradient(135deg, #485563 0%, #29323c 100%)',
+    'gradient-mango': 'linear-gradient(135deg, #ffe259 0%, #ffa751 100%)',
+    'gradient-crystal': 'linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)',
+    'gradient-twilight': 'linear-gradient(135deg, #4b6cb7 0%, #182848 100%)',
+    'gradient-royal': 'linear-gradient(135deg, #141E30 0%, #243B55 100%)',
+    'gradient-vivid': 'linear-gradient(135deg, #FF6B6B 0%, #FFE66D 50%, #4ECDC4 100%)',
+    'gradient-mystic': 'linear-gradient(135deg, #757F9A 0%, #D7DDE8 100%)',
+    
+    // Solid colors
     'solid-light': '#f8f9fa',
     'solid-dark': '#1a1a1a',
     'solid-white': '#ffffff',
@@ -46,8 +69,8 @@ function getBackgroundStyle(bg: string): string {
 }
 
 function getHeaderColorForBackground(bg: string): { text: string; background: string } {
-  const darkBackgrounds = ['solid-dark', 'gradient-night', 'gradient-forest']
-  const lightBackgrounds = ['solid-light', 'solid-white', 'solid-cream', 'gradient-peach']
+  const darkBackgrounds = ['solid-dark', 'gradient-night', 'gradient-forest', 'gradient-terminal', 'gradient-steel', 'gradient-twilight', 'gradient-royal', 'gradient-velvet', 'gradient-ice']
+  const lightBackgrounds = ['solid-light', 'solid-white', 'solid-cream', 'gradient-peach', 'gradient-aurora', 'gradient-mystic', 'gradient-crystal']
   
   if (darkBackgrounds.includes(bg)) {
     return { text: '#ffffff', background: 'rgba(0, 0, 0, 0.3)' }
@@ -1275,6 +1298,7 @@ export default function ProjectPage() {
               
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
                 {[
+                  // Original gradients
                   { id: 'gradient-purple', name: 'Purple Dream', bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
                   { id: 'gradient-blue', name: 'Ocean Blue', bg: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' },
                   { id: 'gradient-sunset', name: 'Sunset', bg: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' },
@@ -1286,6 +1310,28 @@ export default function ProjectPage() {
                   { id: 'gradient-gold', name: 'Gold', bg: 'linear-gradient(135deg, #f5a623 0%, #f7b731 100%)' },
                   { id: 'gradient-lavender', name: 'Lavender', bg: 'linear-gradient(135deg, #b993f3 0%, #9b7ebd 100%)' },
                   { id: 'gradient-peach', name: 'Peach', bg: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)' },
+                  
+                  // New creative gradients
+                  { id: 'gradient-aurora', name: 'Aurora', bg: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)' },
+                  { id: 'gradient-cosmic', name: 'Cosmic', bg: 'linear-gradient(135deg, #4158D0 0%, #C850C0 46%, #FFCC70 100%)' },
+                  { id: 'gradient-terminal', name: 'Terminal', bg: 'linear-gradient(135deg, #000000 0%, #0f9b0f 100%)' },
+                  { id: 'gradient-candy', name: 'Candy', bg: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 50%, #ff9a9e 100%)' },
+                  { id: 'gradient-neon', name: 'Neon', bg: 'linear-gradient(135deg, #08AEEA 0%, #2AF598 100%)' },
+                  { id: 'gradient-fire', name: 'Fire', bg: 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)' },
+                  { id: 'gradient-ice', name: 'Ice', bg: 'linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%)' },
+                  { id: 'gradient-emerald', name: 'Emerald', bg: 'linear-gradient(135deg, #348f50 0%, #56b4d3 100%)' },
+                  { id: 'gradient-paradise', name: 'Paradise', bg: 'linear-gradient(135deg, #1FA2FF 0%, #12D8FA 50%, #A6FFCB 100%)' },
+                  { id: 'gradient-velvet', name: 'Velvet', bg: 'linear-gradient(135deg, #614385 0%, #516395 100%)' },
+                  { id: 'gradient-cherry', name: 'Cherry', bg: 'linear-gradient(135deg, #EB3349 0%, #F45C43 100%)' },
+                  { id: 'gradient-steel', name: 'Steel', bg: 'linear-gradient(135deg, #485563 0%, #29323c 100%)' },
+                  { id: 'gradient-mango', name: 'Mango', bg: 'linear-gradient(135deg, #ffe259 0%, #ffa751 100%)' },
+                  { id: 'gradient-crystal', name: 'Crystal', bg: 'linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)' },
+                  { id: 'gradient-twilight', name: 'Twilight', bg: 'linear-gradient(135deg, #4b6cb7 0%, #182848 100%)' },
+                  { id: 'gradient-royal', name: 'Royal', bg: 'linear-gradient(135deg, #141E30 0%, #243B55 100%)' },
+                  { id: 'gradient-vivid', name: 'Vivid', bg: 'linear-gradient(135deg, #FF6B6B 0%, #FFE66D 50%, #4ECDC4 100%)' },
+                  { id: 'gradient-mystic', name: 'Mystic', bg: 'linear-gradient(135deg, #757F9A 0%, #D7DDE8 100%)' },
+                  
+                  // Solid colors
                   { id: 'solid-light', name: 'Light', bg: '#f8f9fa' },
                   { id: 'solid-white', name: 'White', bg: '#ffffff' },
                   { id: 'solid-cream', name: 'Cream', bg: '#fffef5' },
@@ -1329,8 +1375,8 @@ export default function ProjectPage() {
                       <span style={{ 
                         fontSize: 11, 
                         fontWeight: 600, 
-                        color: ['solid-dark', 'gradient-night', 'gradient-forest'].includes(bg.id) ? 'white' : ['solid-light', 'solid-white', 'solid-cream', 'gradient-peach'].includes(bg.id) ? '#333' : 'white',
-                        textShadow: ['solid-light', 'solid-white', 'solid-cream', 'gradient-peach'].includes(bg.id) ? 'none' : '0 1px 2px rgba(0,0,0,0.5)'
+                        color: ['solid-dark', 'gradient-night', 'gradient-forest', 'gradient-terminal', 'gradient-steel', 'gradient-twilight', 'gradient-royal', 'gradient-velvet', 'gradient-ice'].includes(bg.id) ? 'white' : ['solid-light', 'solid-white', 'solid-cream', 'gradient-peach', 'gradient-aurora', 'gradient-mystic', 'gradient-crystal'].includes(bg.id) ? '#333' : 'white',
+                        textShadow: ['solid-light', 'solid-white', 'solid-cream', 'gradient-peach', 'gradient-aurora', 'gradient-mystic', 'gradient-crystal'].includes(bg.id) ? 'none' : '0 1px 2px rgba(0,0,0,0.5)'
                       }}>
                         {bg.name}
                       </span>

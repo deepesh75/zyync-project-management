@@ -26,15 +26,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-      // Delete file from filesystem
-      const filePath = path.join(process.cwd(), 'public', attachment.url)
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath)
-      }
+      const user = await prisma.user.findUnique({
+        where: { email: session.user.email }
+      })
 
-      // Delete from database
-      await prisma.attachment.delete({
-        where: { id: attachmentId }
+      // Soft delete - keep file for recovery, but mark as deleted
+      await prisma.attachment.update({
+        where: { id: attachmentId },
+        data: {
+          deleted: true,
+          deletedAt: new Date(),
+          deletedBy: user?.id
+        }
       })
 
       return res.status(200).json({ message: 'Attachment deleted successfully' })

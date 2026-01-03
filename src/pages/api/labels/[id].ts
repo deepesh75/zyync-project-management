@@ -12,9 +12,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!session || !session.user?.email) return res.status(401).json({ error: 'Unauthorized' })
 
     try {
-      // Delete the label (this will also delete TaskLabel relations due to cascade)
-      await prisma.label.delete({
-        where: { id: String(id) }
+      const user = await prisma.user.findUnique({ where: { email: session.user.email } })
+      
+      // Soft delete the label
+      await prisma.label.update({
+        where: { id: String(id) },
+        data: {
+          deleted: true,
+          deletedAt: new Date(),
+          deletedBy: user?.id
+        }
       })
       return res.status(200).json({ success: true })
     } catch (err) {

@@ -33,7 +33,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'GET') {
     const attachments = await prisma.attachment.findMany({
-      where: { taskId: id },
+      where: { 
+        taskId: id,
+        deleted: false 
+      },
       include: {
         uploadedBy: {
           select: {

@@ -49,8 +49,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
-    const opts: any = { include: { assignee: true, project: true }, orderBy: { createdAt: 'desc' } }
-    if (projectId) opts.where = { projectId: String(projectId) }
+    const opts: any = { 
+      where: { deleted: false },
+      include: { assignee: true, project: true }, 
+      orderBy: { createdAt: 'desc' } 
+    }
+    if (projectId) {
+      opts.where = { 
+        projectId: String(projectId),
+        deleted: false 
+      }
+    }
     const tasks = await prisma.task.findMany(opts)
     return res.status(200).json(tasks)
   }

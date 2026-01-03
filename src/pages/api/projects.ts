@@ -36,6 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const projects = await prisma.project.findMany({ 
       where: {
         AND: [
+          { deleted: false }, // Exclude soft-deleted projects
           showArchived === 'true' ? {} : { archived: false },
           {
             OR: [
@@ -48,6 +49,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       include: { 
         owner: true, 
         tasks: {
+          where: { deleted: false }, // Exclude soft-deleted tasks
           include: {
             members: {
               include: {

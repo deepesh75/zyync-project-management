@@ -100,12 +100,20 @@ model Project {
   createdAt DateTime @default(now())
   archived  Boolean  @default(false)
   archivedAt DateTime?
+  
+  // Soft delete fields
+  deleted    Boolean  @default(false)
+  deletedAt  DateTime?
+  deletedBy  String?
+  
   columns   String?  @default("[{\"id\":\"todo\",\"name\":\"Todo\"},{\"id\":\"in-progress\",\"name\":\"In Progress\"},{\"id\":\"done\",\"name\":\"Done\"}]")
   background String? @default("gradient-purple") // Board background theme
   tasks     Task[]
   labels    Label[]
   workflows Workflow[]
   templates TaskTemplate[]
+  
+  @@index([deleted])
 }
 model Task {
   id          String   @id @default(cuid())
@@ -121,6 +129,12 @@ model Task {
   members     TaskMember[]
   dueDate     DateTime?
   createdAt   DateTime @default(now())
+  
+  // Soft delete fields
+  deleted     Boolean  @default(false)
+  deletedAt   DateTime?
+  deletedBy   String?
+  
   labels      TaskLabel[]
   comments    Comment[]
   subtasks    Subtask[]
@@ -131,6 +145,7 @@ model Task {
   @@index([projectId])
   @@index([assigneeId])
   @@index([status])
+  @@index([deleted])
 }
 
 model Label {
@@ -141,7 +156,13 @@ model Label {
   projectId String
   project   Project @relation(fields: [projectId], references: [id])
   
+  // Soft delete fields
+  deleted   Boolean  @default(false)
+  deletedAt DateTime?
+  deletedBy String?
+  
   @@index([projectId])
+  @@index([deleted])
 }
 
 model Comment {
@@ -153,7 +174,13 @@ model Comment {
   author    User?    @relation(fields: [authorId], references: [id])
   createdAt DateTime @default(now())
   
+  // Soft delete fields
+  deleted   Boolean  @default(false)
+  deletedAt DateTime?
+  deletedBy String?
+  
   @@index([taskId])
+  @@index([deleted])
 }
 /// Many-to-many join table for Task <-> Label
 model TaskLabel {
@@ -206,7 +233,13 @@ model Subtask {
   createdAt   DateTime @default(now())
   order       Int      @default(0)
   
+  // Soft delete fields
+  deleted     Boolean  @default(false)
+  deletedAt   DateTime?
+  deletedBy   String?
+  
   @@index([taskId])
+  @@index([deleted])
 }
 
 model Attachment {
@@ -222,7 +255,13 @@ model Attachment {
   uploadedBy  User?    @relation(fields: [uploadedById], references: [id])
   createdAt   DateTime @default(now())
   
+  // Soft delete fields
+  deleted     Boolean  @default(false)
+  deletedAt   DateTime?
+  deletedBy   String?
+  
   @@index([taskId])
+  @@index([deleted])
 }
 
 model Activity {

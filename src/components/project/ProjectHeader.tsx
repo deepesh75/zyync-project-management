@@ -4,8 +4,8 @@ import type { Feature } from '../../lib/permissions'
 import { useFeatureAccess } from '../../lib/permissions'
 
 function getHeaderColorForBackground(bg: string): { text: string; background: string } {
-  const darkBackgrounds = ['solid-dark', 'gradient-night', 'gradient-forest']
-  const lightBackgrounds = ['solid-light', 'solid-white', 'solid-cream', 'gradient-peach']
+  const darkBackgrounds = ['solid-dark', 'gradient-night', 'gradient-forest', 'gradient-terminal', 'gradient-steel', 'gradient-twilight', 'gradient-royal', 'gradient-velvet', 'gradient-ice']
+  const lightBackgrounds = ['solid-light', 'solid-white', 'solid-cream', 'gradient-peach', 'gradient-aurora', 'gradient-mystic', 'gradient-crystal']
   
   if (darkBackgrounds.includes(bg)) {
     return { text: '#ffffff', background: 'rgba(0, 0, 0, 0.3)' }
