@@ -193,9 +193,8 @@ export default function TimelineView({ tasks, onTaskClick, users }: TimelineView
 
   return (
     <div style={{ 
-      padding: 24, 
       background: 'var(--bg)', 
-      height: '100vh', 
+      height: 'calc(100vh - 80px)', 
       display: 'flex', 
       flexDirection: 'column',
       overflow: 'hidden'
@@ -203,12 +202,11 @@ export default function TimelineView({ tasks, onTaskClick, users }: TimelineView
       {/* Enhanced Header - Collapsible */}
       <div style={{
         background: 'var(--surface)',
-        padding: isHeaderCompact ? '16px 24px' : 24,
-        borderRadius: 16,
-        border: '1px solid var(--border)',
-        marginBottom: 16,
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-        transition: 'all 0.3s'
+        padding: isHeaderCompact ? '12px 16px' : '16px 20px',
+        borderBottom: '1px solid var(--border)',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+        transition: 'all 0.3s',
+        flexShrink: 0
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isHeaderCompact ? 0 : 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -449,15 +447,14 @@ export default function TimelineView({ tasks, onTaskClick, users }: TimelineView
       </div>
 
       {/* Enhanced Timeline/Gantt Chart */}
+      {/* Timeline Container */}
       <div style={{ 
         background: 'var(--surface)', 
-        borderRadius: 16, 
-        border: '1px solid var(--border)', 
         overflow: 'hidden',
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+        minHeight: 0
       }}>
         <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
           {/* Task List Column */}
