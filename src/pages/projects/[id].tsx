@@ -2996,7 +2996,8 @@ export default function ProjectPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: 0, flex: 1, overflow: 'hidden' }}>
               {/* Left column: Task details */}
               <div style={{ overflowY: 'auto', padding: '0 24px 24px' }}>
-                <div style={{ marginBottom: 16 }}>
+                {/* Description */}
+                <div style={{ marginBottom: 20 }}>
                   <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, fontSize: 12, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Description</label>
                   <textarea
                     value={(selectedTask as any).description || ''}
@@ -3028,81 +3029,85 @@ export default function ProjectPage() {
                   />
                 </div>
 
-                <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, fontSize: 12, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</label>
-                  <select 
-                    value={(selectedTask as any).status || columns[0]?.id} 
-                    onChange={(e) => setSelectedTask({ ...(selectedTask as any), status: e.target.value })} 
-                    style={{ 
-                      width: '100%', 
-                      padding: '8px 12px', 
-                      borderRadius: 6,
-                      border: '1px solid var(--border)',
-                      background: 'var(--surface)',
-                      color: 'var(--text)',
-                      fontSize: 14,
-                      boxSizing: 'border-box',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    {columns.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
+                {/* Compact row: Status, Priority, Due Date */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 11, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</label>
+                    <select 
+                      value={(selectedTask as any).status || columns[0]?.id} 
+                      onChange={(e) => setSelectedTask({ ...(selectedTask as any), status: e.target.value })} 
+                      style={{ 
+                        width: '100%', 
+                        padding: '8px 10px', 
+                        borderRadius: 6,
+                        border: '1px solid var(--border)',
+                        background: 'var(--surface)',
+                        color: 'var(--text)',
+                        fontSize: 13,
+                        boxSizing: 'border-box',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      {columns.map((c) => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 11, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Priority</label>
+                    <select 
+                      value={(selectedTask as any).priority || 'medium'} 
+                      onChange={(e) => setSelectedTask({ ...(selectedTask as any), priority: e.target.value })} 
+                      style={{ 
+                        width: '100%', 
+                        padding: '8px 10px', 
+                        borderRadius: 6,
+                        border: '1px solid var(--border)',
+                        background: 'var(--surface)',
+                        color: 'var(--text)',
+                        fontSize: 13,
+                        boxSizing: 'border-box',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 11, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Due Date</label>
+                    <input
+                      type="date"
+                      value={(selectedTask as any).dueDate ? new Date((selectedTask as any).dueDate).toISOString().split('T')[0] : ''}
+                      onChange={(e) => setSelectedTask({ ...(selectedTask as any), dueDate: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                      style={{
+                        width: '100%',
+                        padding: '8px 10px',
+                        borderRadius: 6,
+                        border: '1px solid var(--border)',
+                        background: 'var(--surface)',
+                        color: 'var(--text)',
+                        fontSize: 13,
+                        boxSizing: 'border-box',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    />
+                  </div>
                 </div>
 
-                <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, fontSize: 12, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Priority</label>
-                  <select 
-                    value={(selectedTask as any).priority || 'medium'} 
-                    onChange={(e) => setSelectedTask({ ...(selectedTask as any), priority: e.target.value })} 
-                    style={{ 
-                      width: '100%', 
-                      padding: '8px 12px', 
-                      borderRadius: 6,
-                      border: '1px solid var(--border)',
-                      background: 'var(--surface)',
-                      color: 'var(--text)',
-                      fontSize: 14,
-                      boxSizing: 'border-box',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    <option value="low">● Low Priority</option>
-                    <option value="medium">● Medium Priority</option>
-                    <option value="high">● High Priority</option>
-                  </select>
-                </div>
-
-                <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, fontSize: 12, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Due Date</label>
-                  <input
-                    type="date"
-                    value={(selectedTask as any).dueDate ? new Date((selectedTask as any).dueDate).toISOString().split('T')[0] : ''}
-                    onChange={(e) => setSelectedTask({ ...(selectedTask as any), dueDate: e.target.value ? new Date(e.target.value).toISOString() : null })}
-                    style={{
-                      width: '100%',
-                      padding: '8px 12px',
-                      borderRadius: 6,
-                      border: '1px solid var(--border)',
-                      background: 'var(--surface)',
-                      color: 'var(--text)',
-                      fontSize: 14,
-                      boxSizing: 'border-box',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  />
-                </div>
-
+                {/* Compact Members Section */}
                 <div style={{ marginBottom: 20 }}>
-                  <label style={{ display: 'block', marginBottom: 10, fontWeight: 700, fontSize: 13, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Members</label>
+                  <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, fontSize: 12, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Members</label>
                   
-                  {/* Current members with remove button */}
-                  <div style={{ marginBottom: 12, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                    {(selectedTask as any).members && (selectedTask as any).members.length > 0 ? (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+                    {/* Current members */}
+                    {(selectedTask as any).members && (selectedTask as any).members.length > 0 && (
                       (selectedTask as any).members.map((m: any) => (
                         <div key={m.userId} style={{ 
                           display: 'inline-flex', 
@@ -3110,9 +3115,9 @@ export default function ProjectPage() {
                           gap: 6, 
                           background: 'var(--primary)', 
                           color: '#fff', 
-                          padding: '6px 10px', 
+                          padding: '4px 10px', 
                           borderRadius: 6, 
-                          fontSize: 13,
+                          fontSize: 12,
                           boxShadow: '0 1px 3px rgba(99, 102, 241, 0.3)'
                         }}>
                           <span>{m.user?.name || m.user?.email}</span>
@@ -3123,10 +3128,10 @@ export default function ProjectPage() {
                               border: 'none', 
                               color: '#fff', 
                               cursor: 'pointer', 
-                              padding: '2px 6px', 
-                              fontSize: 16, 
+                              padding: '0px 4px', 
+                              fontSize: 14, 
                               fontWeight: 'bold',
-                              borderRadius: 4,
+                              borderRadius: 3,
                               lineHeight: 1,
                               transition: 'background 0.2s'
                             }}
@@ -3136,14 +3141,10 @@ export default function ProjectPage() {
                           >×</button>
                         </div>
                       ))
-                    ) : (
-                      <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>No members assigned</span>
                     )}
-                  </div>
 
-                  {/* Add member dropdown */}
-                  {users.filter((u) => !(selectedTask as any).members?.some((m: any) => m.userId === u.id)).length > 0 && (
-                    <div style={{ marginBottom: 12 }}>
+                    {/* Add member dropdown inline */}
+                    {users.filter((u) => !(selectedTask as any).members?.some((m: any) => m.userId === u.id)).length > 0 && (
                       <select
                         value=""
                         onChange={async (e) => {
@@ -3153,10 +3154,6 @@ export default function ProjectPage() {
                           const current = (selectedTask as any).members || []
                           const nextIds = [...current.map((m: any) => m.userId), userId]
                           
-                          console.log('Adding member:', userId)
-                          console.log('Current members:', current)
-                          console.log('Next member IDs:', nextIds)
-                          
                           try {
                             const res = await fetch(`/api/tasks/${(selectedTask as any).id}`, {
                               method: 'PATCH',
@@ -3164,22 +3161,13 @@ export default function ProjectPage() {
                               body: JSON.stringify({ memberIds: nextIds })
                             })
                             
-                            console.log('Response status:', res.status)
-                            
                             if (res.ok) {
-                              const updatedTask = await res.json()
-                              console.log('Updated task:', updatedTask)
-                              
-                              // Revalidate project and update selected task
                               await mutate()
                               if (project) {
                                 const newSelectedTask = project.tasks.find((x: any) => x.id === (selectedTask as any).id)
                                 setSelectedTask(newSelectedTask || null)
-                                console.log('Task after refresh:', newSelectedTask)
                               }
                             } else {
-                              const errorText = await res.text()
-                              console.error('Failed to add member:', errorText)
                               alert('Failed to add member. Please try again.')
                             }
                           } catch (err) {
@@ -3188,45 +3176,44 @@ export default function ProjectPage() {
                           }
                         }}
                         style={{
-                          width: '100%',
-                          padding: '8px 12px',
-                          border: '1px solid var(--border)',
+                          padding: '4px 10px',
+                          border: '1px dashed var(--border)',
                           borderRadius: 6,
                           background: 'var(--surface)',
                           color: 'var(--text)',
-                          fontSize: 14,
+                          fontSize: 12,
                           cursor: 'pointer',
-                          transition: 'border-color 0.2s',
-                          boxSizing: 'border-box'
+                          transition: 'all 0.2s'
                         }}
                       >
-                        <option value="">+ Add member...</option>
+                        <option value="">+ Add member</option>
                         {users.filter((u) => !(selectedTask as any).members?.some((m: any) => m.userId === u.id)).map((u) => (
                           <option key={u.id} value={u.id}>{u.name || u.email}</option>
                         ))}
                       </select>
-                    </div>
-                  )}
+                    )}
+                  </div>
 
-                  {/* Invite new member form */}
+                  {/* Collapsible invite form */}
                   <details style={{ marginTop: 8 }}>
                     <summary style={{ 
                       cursor: 'pointer', 
-                      fontSize: 13, 
-                      color: 'var(--primary)',
+                      fontSize: 11, 
+                      color: 'var(--text-secondary)',
                       fontWeight: 500,
                       padding: '4px 0',
                       userSelect: 'none'
-                    }}>+ Invite new member to organization</summary>
-                    <form onSubmit={inviteNewMember} style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    }}>+ Invite new member</summary>
+                    <form onSubmit={inviteNewMember} style={{ marginTop: 8, display: 'flex', gap: 6 }}>
                       <input
                         type="email"
-                        placeholder="Email address"
+                        placeholder="Email"
                         value={newMemberEmail}
                         onChange={(e) => setNewMemberEmail(e.target.value)}
                         style={{ 
-                          padding: '8px 12px', 
-                          fontSize: 13, 
+                          flex: 1,
+                          padding: '6px 10px', 
+                          fontSize: 12, 
                           borderRadius: 6, 
                           border: '1px solid var(--border)',
                           background: 'var(--surface)',
@@ -3239,8 +3226,9 @@ export default function ProjectPage() {
                         value={newMemberName}
                         onChange={(e) => setNewMemberName(e.target.value)}
                         style={{ 
-                          padding: '8px 12px', 
-                          fontSize: 13, 
+                          flex: 1,
+                          padding: '6px 10px', 
+                          fontSize: 12, 
                           borderRadius: 6, 
                           border: '1px solid var(--border)',
                           background: 'var(--surface)',
@@ -3251,32 +3239,32 @@ export default function ProjectPage() {
                         type="submit" 
                         disabled={inviting || !newMemberEmail} 
                         style={{ 
-                          padding: '8px 12px', 
-                          fontSize: 13,
+                          padding: '6px 12px', 
+                          fontSize: 12,
                           background: (inviting || !newMemberEmail) ? 'var(--text-secondary)' : 'var(--primary)',
                           cursor: (inviting || !newMemberEmail) ? 'not-allowed' : 'pointer',
                           opacity: (inviting || !newMemberEmail) ? 0.6 : 1
                         }}
                       >
-                        {inviting ? 'Inviting...' : 'Send Invite'}
+                        {inviting ? 'Inviting...' : 'Invite'}
                       </button>
                     </form>
                   </details>
                 </div>
 
                 {/* Subtasks / Checklist */}
-                <div style={{ marginBottom: 24 }}>
-                  <label style={{ display: 'block', marginBottom: 12, fontWeight: 700, fontSize: 13, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    Checklist {subtasks.length > 0 && (
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, fontWeight: 600, fontSize: 12, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <span>Checklist</span>
+                    {subtasks.length > 0 && (
                       <span style={{ 
-                        fontSize: 12, 
+                        fontSize: 11, 
                         fontWeight: 600, 
                         color: 'var(--text-secondary)',
-                        marginLeft: 10,
                         textTransform: 'none',
                         letterSpacing: 'normal'
                       }}>
-                        {subtasks.filter(s => s.completed).length}/{subtasks.length} completed
+                        {subtasks.filter(s => s.completed).length}/{subtasks.length}
                       </span>
                     )}
                   </label>
@@ -3284,11 +3272,11 @@ export default function ProjectPage() {
                   {/* Progress bar */}
                   {subtasks.length > 0 && (
                     <div style={{ 
-                      height: 8, 
+                      height: 6, 
                       background: 'var(--bg-secondary)', 
                       borderRadius: 6, 
                       overflow: 'hidden',
-                      marginBottom: 16,
+                      marginBottom: 12,
                       boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)'
                     }}>
                       <div style={{ 
@@ -3302,82 +3290,86 @@ export default function ProjectPage() {
                   )}
 
                   {/* Subtask list */}
-                  <div style={{ marginBottom: 14 }}>
-                    {subtasks.map((subtask) => (
-                      <div key={subtask.id} style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: 10,
-                        padding: '10px 14px',
-                        background: 'var(--bg-secondary)',
-                        borderRadius: 8,
-                        marginBottom: 8,
-                        transition: 'all 0.2s',
-                        border: '1px solid var(--border)'
-                      }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'var(--hover-bg)'
-                          e.currentTarget.style.borderColor = 'var(--border-hover)'
+                  {subtasks.length > 0 && (
+                    <div style={{ marginBottom: 10 }}>
+                      {subtasks.map((subtask) => (
+                        <div key={subtask.id} style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: 8,
+                          padding: '8px 10px',
+                          background: 'var(--bg-secondary)',
+                          borderRadius: 6,
+                          marginBottom: 6,
+                          transition: 'all 0.2s',
+                          border: '1px solid var(--border)'
                         }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'var(--bg-secondary)'
-                          e.currentTarget.style.borderColor = 'var(--border)'
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={subtask.completed}
-                          onChange={(e) => toggleSubtask(subtask.id, e.target.checked)}
-                          style={{ 
-                            width: 18, 
-                            height: 18, 
-                            cursor: 'pointer',
-                            accentColor: 'var(--primary)'
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'var(--hover-bg)'
+                            e.currentTarget.style.borderColor = 'var(--border-hover)'
                           }}
-                        />
-                        <span style={{ 
-                          flex: 1, 
-                          fontSize: 14,
-                          color: subtask.completed ? 'var(--text-secondary)' : 'var(--text)',
-                          textDecoration: subtask.completed ? 'line-through' : 'none',
-                          transition: 'all 0.2s'
-                        }}>
-                          {subtask.title}
-                        </span>
-                        <button
-                          onClick={() => deleteSubtask(subtask.id)}
-                          style={{ 
-                            background: 'none',
-                            border: 'none',
-                            color: 'var(--text-secondary)',
-                            cursor: 'pointer',
-                            padding: '2px 6px',
-                            fontSize: 16,
-                            lineHeight: 1,
-                            opacity: 0.6,
-                            transition: 'opacity 0.2s'
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'var(--bg-secondary)'
+                            e.currentTarget.style.borderColor = 'var(--border)'
                           }}
-                          onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                          onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}
-                          title="Delete subtask"
                         >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                          <input
+                            type="checkbox"
+                            checked={subtask.completed}
+                            onChange={(e) => toggleSubtask(subtask.id, e.target.checked)}
+                            style={{ 
+                              width: 16, 
+                              height: 16, 
+                              cursor: 'pointer',
+                              accentColor: 'var(--primary)',
+                              flexShrink: 0
+                            }}
+                          />
+                          <span style={{ 
+                            flex: 1, 
+                            fontSize: 13,
+                            color: subtask.completed ? 'var(--text-secondary)' : 'var(--text)',
+                            textDecoration: subtask.completed ? 'line-through' : 'none',
+                            transition: 'all 0.2s'
+                          }}>
+                            {subtask.title}
+                          </span>
+                          <button
+                            onClick={() => deleteSubtask(subtask.id)}
+                            style={{ 
+                              background: 'none',
+                              border: 'none',
+                              color: 'var(--text-secondary)',
+                              cursor: 'pointer',
+                              padding: '0px 4px',
+                              fontSize: 16,
+                              lineHeight: 1,
+                              opacity: 0.6,
+                              transition: 'opacity 0.2s',
+                              flexShrink: 0
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                            onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}
+                            title="Delete"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Add subtask form */}
-                  <form onSubmit={addSubtask} style={{ display: 'flex', gap: 8 }}>
+                  <form onSubmit={addSubtask} style={{ display: 'flex', gap: 6 }}>
                     <input
                       type="text"
-                      placeholder="+ Add checklist item"
+                      placeholder="+ Add item"
                       value={newSubtaskTitle}
                       onChange={(e) => setNewSubtaskTitle(e.target.value)}
                       style={{
                         flex: 1,
-                        padding: '8px 12px',
-                        fontSize: 13,
+                        padding: '7px 10px',
+                        fontSize: 12,
                         borderRadius: 6,
                         border: '1px solid var(--border)',
                         background: 'var(--surface)',
@@ -3389,8 +3381,8 @@ export default function ProjectPage() {
                       type="submit"
                       disabled={!newSubtaskTitle.trim()}
                       style={{
-                        padding: '8px 16px',
-                        fontSize: 13,
+                        padding: '7px 14px',
+                        fontSize: 12,
                         fontWeight: 600,
                         borderRadius: 6,
                         border: 'none',
@@ -3408,15 +3400,16 @@ export default function ProjectPage() {
 
                 {/* Attachments */}
                 <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, fontSize: 14, color: 'var(--text)' }}>
-                    Attachments {attachments.length > 0 && (
+                  <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, fontWeight: 600, fontSize: 12, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <span>Attachments</span>
+                    {attachments.length > 0 && (
                       <span style={{ 
-                        fontSize: 12, 
-                        fontWeight: 500, 
+                        fontSize: 11, 
+                        fontWeight: 600, 
                         color: 'var(--text-secondary)',
-                        marginLeft: 8
+                        textTransform: 'none'
                       }}>
-                        ({attachments.length})
+                        {attachments.length}
                       </span>
                     )}
                   </label>
@@ -3564,55 +3557,45 @@ export default function ProjectPage() {
                   </label>
                 </div>
                   
-                <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, fontSize: 14, color: 'var(--text)' }}>Labels</label>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-                      {(project.labels || []).map((l: any) => {
-                        const selected = (selectedTask as any).labels?.some((tl: any) => (tl.label?.id || tl.labelId || tl.id) === l.id)
-                        
-                        // Calculate text color based on background brightness
-                        const hex = l.color || '#6b7280'
-                        const r = parseInt(hex.slice(1, 3), 16)
-                        const g = parseInt(hex.slice(3, 5), 16)
-                        const b = parseInt(hex.slice(5, 7), 16)
-                        const brightness = (r * 299 + g * 587 + b * 114) / 1000
-                        const textColor = brightness > 155 ? '#111827' : '#ffffff'
-                        
-                        return (
-                          <button
-                            key={l.id}
-                            onClick={async () => {
-                              // toggle label
-                              const cur = (selectedTask as any).labels || []
-                              let nextIds: string[]
-                              const currentLabelIds = cur.map((tl: any) => tl.label?.id || tl.labelId || tl.id)
-                              if (selected) nextIds = currentLabelIds.filter((lid: string) => lid !== l.id)
-                              else nextIds = [...currentLabelIds, l.id]
-                              // send PATCH to update labels
-                              try {
-                                const res = await fetch(`/api/tasks/${(selectedTask as any).id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ labelIds: nextIds }) })
-                                if (res.ok) {
-                                  const updated = await res.json()
-                                  // Revalidate project and update selected task
-                                  await mutate()
-                                  if (project) {
-                                    setSelectedTask(project.tasks.find((x: any) => x.id === (selectedTask as any).id) || null)
-                                  }
+                {/* Labels */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, fontSize: 12, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Labels</label>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+                    {(project.labels || []).map((l: any) => {
+                      const selected = (selectedTask as any).labels?.some((tl: any) => (tl.label?.id || tl.labelId || tl.id) === l.id)
+                      
+                      return (
+                        <button
+                          key={l.id}
+                          onClick={async () => {
+                            const cur = (selectedTask as any).labels || []
+                            let nextIds: string[]
+                            const currentLabelIds = cur.map((tl: any) => tl.label?.id || tl.labelId || tl.id)
+                            if (selected) nextIds = currentLabelIds.filter((lid: string) => lid !== l.id)
+                            else nextIds = [...currentLabelIds, l.id]
+                            try {
+                              const res = await fetch(`/api/tasks/${(selectedTask as any).id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ labelIds: nextIds }) })
+                              if (res.ok) {
+                                await mutate()
+                                if (project) {
+                                  setSelectedTask(project.tasks.find((x: any) => x.id === (selectedTask as any).id) || null)
                                 }
-                              } catch (err) {
-                                console.error('Failed to toggle label', err)
                               }
-                            }}
-                            style={{
+                            } catch (err) {
+                              console.error('Failed to toggle label', err)
+                            }
+                          }}
+                          style={{
                               border: selected ? '2px solid #111827' : '1px solid #d1d5db',
                               background: l.color || '#6b7280',
                               color: '#fff',
-                              padding: '4px 12px',
+                              padding: '3px 10px',
                               borderRadius: 999,
                               cursor: 'pointer',
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: selected ? 600 : 400,
-                              opacity: selected ? 1 : 0.8
+                              opacity: selected ? 1 : 0.8,
+                              transition: 'all 0.15s'
                             }}
                           >
                             {selected ? '✓ ' : ''}{l.name}
@@ -3629,7 +3612,6 @@ export default function ProjectPage() {
                         if (res.ok) {
                           setNewLabelName('')
                           setNewLabelColor('#6366f1')
-                          // Revalidate project and update selected task
                           await mutate()
                           if (project && selectedTask) {
                             setSelectedTask(project.tasks.find((x: any) => x.id === (selectedTask as any).id) || null)
@@ -3638,28 +3620,28 @@ export default function ProjectPage() {
                       } catch (err) {
                         console.error('Failed to create label', err)
                       }
-                    }} style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8, padding: 12, background: '#f9fafb', borderRadius: 8, border: '1px solid #e5e7eb' }}>
+                    }} style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 8, padding: 8, background: '#f9fafb', borderRadius: 6, border: '1px solid #e5e7eb' }}>
                       <input 
-                        placeholder="New label name" 
+                        placeholder="New label" 
                         value={newLabelName} 
                         onChange={(e) => setNewLabelName(e.target.value)} 
-                        style={{ flex: 1, padding: '8px 10px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: 13 }} 
+                        style={{ flex: 1, padding: '6px 8px', borderRadius: 4, border: '1px solid #d1d5db', fontSize: 12 }} 
                       />
                       <input 
                         type="color" 
                         value={newLabelColor} 
                         onChange={(e) => setNewLabelColor(e.target.value)} 
                         title="Color" 
-                        style={{ width: 44, height: 36, border: '1px solid #d1d5db', borderRadius: 6, cursor: 'pointer' }} 
+                        style={{ width: 36, height: 30, border: '1px solid #d1d5db', borderRadius: 4, cursor: 'pointer' }} 
                       />
                       <button 
                         type="submit" 
                         style={{ 
-                          padding: '8px 16px', 
+                          padding: '6px 12px', 
                           background: '#10b981', 
                           color: 'white', 
-                          borderRadius: 6, 
-                          fontSize: 13, 
+                          borderRadius: 4, 
+                          fontSize: 12, 
                           fontWeight: 600,
                           border: 'none',
                           cursor: 'pointer',
