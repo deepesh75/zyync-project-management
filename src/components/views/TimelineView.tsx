@@ -25,22 +25,6 @@ export default function TimelineView({ tasks, onTaskClick, users }: TimelineView
   const [groupBy, setGroupBy] = React.useState<GroupBy>('none')
   const [showCompleted, setShowCompleted] = React.useState(true)
   const [hoveredTask, setHoveredTask] = React.useState<string | null>(null)
-  const [isHeaderCompact, setIsHeaderCompact] = React.useState(false)
-  const timelineScrollRef = React.useRef<HTMLDivElement>(null)
-  const taskListScrollRef = React.useRef<HTMLDivElement>(null)
-
-  // Sync scroll between task list and timeline
-  const handleTimelineScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (taskListScrollRef.current) {
-      taskListScrollRef.current.scrollTop = e.currentTarget.scrollTop
-    }
-  }
-
-  const handleTaskListScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (timelineScrollRef.current) {
-      timelineScrollRef.current.scrollTop = e.currentTarget.scrollTop
-    }
-  }
   // Filter tasks with due dates and sort by due date
   const filteredTasks = tasks
     .filter(t => showCompleted || (t.status !== 'Done' && t.status !== 'done'))
@@ -185,89 +169,101 @@ export default function TimelineView({ tasks, onTaskClick, users }: TimelineView
   const getColumnWidth = () => {
     if (timelineScale === 'day') return 60
     if (timelineScale === 'week') return 40
-    return 30
+    return 120 // Wider for month view
   }
 
   const columnWidth = getColumnWidth()
   const visibleDays = Math.min(totalDays, timelineScale === 'day' ? 60 : timelineScale === 'week' ? 90 : 180)
 
+  // Generate timeline columns based on scale
+  const getTimelineColumns = () => {
+    if (timelineScale === 'month') {
+      // For month view, show months
+      const columns = []
+      const current = new Date(rangeStart)
+      const end = new Date(rangeEnd)
+      
+      while (current <= end) {
+        const year = current.getFullYear()
+        const month = current.getMonth()
+        const daysInMonth = new Date(year, month + 1, 0).getDate()
+        
+        columns.push({
+          label: current.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+          shortLabel: current.toLocaleDateString('en-US', { month: 'short' }),
+          date: new Date(current),
+          width: columnWidth,
+          daysInMonth,
+          isToday: new Date().getMonth() === month && new Date().getFullYear() === year
+        })
+        
+        current.setMonth(current.getMonth() + 1)
+      }
+      return columns
+    } else {
+      // For day and week view, show individual days
+      return Array.from({ length: visibleDays }, (_, i) => {
+        const date = new Date(rangeStart)
+        date.setDate(date.getDate() + i)
+        return {
+          label: formatDate(date.toISOString()),
+          shortLabel: date.toLocaleDateString('en-US', { weekday: 'short' }),
+          date: date,
+          width: columnWidth,
+          daysInMonth: 1,
+          isToday: date.toDateString() === new Date().toDateString()
+        }
+      })
+    }
+  }
+
+  const timelineColumns = getTimelineColumns()
+
   return (
     <div style={{ 
+      padding: 24, 
       background: 'var(--bg)', 
-      height: 'calc(100vh - 80px)', 
+      height: '100vh', 
       display: 'flex', 
       flexDirection: 'column',
       overflow: 'hidden'
     }}>
-      {/* Enhanced Header - Collapsible */}
+      {/* Enhanced Header */}
       <div style={{
         background: 'var(--surface)',
-        padding: isHeaderCompact ? '12px 16px' : '16px 20px',
-        borderBottom: '1px solid var(--border)',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-        transition: 'all 0.3s',
-        flexShrink: 0
+        padding: 24,
+        borderRadius: 16,
+        border: '1px solid var(--border)',
+        marginBottom: 24,
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isHeaderCompact ? 0 : 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div>
-              <h2 style={{ margin: 0, fontSize: isHeaderCompact ? 20 : 28, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em', transition: 'all 0.3s' }}>
-                Timeline View
-              </h2>
-              {!isHeaderCompact && (
-                <p style={{ margin: '4px 0 0 0', fontSize: 14, color: 'var(--text-secondary)' }}>
-                  Gantt-style project timeline with task dependencies
-                </p>
-              )}
-            </div>
-            
-            {/* Compact Toggle */}
-            <button
-              onClick={() => setIsHeaderCompact(!isHeaderCompact)}
-              style={{
-                padding: '6px 10px',
-                background: 'var(--bg-secondary)',
-                border: '1px solid var(--border)',
-                borderRadius: 6,
-                cursor: 'pointer',
-                color: 'var(--text-secondary)',
-                fontSize: 12,
-                fontWeight: 600,
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--primary-light)'
-                e.currentTarget.style.borderColor = 'var(--primary)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'var(--bg-secondary)'
-                e.currentTarget.style.borderColor = 'var(--border)'
-              }}
-              title={isHeaderCompact ? 'Expand header' : 'Collapse header'}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: isHeaderCompact ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }}>
-                <path d="M18 15l-6-6-6 6"/>
-              </svg>
-            </button>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <div>
+            <h2 style={{ margin: 0, fontSize: 28, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em' }}>
+              Timeline View
+            </h2>
+            <p style={{ margin: '4px 0 0 0', fontSize: 14, color: 'var(--text-secondary)' }}>
+              Gantt-style project timeline with task dependencies
+            </p>
           </div>
 
           {/* Controls */}
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
             {/* Scale Toggle */}
-            <div style={{ display: 'flex', gap: 4, background: 'var(--bg-secondary)', padding: 3, borderRadius: 7 }}>
+            <div style={{ display: 'flex', gap: 6, background: 'var(--bg-secondary)', padding: 4, borderRadius: 8 }}>
               {(['day', 'week', 'month'] as TimelineScale[]).map(scale => (
                 <button
                   key={scale}
                   onClick={() => setTimelineScale(scale)}
                   style={{
-                    padding: '5px 12px',
+                    padding: '6px 14px',
                     background: timelineScale === scale ? 'var(--primary)' : 'transparent',
                     color: timelineScale === scale ? 'white' : 'var(--text-secondary)',
                     border: 'none',
-                    borderRadius: 5,
+                    borderRadius: 6,
                     cursor: 'pointer',
                     fontWeight: 600,
-                    fontSize: 11,
+                    fontSize: 12,
                     textTransform: 'capitalize',
                     transition: 'all 0.2s'
                   }}
@@ -282,179 +278,177 @@ export default function TimelineView({ tasks, onTaskClick, users }: TimelineView
               value={groupBy}
               onChange={(e) => setGroupBy(e.target.value as GroupBy)}
               style={{
-                padding: '6px 10px',
+                padding: '8px 12px',
                 background: 'var(--surface)',
                 border: '1px solid var(--border)',
-                borderRadius: 7,
+                borderRadius: 8,
                 color: 'var(--text)',
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: 600,
                 cursor: 'pointer'
               }}
             >
               <option value="none">No Grouping</option>
-              <option value="assignee">By Assignee</option>
-              <option value="priority">By Priority</option>
-              <option value="status">By Status</option>
+              <option value="assignee">Group by Assignee</option>
+              <option value="priority">Group by Priority</option>
+              <option value="status">Group by Status</option>
             </select>
 
             {/* Show Completed Toggle */}
             <button
               onClick={() => setShowCompleted(!showCompleted)}
               style={{
-                padding: '6px 12px',
+                padding: '8px 14px',
                 background: showCompleted ? 'var(--primary-light)' : 'var(--bg-secondary)',
                 color: showCompleted ? 'var(--primary)' : 'var(--text-secondary)',
                 border: `1px solid ${showCompleted ? 'var(--primary)' : 'var(--border)'}`,
-                borderRadius: 7,
+                borderRadius: 8,
                 cursor: 'pointer',
                 fontWeight: 600,
-                fontSize: 12,
+                fontSize: 13,
                 transition: 'all 0.2s',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 5
+                gap: 6
               }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 {showCompleted ? (
                   <path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
                 ) : (
                   <rect x="3" y="3" width="18" height="18" rx="2"/>
                 )}
               </svg>
-              {!isHeaderCompact && 'Completed'}
+              Completed
             </button>
           </div>
         </div>
 
-        {/* Stats - Only show when not compact */}
-        {!isHeaderCompact && (
-          <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+        {/* Stats */}
+        <div style={{ display: 'flex', gap: 12 }}>
+          <div style={{
+            flex: 1,
+            padding: 12,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            borderRadius: 10,
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10
+          }}>
             <div style={{
-              flex: 1,
-              padding: 10,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              width: 36,
+              height: 36,
               borderRadius: 8,
-              color: 'white',
+              background: 'rgba(255, 255, 255, 0.2)',
               display: 'flex',
               alignItems: 'center',
-              gap: 8
+              justifyContent: 'center'
             }}>
-              <div style={{
-                width: 32,
-                height: 32,
-                borderRadius: 6,
-                background: 'rgba(255, 255, 255, 0.2)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 16
-              }}>
-                📋
-              </div>
-              <div>
-                <div style={{ fontSize: 10, opacity: 0.9, fontWeight: 600 }}>Total</div>
-                <div style={{ fontSize: 20, fontWeight: 800 }}>{stats.total}</div>
-              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 11l3 3L22 4"/>
+                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+              </svg>
             </div>
-
-            <div style={{
-              flex: 1,
-              padding: 10,
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              borderRadius: 8,
-              color: 'white',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8
-            }}>
-              <div style={{
-                width: 32,
-                height: 32,
-                borderRadius: 6,
-                background: 'rgba(255, 255, 255, 0.2)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 16
-              }}>
-                ✓
-              </div>
-              <div>
-                <div style={{ fontSize: 10, opacity: 0.9, fontWeight: 600 }}>Done</div>
-                <div style={{ fontSize: 20, fontWeight: 800 }}>{stats.completed}</div>
-              </div>
-            </div>
-
-            <div style={{
-              flex: 1,
-              padding: 10,
-              background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-              borderRadius: 8,
-              color: 'white',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8
-            }}>
-              <div style={{
-                width: 32,
-                height: 32,
-                borderRadius: 6,
-                background: 'rgba(255, 255, 255, 0.2)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 16
-              }}>
-                ⚡
-              </div>
-              <div>
-                <div style={{ fontSize: 10, opacity: 0.9, fontWeight: 600 }}>Active</div>
-                <div style={{ fontSize: 20, fontWeight: 800 }}>{stats.inProgress}</div>
-              </div>
-            </div>
-
-            <div style={{
-              flex: 1,
-              padding: 10,
-              background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-              borderRadius: 8,
-              color: 'white',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8
-            }}>
-              <div style={{
-                width: 32,
-                height: 32,
-                borderRadius: 6,
-                background: 'rgba(255, 255, 255, 0.2)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 16
-              }}>
-                ⚠
-              </div>
-              <div>
-                <div style={{ fontSize: 10, opacity: 0.9, fontWeight: 600 }}>Late</div>
-                <div style={{ fontSize: 20, fontWeight: 800 }}>{stats.overdue}</div>
-              </div>
+            <div>
+              <div style={{ fontSize: 11, opacity: 0.9, fontWeight: 600 }}>Total Tasks</div>
+              <div style={{ fontSize: 24, fontWeight: 800 }}>{stats.total}</div>
             </div>
           </div>
-        )}
+
+          <div style={{
+            flex: 1,
+            padding: 12,
+            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            borderRadius: 10,
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10
+          }}>
+            <div style={{
+              width: 36,
+              height: 36,
+              borderRadius: 8,
+              background: 'rgba(255, 255, 255, 0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              ✓
+            </div>
+            <div>
+              <div style={{ fontSize: 11, opacity: 0.9, fontWeight: 600 }}>Completed</div>
+              <div style={{ fontSize: 24, fontWeight: 800 }}>{stats.completed}</div>
+            </div>
+          </div>
+
+          <div style={{
+            flex: 1,
+            padding: 12,
+            background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+            borderRadius: 10,
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10
+          }}>
+            <div style={{
+              width: 36,
+              height: 36,
+              borderRadius: 8,
+              background: 'rgba(255, 255, 255, 0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              ⚡
+            </div>
+            <div>
+              <div style={{ fontSize: 11, opacity: 0.9, fontWeight: 600 }}>In Progress</div>
+              <div style={{ fontSize: 24, fontWeight: 800 }}>{stats.inProgress}</div>
+            </div>
+          </div>
+
+          <div style={{
+            flex: 1,
+            padding: 12,
+            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+            borderRadius: 10,
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10
+          }}>
+            <div style={{
+              width: 36,
+              height: 36,
+              borderRadius: 8,
+              background: 'rgba(255, 255, 255, 0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              ⚠
+            </div>
+            <div>
+              <div style={{ fontSize: 11, opacity: 0.9, fontWeight: 600 }}>Overdue</div>
+              <div style={{ fontSize: 24, fontWeight: 800 }}>{stats.overdue}</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Enhanced Timeline/Gantt Chart */}
-      {/* Timeline Container */}
       <div style={{ 
         background: 'var(--surface)', 
+        borderRadius: 16, 
+        border: '1px solid var(--border)', 
         overflow: 'hidden',
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
-        minHeight: 0
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
       }}>
         <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
           {/* Task List Column */}
@@ -479,11 +473,7 @@ export default function TimelineView({ tasks, onTaskClick, users }: TimelineView
             }}>
               Task Name
             </div>
-            <div 
-              ref={taskListScrollRef}
-              onScroll={handleTaskListScroll}
-              style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}
-            >
+            <div style={{ flex: 1, overflowY: 'auto' }}>
               {taskGroups.map((group, groupIdx) => (
                 <div key={groupIdx}>
                   {groupBy !== 'none' && (
@@ -529,7 +519,6 @@ export default function TimelineView({ tasks, onTaskClick, users }: TimelineView
                         style={{
                           padding: 16,
                           borderBottom: '1px solid var(--border)',
-                          minHeight: 65,
                           cursor: 'pointer',
                           transition: 'all 0.2s',
                           background: hoveredTask === task.id ? 'var(--surface)' : 'transparent',
@@ -605,11 +594,7 @@ export default function TimelineView({ tasks, onTaskClick, users }: TimelineView
           </div>
 
           {/* Timeline Grid */}
-          <div 
-            ref={timelineScrollRef}
-            onScroll={handleTimelineScroll}
-            style={{ flex: 1, overflow: 'auto', position: 'relative' }}
-          >
+          <div style={{ flex: 1, overflow: 'auto', position: 'relative' }}>
             {/* Timeline Header */}
             <div style={{
               position: 'sticky',
@@ -619,39 +604,44 @@ export default function TimelineView({ tasks, onTaskClick, users }: TimelineView
               borderBottom: '2px solid var(--border)'
             }}>
               <div style={{ display: 'flex', minWidth: 'min-content' }}>
-                {Array.from({ length: visibleDays }, (_, i) => {
-                  const date = new Date(rangeStart)
-                  date.setDate(date.getDate() + i)
-                  const isToday = date.toDateString() === new Date().toDateString()
-                  const isWeekend = date.getDay() === 0 || date.getDay() === 6
+                {timelineColumns.map((col, i) => {
+                  const isWeekend = timelineScale !== 'month' && (col.date.getDay() === 0 || col.date.getDay() === 6)
                   
                   return (
                     <div
                       key={i}
                       style={{
-                        width: columnWidth,
+                        width: col.width,
                         flexShrink: 0,
-                        padding: '8px 4px',
+                        padding: timelineScale === 'month' ? '12px 8px' : '8px 4px',
                         textAlign: 'center',
                         fontSize: 10,
                         fontWeight: 700,
-                        borderRight: i % 7 === 6 ? '1px solid var(--border)' : '1px solid rgba(0, 0, 0, 0.05)',
-                        background: isToday 
+                        borderRight: timelineScale === 'month' ? '2px solid var(--border)' : (i % 7 === 6 ? '1px solid var(--border)' : '1px solid rgba(0, 0, 0, 0.05)'),
+                        background: col.isToday 
                           ? 'var(--primary)' 
                           : isWeekend 
                             ? 'var(--bg-secondary)' 
                             : 'var(--surface)',
-                        color: isToday ? 'white' : isWeekend ? 'var(--text-secondary)' : 'var(--text)',
+                        color: col.isToday ? 'white' : isWeekend ? 'var(--text-secondary)' : 'var(--text)',
                         textTransform: 'uppercase',
                         letterSpacing: '0.5px'
                       }}
                     >
-                      <div style={{ fontSize: 9, opacity: 0.8, marginBottom: 2 }}>
-                        {date.toLocaleDateString('en-US', { weekday: 'short' })}
-                      </div>
-                      <div style={{ fontSize: timelineScale === 'day' ? 14 : 11 }}>
-                        {formatDate(date.toISOString())}
-                      </div>
+                      {timelineScale === 'month' ? (
+                        <div style={{ fontSize: 13, fontWeight: 800 }}>
+                          {col.label}
+                        </div>
+                      ) : (
+                        <>
+                          <div style={{ fontSize: 9, opacity: 0.8, marginBottom: 2 }}>
+                            {col.shortLabel}
+                          </div>
+                          <div style={{ fontSize: timelineScale === 'day' ? 14 : 11 }}>
+                            {col.label}
+                          </div>
+                        </>
+                      )}
                     </div>
                   )
                 })}
@@ -661,31 +651,31 @@ export default function TimelineView({ tasks, onTaskClick, users }: TimelineView
             {/* Timeline Grid Content */}
             <div style={{ position: 'relative', minWidth: 'min-content' }}>
               {/* Today Marker */}
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                bottom: 0,
-                left: Math.floor((new Date().getTime() - rangeStart.getTime()) / (1000 * 60 * 60 * 24)) * columnWidth,
-                width: 2,
-                background: 'var(--primary)',
-                zIndex: 1,
-                pointerEvents: 'none'
-              }} />
+              {timelineScale !== 'month' && (
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  bottom: 0,
+                  left: Math.floor((new Date().getTime() - rangeStart.getTime()) / (1000 * 60 * 60 * 24)) * columnWidth,
+                  width: 2,
+                  background: 'var(--primary)',
+                  zIndex: 1,
+                  pointerEvents: 'none'
+                }} />
+              )}
 
               {/* Grid Background */}
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex' }}>
-                {Array.from({ length: visibleDays }, (_, i) => {
-                  const date = new Date(rangeStart)
-                  date.setDate(date.getDate() + i)
-                  const isWeekend = date.getDay() === 0 || date.getDay() === 6
+                {timelineColumns.map((col, i) => {
+                  const isWeekend = timelineScale !== 'month' && (col.date.getDay() === 0 || col.date.getDay() === 6)
                   
                   return (
                     <div
                       key={i}
                       style={{
-                        width: columnWidth,
+                        width: col.width,
                         flexShrink: 0,
-                        borderRight: i % 7 === 6 ? '1px solid var(--border)' : '1px solid rgba(0, 0, 0, 0.03)',
+                        borderRight: timelineScale === 'month' ? '2px solid var(--border)' : (i % 7 === 6 ? '1px solid var(--border)' : '1px solid rgba(0, 0, 0, 0.03)'),
                         background: isWeekend ? 'var(--bg-secondary)' : 'transparent'
                       }}
                     />
@@ -707,8 +697,29 @@ export default function TimelineView({ tasks, onTaskClick, users }: TimelineView
                     {group.tasks.map((task, idx) => {
                       const dueDate = new Date(task.dueDate || '')
                       const createdDate = task.createdAt ? new Date(task.createdAt) : new Date(dueDate.getTime() - 24 * 60 * 60 * 1000)
-                      const startDay = Math.floor((createdDate.getTime() - rangeStart.getTime()) / (1000 * 60 * 60 * 24))
-                      const duration = getTaskDuration(task)
+                      
+                      // Calculate position and width based on timeline scale
+                      let startPosition = 0
+                      let barWidth = columnWidth
+                      
+                      if (timelineScale === 'month') {
+                        // For month view, calculate based on months
+                        const taskMonth = dueDate.getMonth()
+                        const taskYear = dueDate.getFullYear()
+                        const startMonth = rangeStart.getMonth()
+                        const startYear = rangeStart.getFullYear()
+                        
+                        const monthsDiff = (taskYear - startYear) * 12 + (taskMonth - startMonth)
+                        startPosition = monthsDiff * columnWidth
+                        barWidth = columnWidth
+                      } else {
+                        // For day and week view, calculate based on days
+                        const startDay = Math.floor((createdDate.getTime() - rangeStart.getTime()) / (1000 * 60 * 60 * 24))
+                        const duration = getTaskDuration(task)
+                        startPosition = Math.max(0, startDay) * columnWidth
+                        barWidth = Math.max(columnWidth, duration * columnWidth)
+                      }
+                      
                       const progress = getProgressPercentage(task)
                       const overdue = isOverdue(task.dueDate)
 
@@ -720,7 +731,7 @@ export default function TimelineView({ tasks, onTaskClick, users }: TimelineView
                             borderBottom: '1px solid var(--border)',
                             display: 'flex',
                             alignItems: 'center',
-                            paddingLeft: Math.max(0, startDay) * columnWidth,
+                            paddingLeft: startPosition,
                             position: 'relative'
                           }}
                         >
@@ -729,7 +740,7 @@ export default function TimelineView({ tasks, onTaskClick, users }: TimelineView
                             onMouseEnter={() => setHoveredTask(task.id)}
                             onMouseLeave={() => setHoveredTask(null)}
                             style={{
-                              minWidth: Math.max(columnWidth, duration * columnWidth),
+                              minWidth: barWidth,
                               height: 36,
                               borderRadius: 8,
                               background: `linear-gradient(135deg, ${getPriorityColor(task.priority)} 0%, ${getPriorityColor(task.priority)}dd 100%)`,
