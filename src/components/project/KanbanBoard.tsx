@@ -65,7 +65,9 @@ function KanbanBoard({
   onEditingColumns
 }: KanbanBoardProps) {
   const filterTasksByColumn = (columnId: string) => {
-    return tasks.filter((t) => t.status === columnId)
+    return tasks
+      .filter((t) => t.status === columnId)
+      .sort((a, b) => (a.order || 0) - (b.order || 0))
   }
 
   return (

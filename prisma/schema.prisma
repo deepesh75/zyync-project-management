@@ -122,6 +122,7 @@ model Task {
   status      String   @default("todo")
   priority    String?  @default("medium") // "low", "medium", "high"
   coverColor  String?  // Card cover color
+  order       Float    @default(0) // Position within the column for drag-and-drop ordering
   projectId   String
   project     Project  @relation(fields: [projectId], references: [id])
   assigneeId  String?

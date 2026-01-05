@@ -57,7 +57,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     })
     
-    // allow updating title, description, status, priority, assigneeId, dueDate, labelIds
+    // allow updating title, description, status, priority, assigneeId, dueDate, labelIds, order
     const allowed: any = {}
     if (updates.title) allowed.title = updates.title
     if (updates.description !== undefined) allowed.description = updates.description
@@ -66,6 +66,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (updates.coverColor !== undefined) allowed.coverColor = updates.coverColor
     if (updates.assigneeId) allowed.assigneeId = updates.assigneeId
     if (updates.dueDate) allowed.dueDate = new Date(updates.dueDate)
+    if (updates.order !== undefined) allowed.order = updates.order
 
     // Notify on task assignment
     if (updates.assigneeId && currentTask && updates.assigneeId !== currentTask.assigneeId && currentUser) {

@@ -205,18 +205,22 @@ export default function ProjectPage() {
     }
   }, [id, loadWorkflows])
 
-  async function moveTask(taskId: string, toStatus: string) {
+  async function moveTask(taskId: string, toStatus: string, newOrder?: number) {
     if (!project) return
     
     // Find the task being moved
     const movedTask = project.tasks.find((t: any) => t.id === taskId)
     if (!movedTask) return
     
+    // If newOrder is not provided, place it at the end of the column
+    const orderValue = newOrder !== undefined ? newOrder : 
+      Math.max(0, ...project.tasks.filter((t: any) => t.status === toStatus).map((t: any) => t.order || 0)) + 1
+    
     // Optimistic update - instant UI
     const optimisticProject = {
       ...project,
       tasks: project.tasks.map((t: any) =>
-        t.id === taskId ? { ...t, status: toStatus } : t
+        t.id === taskId ? { ...t, status: toStatus, order: orderValue } : t
       ),
     }
     mutate(optimisticProject, false)
@@ -226,7 +230,7 @@ export default function ProjectPage() {
       const response = await fetch(`/api/tasks/${taskId}`, { 
         method: 'PATCH', 
         headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ status: toStatus }) 
+        body: JSON.stringify({ status: toStatus, order: orderValue }) 
       })
       
       if (response.ok) {
@@ -344,11 +348,48 @@ export default function ProjectPage() {
     // Prefer dataTransfer value, but fall back to React state in case it's cleared on drop
     const taskId = e.dataTransfer.getData('text/plain') || draggingTaskId
     console.debug('drop', { taskId, toStatus, dragOverColumn, dragOverTaskId })
-    if (!taskId) {
+    if (!taskId || !project) {
       clearDragState()
       return
     }
-    await moveTask(taskId, toStatus)
+
+    // Calculate the new order based on where the card was dropped
+    let newOrder: number
+    
+    const tasksInTargetColumn = project.tasks
+      .filter((t: any) => t.status === toStatus && !t.deleted)
+      .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+
+    if (dragOverTaskId) {
+      // Dropped on/near a specific task
+      const targetTaskIndex = tasksInTargetColumn.findIndex((t: any) => t.id === dragOverTaskId)
+      
+      if (targetTaskIndex === -1) {
+        // Target task not found, place at end
+        newOrder = tasksInTargetColumn.length > 0 
+          ? Math.max(...tasksInTargetColumn.map((t: any) => t.order || 0)) + 1
+          : 0
+      } else {
+        // Place before the target task
+        const targetTask = tasksInTargetColumn[targetTaskIndex]
+        const prevTask = targetTaskIndex > 0 ? tasksInTargetColumn[targetTaskIndex - 1] : null
+        
+        if (prevTask) {
+          // Place between previous task and target task
+          newOrder = ((prevTask.order || 0) + (targetTask.order || 0)) / 2
+        } else {
+          // Place before the first task
+          newOrder = (targetTask.order || 0) / 2
+        }
+      }
+    } else {
+      // Dropped in empty space or at the end of column
+      newOrder = tasksInTargetColumn.length > 0 
+        ? Math.max(...tasksInTargetColumn.map((t: any) => t.order || 0)) + 1
+        : 0
+    }
+
+    await moveTask(taskId, toStatus, newOrder)
     clearDragState()
   }
 
@@ -359,10 +400,16 @@ export default function ProjectPage() {
     setCreating(true)
     const status = columnId || columns[0]?.id
     
+    // Calculate order for new task (place at end of column)
+    const tasksInColumn = project.tasks.filter((t: any) => t.status === status && !t.deleted)
+    const order = tasksInColumn.length > 0 
+      ? Math.max(...tasksInColumn.map((t: any) => t.order || 0)) + 1
+      : 0
+    
     const res = await fetch('/api/tasks', { 
       method: 'POST', 
       headers: { 'Content-Type': 'application/json' }, 
-      body: JSON.stringify({ title: taskTitle, description: newDescription, projectId: id, status }) 
+      body: JSON.stringify({ title: taskTitle, description: newDescription, projectId: id, status, order }) 
     })
     
     if (res.ok) {

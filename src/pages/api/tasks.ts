@@ -71,7 +71,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const user = await prisma.user.findUnique({ where: { email: session.user.email } })
     if (!user) return res.status(401).json({ error: 'Unauthorized' })
     
-    const { title, description, projectId, assigneeId, dueDate, status } = req.body
+    const { title, description, projectId, assigneeId, dueDate, status, order } = req.body
     if (!title || !projectId) return res.status(400).json({ error: 'title and projectId are required' })
     
     // Verify user has access to the project
@@ -108,7 +108,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         project: { connect: { id: projectId } },
         assignee: assigneeId ? { connect: { id: assigneeId } } : undefined,
         dueDate: dueDate ? new Date(dueDate) : undefined,
-        status: status ?? 'todo'
+        status: status ?? 'todo',
+        order: order ?? 0
       }
     })
     
