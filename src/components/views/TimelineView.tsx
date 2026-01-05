@@ -25,6 +25,22 @@ export default function TimelineView({ tasks, onTaskClick, users }: TimelineView
   const [groupBy, setGroupBy] = React.useState<GroupBy>('none')
   const [showCompleted, setShowCompleted] = React.useState(true)
   const [hoveredTask, setHoveredTask] = React.useState<string | null>(null)
+  const [isHeaderCompact, setIsHeaderCompact] = React.useState(false)
+  const timelineScrollRef = React.useRef<HTMLDivElement>(null)
+  const taskListScrollRef = React.useRef<HTMLDivElement>(null)
+
+  // Sync scroll between task list and timeline
+  const handleTimelineScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (taskListScrollRef.current) {
+      taskListScrollRef.current.scrollTop = e.currentTarget.scrollTop
+    }
+  }
+
+  const handleTaskListScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (timelineScrollRef.current) {
+      timelineScrollRef.current.scrollTop = e.currentTarget.scrollTop
+    }
+  }
   // Filter tasks with due dates and sort by due date
   const filteredTasks = tasks
     .filter(t => showCompleted || (t.status !== 'Done' && t.status !== 'done'))
@@ -184,42 +200,76 @@ export default function TimelineView({ tasks, onTaskClick, users }: TimelineView
       flexDirection: 'column',
       overflow: 'hidden'
     }}>
-      {/* Enhanced Header */}
+      {/* Enhanced Header - Collapsible */}
       <div style={{
         background: 'var(--surface)',
-        padding: 24,
+        padding: isHeaderCompact ? '16px 24px' : 24,
         borderRadius: 16,
         border: '1px solid var(--border)',
-        marginBottom: 24,
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+        marginBottom: 16,
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+        transition: 'all 0.3s'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <div>
-            <h2 style={{ margin: 0, fontSize: 28, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em' }}>
-              Timeline View
-            </h2>
-            <p style={{ margin: '4px 0 0 0', fontSize: 14, color: 'var(--text-secondary)' }}>
-              Gantt-style project timeline with task dependencies
-            </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isHeaderCompact ? 0 : 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: isHeaderCompact ? 20 : 28, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em', transition: 'all 0.3s' }}>
+                Timeline View
+              </h2>
+              {!isHeaderCompact && (
+                <p style={{ margin: '4px 0 0 0', fontSize: 14, color: 'var(--text-secondary)' }}>
+                  Gantt-style project timeline with task dependencies
+                </p>
+              )}
+            </div>
+            
+            {/* Compact Toggle */}
+            <button
+              onClick={() => setIsHeaderCompact(!isHeaderCompact)}
+              style={{
+                padding: '6px 10px',
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border)',
+                borderRadius: 6,
+                cursor: 'pointer',
+                color: 'var(--text-secondary)',
+                fontSize: 12,
+                fontWeight: 600,
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--primary-light)'
+                e.currentTarget.style.borderColor = 'var(--primary)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--bg-secondary)'
+                e.currentTarget.style.borderColor = 'var(--border)'
+              }}
+              title={isHeaderCompact ? 'Expand header' : 'Collapse header'}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: isHeaderCompact ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }}>
+                <path d="M18 15l-6-6-6 6"/>
+              </svg>
+            </button>
           </div>
 
           {/* Controls */}
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             {/* Scale Toggle */}
-            <div style={{ display: 'flex', gap: 6, background: 'var(--bg-secondary)', padding: 4, borderRadius: 8 }}>
+            <div style={{ display: 'flex', gap: 4, background: 'var(--bg-secondary)', padding: 3, borderRadius: 7 }}>
               {(['day', 'week', 'month'] as TimelineScale[]).map(scale => (
                 <button
                   key={scale}
                   onClick={() => setTimelineScale(scale)}
                   style={{
-                    padding: '6px 14px',
+                    padding: '5px 12px',
                     background: timelineScale === scale ? 'var(--primary)' : 'transparent',
                     color: timelineScale === scale ? 'white' : 'var(--text-secondary)',
                     border: 'none',
-                    borderRadius: 6,
+                    borderRadius: 5,
                     cursor: 'pointer',
                     fontWeight: 600,
-                    fontSize: 12,
+                    fontSize: 11,
                     textTransform: 'capitalize',
                     transition: 'all 0.2s'
                   }}
@@ -234,165 +284,168 @@ export default function TimelineView({ tasks, onTaskClick, users }: TimelineView
               value={groupBy}
               onChange={(e) => setGroupBy(e.target.value as GroupBy)}
               style={{
-                padding: '8px 12px',
+                padding: '6px 10px',
                 background: 'var(--surface)',
                 border: '1px solid var(--border)',
-                borderRadius: 8,
+                borderRadius: 7,
                 color: 'var(--text)',
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: 600,
                 cursor: 'pointer'
               }}
             >
               <option value="none">No Grouping</option>
-              <option value="assignee">Group by Assignee</option>
-              <option value="priority">Group by Priority</option>
-              <option value="status">Group by Status</option>
+              <option value="assignee">By Assignee</option>
+              <option value="priority">By Priority</option>
+              <option value="status">By Status</option>
             </select>
 
             {/* Show Completed Toggle */}
             <button
               onClick={() => setShowCompleted(!showCompleted)}
               style={{
-                padding: '8px 14px',
+                padding: '6px 12px',
                 background: showCompleted ? 'var(--primary-light)' : 'var(--bg-secondary)',
                 color: showCompleted ? 'var(--primary)' : 'var(--text-secondary)',
                 border: `1px solid ${showCompleted ? 'var(--primary)' : 'var(--border)'}`,
-                borderRadius: 8,
+                borderRadius: 7,
                 cursor: 'pointer',
                 fontWeight: 600,
-                fontSize: 13,
+                fontSize: 12,
                 transition: 'all 0.2s',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 6
+                gap: 5
               }}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 {showCompleted ? (
                   <path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
                 ) : (
                   <rect x="3" y="3" width="18" height="18" rx="2"/>
                 )}
               </svg>
-              Completed
+              {!isHeaderCompact && 'Completed'}
             </button>
           </div>
         </div>
 
-        {/* Stats */}
-        <div style={{ display: 'flex', gap: 12 }}>
-          <div style={{
-            flex: 1,
-            padding: 12,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            borderRadius: 10,
-            color: 'white',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10
-          }}>
+        {/* Stats - Only show when not compact */}
+        {!isHeaderCompact && (
+          <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
             <div style={{
-              width: 36,
-              height: 36,
+              flex: 1,
+              padding: 10,
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
               borderRadius: 8,
-              background: 'rgba(255, 255, 255, 0.2)',
+              color: 'white',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              gap: 8
             }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 11l3 3L22 4"/>
-                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
-              </svg>
+              <div style={{
+                width: 32,
+                height: 32,
+                borderRadius: 6,
+                background: 'rgba(255, 255, 255, 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 16
+              }}>
+                📋
+              </div>
+              <div>
+                <div style={{ fontSize: 10, opacity: 0.9, fontWeight: 600 }}>Total</div>
+                <div style={{ fontSize: 20, fontWeight: 800 }}>{stats.total}</div>
+              </div>
             </div>
-            <div>
-              <div style={{ fontSize: 11, opacity: 0.9, fontWeight: 600 }}>Total Tasks</div>
-              <div style={{ fontSize: 24, fontWeight: 800 }}>{stats.total}</div>
-            </div>
-          </div>
 
-          <div style={{
-            flex: 1,
-            padding: 12,
-            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-            borderRadius: 10,
-            color: 'white',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10
-          }}>
             <div style={{
-              width: 36,
-              height: 36,
+              flex: 1,
+              padding: 10,
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
               borderRadius: 8,
-              background: 'rgba(255, 255, 255, 0.2)',
+              color: 'white',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              gap: 8
             }}>
-              ✓
+              <div style={{
+                width: 32,
+                height: 32,
+                borderRadius: 6,
+                background: 'rgba(255, 255, 255, 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 16
+              }}>
+                ✓
+              </div>
+              <div>
+                <div style={{ fontSize: 10, opacity: 0.9, fontWeight: 600 }}>Done</div>
+                <div style={{ fontSize: 20, fontWeight: 800 }}>{stats.completed}</div>
+              </div>
             </div>
-            <div>
-              <div style={{ fontSize: 11, opacity: 0.9, fontWeight: 600 }}>Completed</div>
-              <div style={{ fontSize: 24, fontWeight: 800 }}>{stats.completed}</div>
-            </div>
-          </div>
 
-          <div style={{
-            flex: 1,
-            padding: 12,
-            background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-            borderRadius: 10,
-            color: 'white',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10
-          }}>
             <div style={{
-              width: 36,
-              height: 36,
+              flex: 1,
+              padding: 10,
+              background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
               borderRadius: 8,
-              background: 'rgba(255, 255, 255, 0.2)',
+              color: 'white',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              gap: 8
             }}>
-              ⚡
+              <div style={{
+                width: 32,
+                height: 32,
+                borderRadius: 6,
+                background: 'rgba(255, 255, 255, 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 16
+              }}>
+                ⚡
+              </div>
+              <div>
+                <div style={{ fontSize: 10, opacity: 0.9, fontWeight: 600 }}>Active</div>
+                <div style={{ fontSize: 20, fontWeight: 800 }}>{stats.inProgress}</div>
+              </div>
             </div>
-            <div>
-              <div style={{ fontSize: 11, opacity: 0.9, fontWeight: 600 }}>In Progress</div>
-              <div style={{ fontSize: 24, fontWeight: 800 }}>{stats.inProgress}</div>
-            </div>
-          </div>
 
-          <div style={{
-            flex: 1,
-            padding: 12,
-            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-            borderRadius: 10,
-            color: 'white',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10
-          }}>
             <div style={{
-              width: 36,
-              height: 36,
+              flex: 1,
+              padding: 10,
+              background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
               borderRadius: 8,
-              background: 'rgba(255, 255, 255, 0.2)',
+              color: 'white',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              gap: 8
             }}>
-              ⚠
-            </div>
-            <div>
-              <div style={{ fontSize: 11, opacity: 0.9, fontWeight: 600 }}>Overdue</div>
-              <div style={{ fontSize: 24, fontWeight: 800 }}>{stats.overdue}</div>
+              <div style={{
+                width: 32,
+                height: 32,
+                borderRadius: 6,
+                background: 'rgba(255, 255, 255, 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 16
+              }}>
+                ⚠
+              </div>
+              <div>
+                <div style={{ fontSize: 10, opacity: 0.9, fontWeight: 600 }}>Late</div>
+                <div style={{ fontSize: 20, fontWeight: 800 }}>{stats.overdue}</div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Enhanced Timeline/Gantt Chart */}
@@ -429,7 +482,11 @@ export default function TimelineView({ tasks, onTaskClick, users }: TimelineView
             }}>
               Task Name
             </div>
-            <div style={{ flex: 1, overflowY: 'auto' }}>
+            <div 
+              ref={taskListScrollRef}
+              onScroll={handleTaskListScroll}
+              style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}
+            >
               {taskGroups.map((group, groupIdx) => (
                 <div key={groupIdx}>
                   {groupBy !== 'none' && (
@@ -475,6 +532,7 @@ export default function TimelineView({ tasks, onTaskClick, users }: TimelineView
                         style={{
                           padding: 16,
                           borderBottom: '1px solid var(--border)',
+                          minHeight: 65,
                           cursor: 'pointer',
                           transition: 'all 0.2s',
                           background: hoveredTask === task.id ? 'var(--surface)' : 'transparent',
@@ -550,7 +608,11 @@ export default function TimelineView({ tasks, onTaskClick, users }: TimelineView
           </div>
 
           {/* Timeline Grid */}
-          <div style={{ flex: 1, overflow: 'auto', position: 'relative' }}>
+          <div 
+            ref={timelineScrollRef}
+            onScroll={handleTimelineScroll}
+            style={{ flex: 1, overflow: 'auto', position: 'relative' }}
+          >
             {/* Timeline Header */}
             <div style={{
               position: 'sticky',
