@@ -2664,8 +2664,8 @@ export default function ProjectPage() {
       {/* Task detail modal */}
       {selectedTask && (
         <div style={{ position: 'fixed', inset: 0, background: 'var(--modal-backdrop)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, animation: 'fadeIn 0.2s ease', padding: 16 }} onClick={() => setSelectedTask(null)}>
-          <div style={{ width: '100%', maxWidth: 1100, background: 'var(--surface)', borderRadius: 16, maxHeight: 'calc(100vh - 32px)', overflowY: 'auto', border: '1px solid var(--border)', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', animation: 'slideUp 0.3s ease' }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid var(--border)', padding: '20px 24px', position: 'sticky', top: 0, background: 'var(--surface)', zIndex: 1, gap: 16 }}>
+          <div style={{ width: '100%', maxWidth: 1100, background: 'var(--surface)', borderRadius: 16, maxHeight: 'calc(100vh - 32px)', border: '1px solid var(--border)', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', animation: 'slideUp 0.3s ease', display: 'flex', flexDirection: 'column', overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: 16, borderBottom: '1px solid var(--border)', padding: '20px 24px', background: 'var(--surface)', zIndex: 1, gap: 16, flexShrink: 0 }}>
               <div style={{ display: 'flex', gap: 12, alignItems: 'center', flex: 1 }}>
                 <input
                   value={ (selectedTask as any).title }
@@ -2985,10 +2985,10 @@ export default function ProjectPage() {
               </div>
             </div>
 
-            {/* Two-column layout */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: 24, padding: '0 24px 24px' }}>
+            {/* Two-column layout with independent scrolling */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: 0, flex: 1, overflow: 'hidden' }}>
               {/* Left column: Task details */}
-              <div>
+              <div style={{ overflowY: 'auto', padding: '0 24px 24px' }}>
                 <div style={{ marginBottom: 16 }}>
                   <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, fontSize: 12, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Description</label>
                   <textarea
@@ -3668,7 +3668,7 @@ export default function ProjectPage() {
               </div>
 
               {/* Right column: Activity & Comments */}
-              <div style={{ borderLeft: '1px solid var(--border)', paddingLeft: 24 }}>
+              <div style={{ borderLeft: '1px solid var(--border)', paddingLeft: 24, overflowY: 'auto', padding: '0 24px 24px 24px' }}>
                 {/* Activity Log */}
                 <h4 style={{ marginTop: 0, marginBottom: 16, fontSize: 16, fontWeight: 600, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 8 }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
