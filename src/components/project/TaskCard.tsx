@@ -36,7 +36,16 @@ function TaskCard({
   return (
     <>
       {isDragOverThis && (
-        <li style={{ background: 'var(--card-bg)', padding: 12, marginBottom: 8, borderRadius: 4, minHeight: 48 }} />
+        <li style={{ 
+          background: 'linear-gradient(135deg, var(--primary-light) 0%, rgba(99, 102, 241, 0.1) 100%)', 
+          padding: 12, 
+          marginBottom: 10, 
+          borderRadius: 10, 
+          minHeight: 60,
+          border: '2px dashed var(--primary)',
+          animation: 'pulse 1.5s ease-in-out infinite',
+          boxShadow: '0 0 20px rgba(79, 70, 229, 0.2)'
+        }} />
       )}
 
       <li
@@ -52,16 +61,17 @@ function TaskCard({
           padding: 12,
           marginBottom: 10,
           borderRadius: 10,
-          boxShadow: 'var(--shadow-sm)',
-          cursor: 'grab',
+          boxShadow: isDragging ? 'var(--shadow-xl)' : 'var(--shadow-sm)',
+          cursor: isDragging ? 'grabbing' : 'grab',
           borderLeft: '3px solid var(--primary)',
-          opacity: isDragging ? 0.6 : 1,
+          opacity: isDragging ? 0.4 : 1,
           position: 'relative',
-          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
           border: '1px solid var(--border)',
           borderLeftWidth: '3px',
           borderLeftColor: 'var(--primary)',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          transform: isDragging ? 'scale(1.05) rotate(2deg)' : 'scale(1) rotate(0deg)'
         }}
       >
         {/* Cover color bar */}

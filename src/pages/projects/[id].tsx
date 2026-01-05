@@ -287,22 +287,29 @@ export default function ProjectPage() {
     e.dataTransfer.effectAllowed = 'move'
     setDraggingTaskId(taskId)
     console.debug('dragstart', taskId, title)
-    // create a simple drag preview element
+    // create an enhanced drag preview element
     const preview = document.createElement('div')
     preview.setAttribute('data-drag-preview', '1')
-    preview.style.padding = '8px 12px'
-    preview.style.background = 'var(--card-bg)'
-    preview.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)'
-    preview.style.borderRadius = '6px'
+    preview.style.padding = '12px 16px'
+    preview.style.background = 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)'
+    preview.style.boxShadow = '0 8px 24px rgba(79, 70, 229, 0.4), 0 4px 8px rgba(0,0,0,0.2)'
+    preview.style.borderRadius = '12px'
     preview.style.fontWeight = '700'
-    preview.style.fontSize = '13px'
+    preview.style.fontSize = '14px'
+    preview.style.color = 'white'
     preview.style.position = 'absolute'
     preview.style.top = '-9999px'
-    preview.textContent = title
+    preview.style.maxWidth = '280px'
+    preview.style.whiteSpace = 'nowrap'
+    preview.style.overflow = 'hidden'
+    preview.style.textOverflow = 'ellipsis'
+    preview.style.transform = 'rotate(-2deg)'
+    preview.style.border = '2px solid rgba(255,255,255,0.3)'
+    preview.textContent = '📋 ' + title
     document.body.appendChild(preview)
     // set drag image with the preview
     try {
-      e.dataTransfer.setDragImage(preview, 20, 10)
+      e.dataTransfer.setDragImage(preview, 30, 20)
     } catch (err) {
       // ignore if not supported
     }

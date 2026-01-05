@@ -85,14 +85,17 @@ function KanbanBoard({
               display: 'flex',
               flexDirection: 'column',
               background: dragOverColumn === col.id 
-                ? 'linear-gradient(135deg, var(--primary-light) 0%, rgba(99, 102, 241, 0.1) 100%)' 
+                ? 'linear-gradient(135deg, var(--primary-light) 0%, rgba(99, 102, 241, 0.15) 100%)' 
                 : 'var(--surface)',
               padding: 12,
               borderRadius: 14,
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
               border: dragOverColumn === col.id ? '2px solid var(--primary)' : '2px solid var(--border)',
-              boxShadow: dragOverColumn === col.id ? 'var(--shadow-xl)' : 'var(--shadow-md)',
-              height: 'calc(100% - 40px)'
+              boxShadow: dragOverColumn === col.id 
+                ? '0 12px 32px rgba(79, 70, 229, 0.25), 0 0 20px rgba(79, 70, 229, 0.15)' 
+                : 'var(--shadow-md)',
+              height: 'calc(100% - 40px)',
+              transform: dragOverColumn === col.id ? 'scale(1.02)' : 'scale(1)'
             }}
           >
             {/* Column Header */}
@@ -191,7 +194,16 @@ function KanbanBoard({
               ))}
 
               {draggingTaskId && dragOverColumn === col.id && !dragOverTaskId && (
-                <li key={`placeholder-end-${col.id}`} style={{ background: '#fafafa', padding: 12, marginBottom: 8, borderRadius: 4, border: '2px dashed #ddd', minHeight: 48 }} />
+                <li key={`placeholder-end-${col.id}`} style={{ 
+                  background: 'linear-gradient(135deg, var(--primary-light) 0%, rgba(99, 102, 241, 0.1) 100%)', 
+                  padding: 12, 
+                  marginBottom: 10, 
+                  borderRadius: 10, 
+                  border: '2px dashed var(--primary)', 
+                  minHeight: 60,
+                  animation: 'pulse 1.5s ease-in-out infinite',
+                  boxShadow: '0 0 20px rgba(79, 70, 229, 0.2)'
+                }} />
               )}
             </ul>
             
