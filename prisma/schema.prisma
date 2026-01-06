@@ -12,11 +12,16 @@ model Organization {
   name      String
   slug      String   @unique
   
-  // PayPal billing/customer info
+  // PayPal billing/customer info (legacy - migrating to Razorpay)
   paypalCustomerId      String?
   paypalSubscriptionId  String?
   paypalPlanId          String?
   planId                String?
+  
+  // Razorpay billing info
+  razorpayCustomerId    String?
+  razorpaySubscriptionId String?
+  razorpayPlanId        String?
   
   // Seat management
   seatsAllowed          Int      @default(1)  // Total seats purchased
@@ -36,6 +41,7 @@ model Organization {
   members   OrganizationMember[]
   projects  Project[]
   invitations Invitation[]
+  payments  Payment[]
 }
 
 model OrganizationMember {
@@ -357,3 +363,37 @@ model TaskTemplate {
   
   @@index([projectId])
 }
+
+// Payment records for Razorpay transactions
+model Payment {
+  id                    String   @id @default(cuid())
+  organizationId        String
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  // Razorpay IDs
+  razorpayOrderId       String   @unique
+  razorpayPaymentId     String?  @unique
+  razorpaySubscriptionId String?
+  
+  // Payment details
+  amount                Int      // Amount in paise
+  currency              String   @default("INR")
+  status                String   // "created", "authorized", "captured", "failed", "refunded"
+  method                String?  // "card", "netbanking", "wallet", "upi"
+  
+  // Subscription info
+  planType              String?  // "pro_monthly", "pro_annual", "pro_lifetime"
+  billingInterval       String?  // "monthly", "annual", "lifetime"
+  
+  // Metadata
+  receipt               String?
+  notes                 String?  // JSON string for additional data
+  
+  createdAt             DateTime @default(now())
+  capturedAt            DateTime?
+  
+  @@index([organizationId])
+  @@index([razorpayOrderId])
+  @@index([status])
+}
+

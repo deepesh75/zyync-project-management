@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import crypto from 'crypto'
+import { prisma } from '../../../lib/prisma'
 
 export const config = {
   api: {
@@ -31,10 +32,99 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const event = JSON.parse(buf.toString())
     console.log('Razorpay webhook event:', event.event)
-    // TODO: handle events like payment.captured, payment.failed, subscription.charged
+    
+    // Handle different event types
+    switch (event.event) {
+      case 'payment.captured':
+        await handlePaymentCaptured(event.payload.payment.entity)
+        break
+      
+      case 'payment.failed':
+        await handlePaymentFailed(event.payload.payment.entity)
+        break
+      
+      case 'order.paid':
+        await handleOrderPaid(event.payload.order.entity)
+        break
+      
+      case 'subscription.charged':
+        // Future: handle recurring subscription charges
+        console.log('Subscription charged:', event.payload.subscription.entity)
+        break
+      
+      case 'subscription.cancelled':
+        await handleSubscriptionCancelled(event.payload.subscription.entity)
+        break
+      
+      default:
+        console.log('Unhandled event type:', event.event)
+    }
+    
     return res.status(200).json({ ok: true })
   } catch (err) {
     console.error('Failed to parse webhook', err)
     return res.status(500).json({ ok: false })
+  }
+}
+
+async function handlePaymentCaptured(payment: any) {
+  try {
+    // Update payment record status
+    await prisma.payment.updateMany({
+      where: { razorpayPaymentId: payment.id },
+      data: {
+        status: 'captured',
+        capturedAt: new Date(),
+        method: payment.method
+      }
+    })
+    console.log('Payment captured:', payment.id)
+  } catch (err) {
+    console.error('Error handling payment.captured:', err)
+  }
+}
+
+async function handlePaymentFailed(payment: any) {
+  try {
+    // Update payment record status
+    await prisma.payment.updateMany({
+      where: { razorpayPaymentId: payment.id },
+      data: { status: 'failed' }
+    })
+    
+    // Update organization billing status
+    const paymentRecord = await prisma.payment.findFirst({
+      where: { razorpayPaymentId: payment.id }
+    })
+    
+    if (paymentRecord?.organizationId) {
+      await prisma.organization.update({
+        where: { id: paymentRecord.organizationId },
+        data: { billingStatus: 'past_due' }
+      })
+    }
+    
+    console.log('Payment failed:', payment.id)
+  } catch (err) {
+    console.error('Error handling payment.failed:', err)
+  }
+}
+
+async function handleOrderPaid(order: any) {
+  console.log('Order paid:', order.id)
+  // Additional processing if needed
+}
+
+async function handleSubscriptionCancelled(subscription: any) {
+  try {
+    // Find organization by subscription ID and update status
+    await prisma.organization.updateMany({
+      where: { razorpaySubscriptionId: subscription.id },
+      data: { billingStatus: 'canceled' }
+    })
+    
+    console.log('Subscription cancelled:', subscription.id)
+  } catch (err) {
+    console.error('Error handling subscription.cancelled:', err)
   }
 }

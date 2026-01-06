@@ -49,8 +49,21 @@ export default function ProPricing() {
 
     setLoading(true)
     try {
+      // Get user's organization
+      const orgRes = await fetch('/api/organization')
+      const orgData = await orgRes.json()
+      const organizationId = orgData?.organization?.id
+
+      if (!organizationId) {
+        alert('Please create an organization first')
+        router.push('/dashboard')
+        return
+      }
+
       // Calculate amount in smallest currency unit (paise)
       const amountINR = Math.round(total * 100) // adjust currency conversion if needed
+      const planType = `pro_${billingCycle}`
+      
       const res = await fetch('/api/payments/razorpay/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -64,14 +77,19 @@ export default function ProPricing() {
         amount: order.amount,
         currency: order.currency,
         name: 'Zyync',
-        description: 'Pro plan',
+        description: `Pro plan - ${billingCycle} (${userCount} users)`,
         order_id: order.id,
         handler: async function (response: any) {
           // Verify payment on server
           const verifyRes = await fetch('/api/payments/razorpay/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(response)
+            body: JSON.stringify({
+              ...response,
+              organizationId,
+              planType,
+              amount: amountINR
+            })
           })
           const result = await verifyRes.json()
           if (result && result.ok) {
