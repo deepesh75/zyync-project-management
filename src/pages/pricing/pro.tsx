@@ -4,10 +4,10 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Navbar from '../../components/Navbar'
 
-// PayPal global type declaration
+// Razorpay global type declaration
 declare global {
   interface Window {
-    paypal?: any
+    Razorpay?: any
   }
 }
 
@@ -17,7 +17,7 @@ export default function ProPricing() {
   const [userCount, setUserCount] = useState(5)
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual')
   const [loading, setLoading] = useState(false)
-  const [paypalLoaded, setPaypalLoaded] = useState(false)
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false)
 
   const pricePerUserMonthly = 4
   const pricePerUserAnnual = 36 // $36/year (save 25% vs monthly)
@@ -26,80 +26,76 @@ export default function ProPricing() {
   const discount = 0
   const total = subtotal - discount
 
-  // Load PayPal SDK
+  // Load Razorpay Checkout script
   useEffect(() => {
-    if (typeof window !== 'undefined' && !paypalLoaded) {
+    if (typeof window !== 'undefined' && !razorpayLoaded) {
       const script = document.createElement('script')
-      script.src = 'https://www.paypal.com/sdk/js?client-id=Afdwxc772Yiai4tutPAMlm-7y7VSEVEEUXlGlniM2G3tAZSioWwX7M1tOHO-K-LoxiR7VlIca5okFJ1S&vault=true&intent=subscription'
-      script.onload = () => setPaypalLoaded(true)
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+      script.onload = () => setRazorpayLoaded(true)
       document.head.appendChild(script)
     }
-  }, [paypalLoaded])
+  }, [razorpayLoaded])
 
-  // Render PayPal button when SDK is loaded
-  useEffect(() => {
-    if (paypalLoaded && window.paypal) {
-      // Clear any existing PayPal buttons
-      const container = document.getElementById('paypal-button-container')
-      if (container) {
-        container.innerHTML = ''
-      }
-
-      window.paypal.Buttons({
-        style: {
-          shape: 'pill',
-          color: 'blue',
-          layout: 'vertical',
-          label: 'subscribe'
-        },
-        createSubscription: function(data: any, actions: any) {
-          // Check if user is authenticated first
-          if (!session) {
-            // Redirect to signup instead of creating subscription
-            router.push(`/auth/signup?plan=pro&users=${userCount}&billing=${billingCycle}`)
-            return Promise.reject('User not authenticated - redirecting to signup')
-          }
-
-          // Select plan based on billing cycle
-          const planId = billingCycle === 'monthly' 
-            ? 'P-3N8118553R364412BNFAARJA'  // Monthly plan
-            : 'P-1PK53547FK456084XNFKSFJY'   // Annual plan
-
-          console.log('Creating subscription with:', { planId, quantity: userCount })
-
-          return actions.subscription.create({
-            plan_id: planId,
-            quantity: userCount
-          })
-        },
-        onApprove: function(data: any, actions: any) {
-          // Handle successful subscription
-          console.log('Subscription created:', data.subscriptionID)
-          alert(`Subscription created successfully! ID: ${data.subscriptionID}`)
-          // You can redirect to a success page or update user status here
-          router.push('/dashboard?subscription=success')
-        },
-        onError: function(err: any) {
-          console.error('PayPal error:', err)
-          // Don't show alert for expected errors (like redirects)
-          if (err !== 'User not authenticated - redirecting to signup') {
-            alert('There was an error processing your subscription. Please try again.')
-          }
-        },
-        onCancel: function(data: any) {
-          console.log('PayPal payment cancelled by user')
-          // Optional: Show a message or redirect
-        }
-      }).render('#paypal-button-container')
-    }
-  }, [paypalLoaded, session, userCount, billingCycle]) // Removed router from dependencies
-
-  const handleSubscribe = () => {
+  const handleSubscribe = async () => {
     if (!session) {
       router.push(`/auth/signup?plan=pro&users=${userCount}&billing=${billingCycle}`)
       return
     }
-    // PayPal button will handle the subscription
+
+    if (!razorpayLoaded || typeof window === 'undefined' || !window.Razorpay) {
+      alert('Payment system is not ready. Please try again in a moment.')
+      return
+    }
+
+    setLoading(true)
+    try {
+      // Calculate amount in smallest currency unit (paise)
+      const amountINR = Math.round(total * 100) // adjust currency conversion if needed
+      const res = await fetch('/api/payments/razorpay/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: amountINR, currency: 'INR' })
+      })
+      const order = await res.json()
+      if (!order || !order.id) throw new Error('Failed to create order')
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '',
+        amount: order.amount,
+        currency: order.currency,
+        name: 'Zyync',
+        description: 'Pro plan',
+        order_id: order.id,
+        handler: async function (response: any) {
+          // Verify payment on server
+          const verifyRes = await fetch('/api/payments/razorpay/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(response)
+          })
+          const result = await verifyRes.json()
+          if (result && result.ok) {
+            alert('Payment successful — thank you!')
+            router.push('/dashboard?payment=success')
+          } else {
+            alert('Payment verification failed. Please contact support.')
+          }
+        },
+        prefill: {
+          name: session.user?.name || '',
+          email: session.user?.email || ''
+        },
+        theme: { color: '#6366f1' }
+      }
+
+      const rzp = new window.Razorpay(options)
+      rzp.open()
+    } catch (err) {
+      console.error('Razorpay error', err)
+      alert('There was an error initiating payment. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -254,13 +250,15 @@ export default function ProPricing() {
             </div>
           </div>
 
-          {/* PayPal Button */}
+          {/* Razorpay Button */}
           <div style={{ textAlign: 'center' }}>
-            <div id="paypal-button-container" style={{ maxWidth: 400, margin: '0 auto', width: '100%' }}></div>
-            {!paypalLoaded && (
-              <div style={{ padding: '20px', color: '#6b7280', fontSize: '14px' }}>
-                Loading PayPal...
-              </div>
+            <div style={{ maxWidth: 400, margin: '0 auto', width: '100%' }}>
+              <button onClick={handleSubscribe} disabled={loading} style={{ padding: '12px 20px', background: '#6366f1', color: 'white', borderRadius: 8, border: 'none', cursor: 'pointer', fontWeight: 700 }}>
+                {loading ? 'Processing…' : 'Pay with Razorpay'}
+              </button>
+            </div>
+            {!razorpayLoaded && (
+              <div style={{ marginTop: 12, color: '#6b7280' }}>Loading payment gateway…</div>
             )}
             <p style={{ fontSize: 14, color: '#6b7280', marginTop: 16 }}>
               14-day free trial • Cancel anytime • Upgrade or downgrade at any time
