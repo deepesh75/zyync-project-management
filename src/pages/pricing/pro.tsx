@@ -185,7 +185,8 @@ export default function ProPricing() {
                   onClick={() => setUserCount(Math.max(1, userCount - 1))}
                   style={{
                     width: 40, height: 40, borderRadius: 8, border: '1px solid var(--border)',
-                    background: 'var(--surface)', cursor: 'pointer', fontSize: 18, fontWeight: 600, color: 'var(--text)'
+                    background: 'var(--surface)', cursor: 'pointer', fontSize: 18, fontWeight: 600, color: 'var(--text)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1
                   }}
                 >
                   -
@@ -195,8 +196,9 @@ export default function ProPricing() {
                   value={userCount}
                   onChange={(e) => setUserCount(Math.max(1, parseInt(e.target.value) || 1))}
                   style={{
-                    width: 80, padding: '8px 12px', border: '1px solid var(--border)', borderRadius: 8,
-                    fontSize: 16, fontWeight: 600, textAlign: 'center', background: 'var(--surface)', color: 'var(--text)'
+                    width: 80, height: 40, padding: '0 12px', border: '1px solid var(--border)', borderRadius: 8,
+                    fontSize: 16, fontWeight: 600, textAlign: 'center', background: 'var(--surface)', color: 'var(--text)',
+                    lineHeight: 1, boxSizing: 'border-box'
                   }}
                   min="1"
                 />
@@ -204,12 +206,13 @@ export default function ProPricing() {
                   onClick={() => setUserCount(userCount + 1)}
                   style={{
                     width: 40, height: 40, borderRadius: 8, border: '1px solid var(--border)',
-                    background: 'var(--surface)', cursor: 'pointer', fontSize: 18, fontWeight: 600, color: 'var(--text)'
+                    background: 'var(--surface)', cursor: 'pointer', fontSize: 18, fontWeight: 600, color: 'var(--text)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1
                   }}
                 >
                   +
                 </button>
-                <span style={{ fontSize: 16, color: 'var(--text-secondary)' }}>users</span>
+                <span style={{ fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1, display: 'flex', alignItems: 'center', height: 40 }}>users</span>
               </div>
             </div>
 
