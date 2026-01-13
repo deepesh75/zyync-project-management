@@ -23,7 +23,7 @@ export default function LifetimePricing() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           planId: 'pro_lifetime',
-          price: 199,
+          price: 16500,
           isLifetime: true
         })
       })
@@ -115,7 +115,7 @@ export default function LifetimePricing() {
 
             <div style={{ textAlign: 'center', marginBottom: 32 }}>
               <div className="price" style={{ fontSize: 64, fontWeight: 800, color: '#111827', margin: 0 }}>
-                $199
+                ₹16,500
               </div>
               <div style={{ color: '#6b7280', fontSize: 16, marginTop: 4 }}>
                 One-time payment • Up to 10 users • Lifetime access
@@ -129,10 +129,10 @@ export default function LifetimePricing() {
               </h3>
               <div style={{ fontSize: 14, color: '#4b5563', lineHeight: 1.6 }}>
                 <p style={{ margin: 0, marginBottom: 12 }}>
-                  <strong>Regular Pro pricing:</strong> $4/user/month × 10 users = $40/month ($480/year)
+                  <strong>Regular Pro pricing:</strong> ₹330/user/month × 10 users = ₹3,300/month (₹39,600/year)
                 </p>
                 <p style={{ margin: 0, marginBottom: 12 }}>
-                  <strong>With lifetime deal:</strong> Only $199 total for up to 10 users (worth $2,400+ over 5 years)
+                  <strong>With lifetime deal:</strong> Only ₹16,500 total for up to 10 users (worth ₹1,98,000+ over 5 years)
                 </p>
                 <p style={{ margin: 0, fontSize: 16, fontWeight: 600, color: '#10b981' }}>
                   Save over 90% compared to subscriptions!
@@ -192,7 +192,7 @@ export default function LifetimePricing() {
                 <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
                   <input type="hidden" name="cmd" value="_s-xclick" />
                   <input type="hidden" name="hosted_button_id" value="ULGAXDGFUDEG2" />
-                  <input type="hidden" name="currency_code" value="USD" />
+                  <input type="hidden" name="currency_code" value="INR" />
                   <input
                     type="image"
                     src="https://www.paypalobjects.com/en_US/i/btn/btn_buynowCC_LG.gif"
@@ -222,7 +222,7 @@ export default function LifetimePricing() {
                   How many users does this cover?
                 </h4>
                 <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>
-                  The lifetime deal covers up to 10 users. If you need more than 10 users, you'll need to subscribe to our monthly ($4/user/month) or annual ($36/user/year) plans.
+                  The lifetime deal covers up to 10 users. If you need more than 10 users, you'll need to subscribe to our monthly (₹330/user/month) or annual (₹3000/user/year) plans.
                 </p>
               </div>
 

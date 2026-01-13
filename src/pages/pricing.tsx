@@ -7,7 +7,7 @@ import Navbar from '../components/Navbar'
 const plans = [
   {
     name: 'Free',
-    price: '$0',
+    price: '₹0',
     period: 'forever',
     description: 'Perfect for individuals and small teams getting started',
     features: [
@@ -26,7 +26,7 @@ const plans = [
   },
   {
     name: 'Pro',
-    price: 'Starting at $3',
+    price: 'Starting at ₹250',
     period: '/user/month',
     description: 'For growing teams that need more',
     features: [
@@ -41,8 +41,8 @@ const plans = [
       'Task templates'
     ],
     pricing: {
-      monthly: '$4/user/month (billed monthly)',
-      annual: '$3/user/month (billed annually - save 25%)',
+      monthly: '₹330/user/month (billed monthly)',
+      annual: '₹250/user/month (billed annually - save 25%)',
       minUsers: 1
     },
     cta: 'Start Free Trial',
@@ -69,7 +69,7 @@ const plans = [
   },
   {
     name: 'Pro Lifetime',
-    price: '$199',
+    price: '₹16,500',
     period: 'one-time',
     description: 'One-time payment for up to 10 users',
     features: [

@@ -19,8 +19,8 @@ export default function ProPricing() {
   const [loading, setLoading] = useState(false)
   const [razorpayLoaded, setRazorpayLoaded] = useState(false)
 
-  const pricePerUserMonthly = 4
-  const pricePerUserAnnual = 36 // $36/year (save 25% vs monthly)
+  const pricePerUserMonthly = 330
+  const pricePerUserAnnual = 3000 // ₹3000/year (save 25% vs monthly)
   const pricePerUser = billingCycle === 'monthly' ? pricePerUserMonthly : pricePerUserAnnual
   const subtotal = userCount * pricePerUser
   const discount = 0
@@ -225,7 +225,7 @@ export default function ProPricing() {
                     color: '#374151'
                   }}
                 >
-                  Monthly - ${pricePerUserMonthly}/user/mo
+                  Monthly - ₹{pricePerUserMonthly}/user/mo
                 </button>
                 <button
                   onClick={() => setBillingCycle('annual')}
@@ -235,7 +235,7 @@ export default function ProPricing() {
                     position: 'relative', color: '#374151'
                   }}
                 >
-                  Annual - ${pricePerUserAnnual}/user/yr
+                  Annual - ₹{pricePerUserAnnual}/user/yr
                   <span style={{
                     position: 'absolute', top: -8, right: -8, background: '#10b981', color: 'white',
                     padding: '2px 8px', borderRadius: 12, fontSize: 12, fontWeight: 700
@@ -252,18 +252,18 @@ export default function ProPricing() {
                 Pricing Summary
               </h3>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span>{userCount} users × ${pricePerUser}/{billingCycle === 'monthly' ? 'month' : 'year'}</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>{userCount} users × ₹{pricePerUser}/{billingCycle === 'monthly' ? 'month' : 'year'}</span>
+                <span>₹{subtotal.toFixed(2)}</span>
               </div>
               {billingCycle === 'annual' && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, color: '#10b981', fontSize: 14 }}>
                   <span>Annual savings vs monthly</span>
-                  <span>-${(userCount * pricePerUserMonthly * 12 - subtotal).toFixed(2)}</span>
+                  <span>-₹{(userCount * pricePerUserMonthly * 12 - subtotal).toFixed(2)}</span>
                 </div>
               )}
               <div className="total" style={{ display: 'flex', justifyContent: 'space-between', fontSize: 18, fontWeight: 700, borderTop: '1px solid #e5e7eb', paddingTop: 12 }}>
                 <span>Total {billingCycle === 'monthly' ? 'per month' : 'per year'}</span>
-                <span>${total.toFixed(2)}</span>
+                <span>₹{total.toFixed(2)}</span>
               </div>
             </div>
           </div>
