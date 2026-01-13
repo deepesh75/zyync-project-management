@@ -3,6 +3,7 @@ import { prisma } from '../../lib/prisma'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from './auth/[...nextauth]'
 import { getCached, setCached, invalidateCache } from '../../lib/redis'
+import { checkOrganizationAccess } from '../../lib/access-control'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
@@ -86,6 +87,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       })
       if (!membership) {
         return res.status(403).json({ error: 'Not a member of this organization' })
+      }
+
+      // Check if organization has active subscription
+      const accessCheck = await checkOrganizationAccess(organizationId)
+      if (!accessCheck.allowed) {
+        return res.status(403).json({ 
+          error: accessCheck.message || 'Subscription required',
+          reason: accessCheck.reason,
+          upgradeRequired: true
+        })
       }
     }
     

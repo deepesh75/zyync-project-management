@@ -34,6 +34,13 @@ model Organization {
   billingCycleAnchor    DateTime?                    // When the current billing cycle started
   trialEndsAt           DateTime?
   
+  // Subscription lifecycle tracking
+  subscriptionStartedAt DateTime?                    // When subscription became active
+  currentPeriodStart    DateTime?                    // Current billing period start
+  currentPeriodEnd      DateTime?                    // When subscription expires/renews
+  canceledAt            DateTime?                    // When user requested cancellation
+  cancelAtPeriodEnd     Boolean  @default(false)     // Cancel at end vs immediately
+  
   // Legacy field for backward compatibility
   seats                 Int      @default(1)
   

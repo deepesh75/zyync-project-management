@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '../../../lib/prisma'
 import { syncSeatsUsed } from '../../../lib/seats'
+import { canAddUser } from '../../../lib/access-control'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end()
@@ -12,6 +13,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const invite = await prisma.invitation.findUnique({ where: { token } })
     if (!invite) return res.status(404).json({ error: 'Invitation not found' })
     if (invite.expiresAt && invite.expiresAt < new Date()) return res.status(400).json({ error: 'Invitation expired' })
+
+    // Check if organization can add more users (subscription + seat limits)
+    const accessCheck = await canAddUser(invite.organizationId)
+    if (!accessCheck.allowed) {
+      return res.status(403).json({ 
+        error: accessCheck.message || 'Cannot accept invitation',
+        reason: accessCheck.reason,
+        upgradeRequired: true
+      })
+    }
 
     // add membership
     await prisma.organizationMember.create({ data: { organizationId: invite.organizationId, userId, role: invite.role } })

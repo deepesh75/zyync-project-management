@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from './auth/[...nextauth]'
 import { invalidateCacheKeys } from '../../lib/redis'
 import { logActivity } from '../../lib/activity'
+import { checkOrganizationAccess } from '../../lib/access-control'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
@@ -99,6 +100,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (!hasAccess) {
       return res.status(403).json({ error: 'You do not have access to this project' })
+    }
+
+    // Check if organization has active subscription (if project belongs to org)
+    if (project.organizationId) {
+      const accessCheck = await checkOrganizationAccess(project.organizationId)
+      if (!accessCheck.allowed) {
+        return res.status(403).json({ 
+          error: accessCheck.message || 'Subscription required',
+          reason: accessCheck.reason,
+          upgradeRequired: true
+        })
+      }
     }
     
     const task = await prisma.task.create({

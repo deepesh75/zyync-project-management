@@ -48,8 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         break
       
       case 'subscription.charged':
-        // Future: handle recurring subscription charges
-        console.log('Subscription charged:', event.payload.subscription.entity)
+        await handleSubscriptionCharged(event.payload.subscription.entity, event.payload.payment.entity)
         break
       
       case 'subscription.cancelled':
@@ -115,15 +114,81 @@ async function handleOrderPaid(order: any) {
   // Additional processing if needed
 }
 
+async function handleSubscriptionCharged(subscription: any, payment: any) {
+  try {
+    // Calculate period dates from subscription
+    const periodStart = subscription.current_start 
+      ? new Date(subscription.current_start * 1000) 
+      : new Date()
+    const periodEnd = subscription.current_end 
+      ? new Date(subscription.current_end * 1000) 
+      : null
+
+    // Find organization
+    const org = await prisma.organization.findFirst({
+      where: { razorpaySubscriptionId: subscription.id }
+    })
+
+    if (!org) {
+      console.warn('Organization not found for subscription:', subscription.id)
+      return
+    }
+    
+    // Update organization with new period dates
+    await prisma.organization.update({
+      where: { id: org.id },
+      data: {
+        billingStatus: 'active',
+        currentPeriodStart: periodStart,
+        currentPeriodEnd: periodEnd,
+        canceledAt: null,
+        cancelAtPeriodEnd: false
+      }
+    })
+    
+    // Create payment record for this renewal
+    if (payment) {
+      await prisma.payment.create({
+        data: {
+          organizationId: org.id,
+          razorpayOrderId: payment.order_id || `ord_${Date.now()}`,
+          razorpayPaymentId: payment.id,
+          razorpaySubscriptionId: subscription.id,
+          amount: payment.amount,
+          currency: payment.currency || 'INR',
+          status: 'captured',
+          method: payment.method,
+          planType: subscription.plan_id,
+          billingInterval: subscription.billing_frequency === 'monthly' ? 'monthly' : 'annual',
+          capturedAt: new Date()
+        }
+      })
+    }
+    
+    console.log('Subscription renewed:', subscription.id, 'Period:', periodStart, '-', periodEnd)
+  } catch (err) {
+    console.error('Error handling subscription.charged:', err)
+  }
+}
+
 async function handleSubscriptionCancelled(subscription: any) {
   try {
+    const periodEnd = subscription.current_end 
+      ? new Date(subscription.current_end * 1000) 
+      : null
+    
     // Find organization by subscription ID and update status
     await prisma.organization.updateMany({
       where: { razorpaySubscriptionId: subscription.id },
-      data: { billingStatus: 'canceled' }
+      data: { 
+        billingStatus: 'canceled',
+        canceledAt: new Date(),
+        cancelAtPeriodEnd: subscription.cancel_at_cycle_end || false,
+        currentPeriodEnd: periodEnd // Allow access until period ends
+      }
     })
     
-    console.log('Subscription cancelled:', subscription.id)
+    console.log('Subscription cancelled:', subscription.id, 'Cancel at period end:', subscription.cancel_at_cycle_end)
   } catch (err) {
     console.error('Error handling subscription.cancelled:', err)
   }
