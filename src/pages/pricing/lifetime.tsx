@@ -70,28 +70,28 @@ export default function LifetimePricing() {
           }
         }
       `}</style>
-      <main style={{ fontFamily: 'inherit', minHeight: 'calc(100vh - 60px)', background: '#f8fafc' }}>
+      <main style={{ fontFamily: 'inherit', minHeight: 'calc(100vh - 60px)', background: 'var(--bg-secondary)' }}>
         <div style={{ maxWidth: 800, margin: '0 auto', padding: '40px 24px' }}>
           {/* Header */}
           <div className="lifetime-header" style={{ textAlign: 'center', marginBottom: 40 }}>
-            <Link href="/pricing" style={{ color: '#6366f1', textDecoration: 'none', fontSize: 14 }}>
+            <Link href="/pricing" style={{ color: 'var(--primary)', textDecoration: 'none', fontSize: 14 }}>
               ← Back to Pricing
             </Link>
-            <h1 style={{ fontSize: 32, fontWeight: 800, margin: '16px 0', color: '#111827' }}>
+            <h1 style={{ fontSize: 32, fontWeight: 800, margin: '16px 0', color: 'var(--text)' }}>
               Pro Lifetime Deal
             </h1>
-            <p style={{ color: '#6b7280', fontSize: 16 }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 16 }}>
               Get all Pro features forever with a one-time payment
             </p>
           </div>
 
           {/* Pricing Card */}
           <div className="pricing-card" style={{
-            background: 'white',
+            background: 'var(--surface)',
             borderRadius: 16,
             padding: 40,
-            boxShadow: '0 20px 40px rgba(99, 102, 241, 0.15)',
-            border: '2px solid #6366f1',
+            boxShadow: 'var(--shadow-xl)',
+            border: '2px solid var(--primary)',
             position: 'relative',
             marginBottom: 32
           }}>
@@ -101,7 +101,7 @@ export default function LifetimePricing() {
               top: -12,
               left: '50%',
               transform: 'translateX(-50%)',
-              background: '#ef4444',
+              background: 'var(--danger)',
               color: 'white',
               padding: '6px 16px',
               borderRadius: 20,
@@ -114,27 +114,27 @@ export default function LifetimePricing() {
             </div>
 
             <div style={{ textAlign: 'center', marginBottom: 32 }}>
-              <div className="price" style={{ fontSize: 64, fontWeight: 800, color: '#111827', margin: 0 }}>
+              <div className="price" style={{ fontSize: 64, fontWeight: 800, color: 'var(--text)', margin: 0 }}>
                 ₹16,500
               </div>
-              <div style={{ color: '#6b7280', fontSize: 16, marginTop: 4 }}>
+              <div style={{ color: 'var(--text-secondary)', fontSize: 16, marginTop: 4 }}>
                 One-time payment • Up to 10 users • Lifetime access
               </div>
             </div>
 
             {/* Value Proposition */}
-            <div className="value-box" style={{ background: '#f0f4ff', borderRadius: 12, padding: 24, marginBottom: 32 }}>
-              <h3 style={{ fontSize: 18, fontWeight: 700, margin: 0, marginBottom: 16, color: '#111827' }}>
+            <div className="value-box" style={{ background: 'var(--primary-light)', borderRadius: 12, padding: 24, marginBottom: 32 }}>
+              <h3 style={{ fontSize: 18, fontWeight: 700, margin: 0, marginBottom: 16, color: 'var(--text)' }}>
                 💰 Incredible Value
               </h3>
-              <div style={{ fontSize: 14, color: '#4b5563', lineHeight: 1.6 }}>
+              <div style={{ fontSize: 14, color: 'var(--text)', lineHeight: 1.6 }}>
                 <p style={{ margin: 0, marginBottom: 12 }}>
                   <strong>Regular Pro pricing:</strong> ₹330/user/month × 10 users = ₹3,300/month (₹39,600/year)
                 </p>
                 <p style={{ margin: 0, marginBottom: 12 }}>
                   <strong>With lifetime deal:</strong> Only ₹16,500 total for up to 10 users (worth ₹1,98,000+ over 5 years)
                 </p>
-                <p style={{ margin: 0, fontSize: 16, fontWeight: 600, color: '#10b981' }}>
+                <p style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--success)' }}>
                   Save over 90% compared to subscriptions!
                 </p>
               </div>
@@ -142,7 +142,7 @@ export default function LifetimePricing() {
 
             {/* Features */}
             <div style={{ marginBottom: 32 }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, margin: 0, marginBottom: 20, color: '#111827' }}>
+              <h3 style={{ fontSize: 20, fontWeight: 700, margin: 0, marginBottom: 20, color: 'var(--text)' }}>
                 Everything Included:
               </h3>
               <div className="features-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -160,7 +160,7 @@ export default function LifetimePricing() {
                   '✅ Lifetime updates',
                   '✅ No recurring payments'
                 ].map((feature, idx) => (
-                  <div key={idx} style={{ fontSize: 14, color: '#374151' }}>
+                  <div key={idx} style={{ fontSize: 14, color: 'var(--text)' }}>
                     {feature}
                   </div>
                 ))}
@@ -205,41 +205,41 @@ export default function LifetimePricing() {
               </div>
             )}
 
-            <p style={{ fontSize: 14, color: '#6b7280', textAlign: 'center', marginTop: 16 }}>
+            <p style={{ fontSize: 14, color: 'var(--text-secondary)', textAlign: 'center', marginTop: 16 }}>
               Secure payment via PayPal • Instant access • 30-day money-back guarantee
             </p>
           </div>
 
           {/* FAQ */}
-          <div className="faq-section" style={{ background: 'white', borderRadius: 16, padding: 32, boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)' }}>
-            <h3 style={{ fontSize: 20, fontWeight: 700, margin: 0, marginBottom: 24, color: '#111827' }}>
+          <div className="faq-section" style={{ background: 'var(--surface)', borderRadius: 16, padding: 32, boxShadow: 'var(--shadow-lg)' }}>
+            <h3 style={{ fontSize: 20, fontWeight: 700, margin: 0, marginBottom: 24, color: 'var(--text)' }}>
               Frequently Asked Questions
             </h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               <div>
-                <h4 style={{ fontSize: 16, fontWeight: 600, margin: 0, marginBottom: 8, color: '#111827' }}>
+                <h4 style={{ fontSize: 16, fontWeight: 600, margin: 0, marginBottom: 8, color: 'var(--text)' }}>
                   How many users does this cover?
                 </h4>
-                <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>
+                <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: 0 }}>
                   The lifetime deal covers up to 10 users. If you need more than 10 users, you'll need to subscribe to our monthly (₹330/user/month) or annual (₹3000/user/year) plans.
                 </p>
               </div>
 
               <div>
-                <h4 style={{ fontSize: 16, fontWeight: 600, margin: 0, marginBottom: 8, color: '#111827' }}>
+                <h4 style={{ fontSize: 16, fontWeight: 600, margin: 0, marginBottom: 8, color: 'var(--text)' }}>
                   What if I need more than 10 users?
                 </h4>
-                <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>
+                <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: 0 }}>
                   For teams larger than 10 users, please choose our Pro Monthly or Pro Annual plans from the pricing page. These plans support unlimited users with flexible scaling.
                 </p>
               </div>
 
               <div>
-                <h4 style={{ fontSize: 16, fontWeight: 600, margin: 0, marginBottom: 8, color: '#111827' }}>
+                <h4 style={{ fontSize: 16, fontWeight: 600, margin: 0, marginBottom: 8, color: 'var(--text)' }}>
                   Is there a refund policy?
                 </h4>
-                <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>
+                <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: 0 }}>
                   Yes, 30-day money-back guarantee. If you're not satisfied, contact us for a full refund.
                 </p>
               </div>

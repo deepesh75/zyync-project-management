@@ -182,11 +182,11 @@ export default function Pricing() {
                 key={plan.name}
                 className="pricing-card"
                 style={{
-                  background: 'white',
-                  border: plan.highlight ? '3px solid #6366f1' : '1px solid #e5e7eb',
+                  background: 'var(--surface)',
+                  border: plan.highlight ? '3px solid var(--primary)' : '1px solid var(--border)',
                   borderRadius: 16,
                   padding: 40,
-                  boxShadow: plan.highlight ? '0 20px 40px rgba(99, 102, 241, 0.15)' : '0 4px 12px rgba(0, 0, 0, 0.08)',
+                  boxShadow: plan.highlight ? 'var(--shadow-xl)' : 'var(--shadow-lg)',
                   position: 'relative',
                   transform: plan.highlight ? 'scale(1.05)' : 'scale(1)',
                   transition: 'all 0.3s ease'
@@ -210,7 +210,7 @@ export default function Pricing() {
                     top: -12,
                     left: '50%',
                     transform: 'translateX(-50%)',
-                    background: '#6366f1',
+                    background: 'var(--primary)',
                     color: 'white',
                     padding: '6px 16px',
                     borderRadius: 20,
@@ -223,27 +223,27 @@ export default function Pricing() {
                   </div>
                 )}
 
-                <h2 style={{ fontSize: 28, fontWeight: 700, margin: 0, marginBottom: 8, color: '#111827' }}>
+                <h2 style={{ fontSize: 28, fontWeight: 700, margin: 0, marginBottom: 8, color: 'var(--text)' }}>
                   {plan.name}
                 </h2>
-                <p style={{ color: '#6b7280', margin: 0, marginBottom: 24, fontSize: 14 }}>
+                <p style={{ color: 'var(--text-secondary)', margin: 0, marginBottom: 24, fontSize: 14 }}>
                   {plan.description}
                 </p>
 
                 <div style={{ marginBottom: 32 }}>
-                  <div className="price" style={{ fontSize: 48, fontWeight: 800, color: '#111827', margin: 0 }}>
+                  <div className="price" style={{ fontSize: 48, fontWeight: 800, color: 'var(--text)', margin: 0 }}>
                     {plan.price}
                   </div>
-                  <div style={{ color: '#6b7280', fontSize: 14, marginTop: 4 }}>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>
                     {plan.period}
                   </div>
                   {plan.pricing && (
-                    <div style={{ marginTop: 16, padding: 16, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: '#374151', marginBottom: 8 }}>Pricing Options:</div>
-                      <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.5 }}>
+                    <div style={{ marginTop: 16, padding: 16, background: 'var(--bg-secondary)', borderRadius: 8, border: '1px solid var(--border)' }}>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 8 }}>Pricing Options:</div>
+                      <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                         <div>• {plan.pricing.monthly}</div>
                         <div>• {plan.pricing.annual}</div>
-                        <div style={{ marginTop: 8, fontSize: 12, color: '#9ca3af' }}>
+                        <div style={{ marginTop: 8, fontSize: 12, color: 'var(--muted)' }}>
                           Minimum {plan.pricing.minUsers} user{plan.pricing.minUsers > 1 ? 's' : ''}
                         </div>
                       </div>
@@ -256,8 +256,8 @@ export default function Pricing() {
                   style={{
                     width: '100%',
                     padding: '14px 24px',
-                    background: plan.highlight ? '#6366f1' : '#f3f4f6',
-                    color: plan.highlight ? 'white' : '#1f2937',
+                    background: plan.highlight ? 'var(--primary)' : 'var(--bg-secondary)',
+                    color: plan.highlight ? 'white' : 'var(--text)',
                     border: 'none',
                     borderRadius: 10,
                     fontSize: 14,
@@ -268,16 +268,16 @@ export default function Pricing() {
                   }}
                   onMouseEnter={(e) => {
                     if (plan.highlight) {
-                      e.currentTarget.style.background = '#4f46e5'
+                      e.currentTarget.style.background = getComputedStyle(document.documentElement).getPropertyValue('--primary-hover').trim()
                     } else {
-                      e.currentTarget.style.background = '#e5e7eb'
+                      e.currentTarget.style.background = getComputedStyle(document.documentElement).getPropertyValue('--hover-bg').trim()
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (plan.highlight) {
-                      e.currentTarget.style.background = '#6366f1'
+                      e.currentTarget.style.background = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()
                     } else {
-                      e.currentTarget.style.background = '#f3f4f6'
+                      e.currentTarget.style.background = getComputedStyle(document.documentElement).getPropertyValue('--bg-secondary').trim()
                     }
                   }}
                 >
@@ -290,16 +290,16 @@ export default function Pricing() {
                       key={idx}
                       style={{
                         padding: '12px 0',
-                        borderBottom: idx < plan.features.length - 1 ? '1px solid #f3f4f6' : 'none',
+                        borderBottom: idx < plan.features.length - 1 ? '1px solid var(--border)' : 'none',
                         display: 'flex',
                         alignItems: 'center',
                         gap: 12,
                         fontSize: 14,
-                        color: '#374151'
+                        color: 'var(--text)'
                       }}
                     >
                       <span style={{
-                        color: '#10b981',
+                        color: 'var(--success)',
                         fontSize: 18,
                         lineHeight: 1
                       }}>✓</span>
@@ -316,11 +316,11 @@ export default function Pricing() {
             <div
               key={plan.name}
               style={{
-                background: 'white',
-                border: '3px solid #f59e0b', // Orange/gold border for lifetime deal
+                background: 'var(--surface)',
+                border: '3px solid var(--warning)', // Orange/gold border for lifetime deal
                 borderRadius: 16,
                 padding: 40,
-                boxShadow: '0 20px 40px rgba(245, 158, 11, 0.15)',
+                boxShadow: 'var(--shadow-xl)',
                 position: 'relative',
                 maxWidth: 400,
                 margin: '0 auto',
@@ -341,7 +341,7 @@ export default function Pricing() {
                 top: -12,
                 left: '50%',
                 transform: 'translateX(-50%)',
-                background: '#f59e0b',
+                background: 'var(--warning)',
                 color: 'white',
                 padding: '6px 16px',
                 borderRadius: 20,
@@ -353,18 +353,18 @@ export default function Pricing() {
                 🔥 Limited Time
               </div>
 
-              <h2 style={{ fontSize: 28, fontWeight: 700, margin: 0, marginBottom: 8, color: '#111827', textAlign: 'center' }}>
+              <h2 style={{ fontSize: 28, fontWeight: 700, margin: 0, marginBottom: 8, color: 'var(--text)', textAlign: 'center' }}>
                 {plan.name}
               </h2>
-              <p style={{ color: '#6b7280', margin: 0, marginBottom: 24, fontSize: 14, textAlign: 'center' }}>
+              <p style={{ color: 'var(--text-secondary)', margin: 0, marginBottom: 24, fontSize: 14, textAlign: 'center' }}>
                 {plan.description}
               </p>
 
               <div style={{ marginBottom: 32, textAlign: 'center' }}>
-                <div style={{ fontSize: 48, fontWeight: 800, color: '#111827', margin: 0 }}>
+                <div style={{ fontSize: 48, fontWeight: 800, color: 'var(--text)', margin: 0 }}>
                   {plan.price}
                 </div>
-                <div style={{ color: '#6b7280', fontSize: 14, marginTop: 4 }}>
+                <div style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>
                   {plan.period}
                 </div>
               </div>
@@ -374,7 +374,7 @@ export default function Pricing() {
                 style={{
                   width: '100%',
                   padding: '14px 24px',
-                  background: '#f59e0b',
+                  background: 'var(--warning)',
                   color: 'white',
                   border: 'none',
                   borderRadius: 10,
@@ -385,10 +385,12 @@ export default function Pricing() {
                   marginBottom: 32
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#d97706'
+                  e.currentTarget.style.background = getComputedStyle(document.documentElement).getPropertyValue('--warning').trim()
+                  e.currentTarget.style.opacity = '0.9'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#f59e0b'
+                  e.currentTarget.style.background = getComputedStyle(document.documentElement).getPropertyValue('--warning').trim()
+                  e.currentTarget.style.opacity = '1'
                 }}
               >
                 {plan.cta}
@@ -400,16 +402,16 @@ export default function Pricing() {
                     key={idx}
                     style={{
                       padding: '12px 0',
-                      borderBottom: idx < plan.features.length - 1 ? '1px solid #f3f4f6' : 'none',
+                      borderBottom: idx < plan.features.length - 1 ? '1px solid var(--border)' : 'none',
                       display: 'flex',
                       alignItems: 'center',
                       gap: 12,
                       fontSize: 14,
-                      color: '#374151'
+                      color: 'var(--text)'
                     }}
                   >
                     <span style={{
-                      color: '#10b981',
+                      color: 'var(--success)',
                       fontSize: 18,
                       lineHeight: 1
                     }}>✓</span>
@@ -424,11 +426,11 @@ export default function Pricing() {
         {/* FAQ Section */}
         <section style={{
           padding: '80px 24px',
-          background: '#f9fafb',
-          borderTop: '1px solid #e5e7eb'
+          background: 'var(--bg-primary)',
+          borderTop: '1px solid var(--border)'
         }}>
           <div style={{ maxWidth: 800, margin: '0 auto' }}>
-            <h2 style={{ fontSize: 32, fontWeight: 700, textAlign: 'center', marginBottom: 40, color: '#111827' }}>
+            <h2 style={{ fontSize: 32, fontWeight: 700, textAlign: 'center', marginBottom: 40, color: 'var(--text)' }}>
               Frequently Asked Questions
             </h2>
 
@@ -455,10 +457,10 @@ export default function Pricing() {
               }
             ].map((faq, idx) => (
               <div key={idx} style={{ marginBottom: 32 }}>
-                <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, marginBottom: 8, color: '#111827' }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, marginBottom: 8, color: 'var(--text)' }}>
                   {faq.q}
                 </h3>
-                <p style={{ margin: 0, color: '#6b7280', lineHeight: 1.6 }}>
+                <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                   {faq.a}
                 </p>
               </div>
