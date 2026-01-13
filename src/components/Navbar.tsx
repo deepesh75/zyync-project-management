@@ -25,7 +25,7 @@ function getNavbarStyleForBackground(bg?: string, theme?: string): { background:
   }
   
   const darkBackgrounds = ['solid-dark', 'gradient-night', 'gradient-forest', 'gradient-terminal', 'gradient-steel', 'gradient-twilight', 'gradient-royal', 'gradient-velvet', 'gradient-ice']
-  const lightBackgrounds = ['solid-light', 'solid-white', 'solid-cream', 'gradient-peach', 'gradient-aurora', 'gradient-mystic', 'gradient-crystal']
+  const lightBackgrounds = ['solid-light', 'solid-white', 'solid-cream', 'gradient-peach', 'gradient-aurora', 'gradient-mystic', 'gradient-crystal', 'solid-gray']
   
   if (darkBackgrounds.includes(bg)) {
     return { 
@@ -35,10 +35,19 @@ function getNavbarStyleForBackground(bg?: string, theme?: string): { background:
     }
   }
   if (lightBackgrounds.includes(bg)) {
-    return { 
-      background: 'rgba(255, 255, 255, 0.8)', 
-      textColor: '#1a1a1a',
-      opacity: '1'
+    // For light backgrounds, use a nice gradient navbar in light mode, dark navbar in dark mode
+    if (theme === 'dark') {
+      return { 
+        background: 'rgba(0, 0, 0, 0.6)', 
+        textColor: '#ffffff',
+        opacity: '1'
+      }
+    } else {
+      return { 
+        background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)', 
+        textColor: 'white',
+        opacity: '0.95'
+      }
     }
   }
   // For colorful gradients, use semi-transparent dark background with white text
