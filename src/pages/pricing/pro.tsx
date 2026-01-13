@@ -278,9 +278,6 @@ export default function ProPricing() {
             {!razorpayLoaded && (
               <div style={{ marginTop: 12, color: '#6b7280' }}>Loading payment gateway…</div>
             )}
-            <p style={{ fontSize: 14, color: '#6b7280', marginTop: 16 }}>
-              14-day free trial • Cancel anytime • Upgrade or downgrade at any time
-            </p>
           </div>
         </div>
       </main>
