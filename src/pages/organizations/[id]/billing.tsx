@@ -193,14 +193,14 @@ export default function OrganizationBilling() {
           }
         }
       `}</style>
-      <main className="billing-main" style={{ padding: 24, maxWidth: 900, margin: '0 auto' }}>
-        <a href={`/organizations/${organization.id}/settings`} style={{ color: '#6366f1', textDecoration: 'none', fontSize: 14 }}>← Back to Settings</a>
-        <h1 style={{ marginTop: 16 }}>{organization.name} — Billing & Seats</h1>
-        <p style={{ color: '#6b7280' }}>Manage your subscription, team seats, and billing settings.</p>
+      <main className="billing-main" style={{ padding: 24, maxWidth: 900, margin: '0 auto', background: 'var(--bg)', minHeight: 'calc(100vh - 60px)' }}>
+        <a href={`/organizations/${organization.id}/settings`} style={{ color: 'var(--primary)', textDecoration: 'none', fontSize: 14 }}>← Back to Settings</a>
+        <h1 style={{ marginTop: 16, color: 'var(--text)' }}>{organization.name} — Billing & Seats</h1>
+        <p style={{ color: 'var(--text-secondary)' }}>Manage your subscription, team seats, and billing settings.</p>
 
         {/* Current Plan Overview */}
-        <section className="plan-overview" style={{ marginTop: 24, background: 'white', padding: 24, borderRadius: 12, border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <h2 style={{ marginTop: 0, fontSize: 18, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <section className="plan-overview" style={{ marginTop: 24, background: 'var(--surface)', padding: 24, borderRadius: 12, border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
+          <h2 style={{ marginTop: 0, fontSize: 18, display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text)' }}>
             Current Plan
             <span style={{ 
               padding: '4px 12px', 
@@ -216,7 +216,7 @@ export default function OrganizationBilling() {
           
           <div className="billing-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20, marginTop: 16 }}>
             <div>
-              <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 4 }}>Status</div>
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 4 }}>Status</div>
               <div style={{ 
                 fontSize: 15, 
                 fontWeight: 600,
@@ -238,18 +238,18 @@ export default function OrganizationBilling() {
 
             {organization.billingInterval !== 'lifetime' && organization.currentPeriodEnd && (
               <div>
-                <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 4 }}>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 4 }}>
                   {organization.billingStatus === 'canceled' && organization.cancelAtPeriodEnd 
                     ? 'Access Until' 
                     : 'Renews On'}
                 </div>
-                <div style={{ fontSize: 15, fontWeight: 600, color: '#111827' }}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)' }}>
                   {formatDate(organization.currentPeriodEnd)}
                 </div>
                 {daysRemaining !== null && daysRemaining > 0 && (
                   <div style={{ 
                     fontSize: 12, 
-                    color: isExpiringSoon ? '#dc2626' : '#6b7280', 
+                    color: isExpiringSoon ? '#dc2626' : 'var(--text-secondary)', 
                     marginTop: 2,
                     fontWeight: isExpiringSoon ? 600 : 400
                   }}>
@@ -262,7 +262,7 @@ export default function OrganizationBilling() {
 
             {organization.billingInterval === 'lifetime' && (
               <div>
-                <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 4 }}>Plan Type</div>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 4 }}>Plan Type</div>
                 <div style={{ fontSize: 15, fontWeight: 600, color: '#10b981', display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span>♾️</span> Lifetime Access
                 </div>
@@ -272,22 +272,22 @@ export default function OrganizationBilling() {
             {seatInfo && (
               <>
                 <div>
-                  <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 4 }}>Seats</div>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 4 }}>Seats</div>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text)' }}>
                     {seatInfo.seatsUsed} / {seatInfo.seatsAllowed}
                   </div>
-                  <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
                     {seatInfo.availableSeats} available
                   </div>
                 </div>
 
                 <div>
-                  <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 4 }}>Monthly Cost</div>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 4 }}>Monthly Cost</div>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text)' }}>
                     {formatCurrency(seatInfo.monthlyCostCents)}
                   </div>
                   {seatInfo.perSeatPriceCents > 0 && (
-                    <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
+                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
                       {formatCurrency(seatInfo.perSeatPriceCents)}/seat
                     </div>
                   )}
@@ -295,7 +295,7 @@ export default function OrganizationBilling() {
               </>
             )}
 
-            {loadingSeats && <div style={{ color: '#6b7280' }}>Loading seat info...</div>}
+            {loadingSeats && <div style={{ color: 'var(--text-secondary)' }}>Loading seat info...</div>}
           </div>
 
           {isExpiringSoon && organization.billingStatus === 'active' && (
@@ -378,15 +378,15 @@ export default function OrganizationBilling() {
 
         {/* Add Seats */}
         {planName !== 'Free' && seatInfo && (
-          <section style={{ marginTop: 24, background: 'white', padding: 24, borderRadius: 12, border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <h2 style={{ marginTop: 0, fontSize: 18 }}>Add Team Seats</h2>
-            <p style={{ color: '#6b7280', fontSize: 14, margin: '8px 0 16px' }}>
+          <section style={{ marginTop: 24, background: 'var(--surface)', padding: 24, borderRadius: 12, border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
+            <h2 style={{ marginTop: 0, fontSize: 18, color: 'var(--text)' }}>Add Team Seats</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 14, margin: '8px 0 16px' }}>
               Add more seats to invite additional team members. You'll be charged {formatCurrency(seatInfo.perSeatPriceCents)}/seat/month.
             </p>
 
             <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end' }}>
               <div style={{ flex: '0 0 150px' }}>
-                <label style={{ fontSize: 13, color: '#374151', display: 'block', marginBottom: 6 }}>
+                <label style={{ fontSize: 13, color: 'var(--text)', display: 'block', marginBottom: 6 }}>
                   Additional Seats
                 </label>
                 <input 
@@ -398,15 +398,17 @@ export default function OrganizationBilling() {
                     width: '100%',
                     padding: '10px 12px', 
                     borderRadius: 8, 
-                    border: '1px solid #d1d5db',
-                    fontSize: 15
+                    border: '1px solid var(--border)',
+                    fontSize: 15,
+                    background: 'var(--surface)',
+                    color: 'var(--text)'
                   }}
                 />
               </div>
 
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 6 }}>Monthly increase</div>
-                <div style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 6 }}>Monthly increase</div>
+                <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text)' }}>
                   +{formatCurrency(calculateProratedCost())}
                 </div>
               </div>
@@ -471,9 +473,9 @@ export default function OrganizationBilling() {
         )}
 
         {/* Data Export */}
-        <section style={{ marginTop: 24, background: 'white', padding: 24, borderRadius: 12, border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <h2 style={{ marginTop: 0, fontSize: 18 }}>Export Organization Data</h2>
-          <p style={{ color: '#6b7280', fontSize: 14, margin: '8px 0 16px' }}>
+        <section style={{ marginTop: 24, background: 'var(--surface)', padding: 24, borderRadius: 12, border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
+          <h2 style={{ marginTop: 0, fontSize: 18, color: 'var(--text)' }}>Export Organization Data</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 14, margin: '8px 0 16px' }}>
             Download a complete backup of all your organization's projects, tasks, comments, and member data in JSON format.
           </p>
           <button 
@@ -506,7 +508,7 @@ export default function OrganizationBilling() {
             disabled={processing}
             style={{ 
               padding: '12px 24px', 
-              background: processing ? '#d1d5db' : '#6366f1', 
+              background: processing ? 'var(--border)' : 'var(--primary)', 
               color: 'white', 
               border: 'none', 
               borderRadius: 8, 
@@ -520,16 +522,16 @@ export default function OrganizationBilling() {
           >
             <span>{processing ? 'Exporting...' : '📥 Download Data Export'}</span>
           </button>
-          <div style={{ marginTop: 12, fontSize: 12, color: '#6b7280' }}>
+          <div style={{ marginTop: 12, fontSize: 12, color: 'var(--text-secondary)' }}>
             💡 Tip: We recommend exporting your data regularly for backup purposes.
           </div>
         </section>
 
         {/* Manage Subscription */}
         {planName !== 'Free' && (
-          <section style={{ marginTop: 24, background: 'white', padding: 24, borderRadius: 12, border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <h2 style={{ marginTop: 0, fontSize: 18 }}>Manage Subscription</h2>
-            <p style={{ color: '#6b7280', fontSize: 14, margin: '8px 0 16px' }}>
+          <section style={{ marginTop: 24, background: 'var(--surface)', padding: 24, borderRadius: 12, border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
+            <h2 style={{ marginTop: 0, fontSize: 18, color: 'var(--text)' }}>Manage Subscription</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 14, margin: '8px 0 16px' }}>
               Update payment methods, view invoices, and manage your subscription in PayPal.
             </p>
             <button 
