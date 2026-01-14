@@ -2,15 +2,16 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { checkAndSendExpirationEmails } from '../../../lib/subscription-emails'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
+  // Allow both POST (manual trigger) and GET (Vercel cron)
+  if (req.method !== 'POST' && req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  // Simple secret-based authentication for cron jobs
-  const authHeader = req.headers.authorization
-  const expectedAuth = `Bearer ${process.env.CRON_SECRET || 'your-secret-key-here'}`
+  // Vercel cron jobs include a special authorization header
+  const isVercelCron = req.headers.authorization === `Bearer ${process.env.CRON_SECRET}`
+  const isManualTrigger = req.method === 'POST' && req.headers.authorization === `Bearer ${process.env.CRON_SECRET}`
 
-  if (authHeader !== expectedAuth) {
+  if (!isVercelCron && !isManualTrigger) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
