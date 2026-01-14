@@ -47,11 +47,21 @@ export default function ProPricing() {
       return
     }
 
+    const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
+    if (!razorpayKey) {
+      console.error('Razorpay key is missing')
+      alert('Payment configuration error. Please contact support.')
+      return
+    }
+
     setLoading(true)
     try {
       // Get user's organization
       const orgRes = await fetch('/api/organization')
       const orgData = await orgRes.json()
+      
+      console.log('Organization data:', orgData)
+      
       const organizationId = orgData?.organization?.id
 
       if (!organizationId) {
@@ -64,16 +74,27 @@ export default function ProPricing() {
       const amountINR = Math.round(total * 100) // adjust currency conversion if needed
       const planType = `pro_${billingCycle}`
       
+      console.log('Creating Razorpay order:', { amountINR, currency: 'INR' })
+      
       const res = await fetch('/api/payments/razorpay/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: amountINR, currency: 'INR' })
       })
+      
+      if (!res.ok) {
+        const errorData = await res.json()
+        console.error('Order creation failed:', errorData)
+        throw new Error(errorData.error || 'Failed to create order')
+      }
+      
       const order = await res.json()
+      console.log('Order created:', order)
+      
       if (!order || !order.id) throw new Error('Failed to create order')
 
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '',
+        key: razorpayKey,
         amount: order.amount,
         currency: order.currency,
         name: 'Zyync',
