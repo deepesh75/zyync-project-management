@@ -15,7 +15,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const keyId = process.env.RAZORPAY_KEY_ID || ''
     const keySecret = process.env.RAZORPAY_KEY_SECRET || ''
 
+    if (!keyId || !keySecret) {
+      console.error('Razorpay credentials missing:', { keyId: keyId ? 'set' : 'missing', keySecret: keySecret ? 'set' : 'missing' })
+      return res.status(500).json({ error: 'Razorpay configuration error', details: 'Server credentials not configured' })
+    }
+
     const body = JSON.stringify({ amount, currency, receipt: receipt || `rcpt_${Date.now()}`, payment_capture: 1 })
+
+    console.log('Creating Razorpay order with:', { amount, currency, keyIdPrefix: keyId.substring(0, 10) })
 
     const resp = await fetch('https://api.razorpay.com/v1/orders', {
       method: 'POST',
@@ -28,14 +35,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (!resp.ok) {
       const text = await resp.text()
-      console.error('Razorpay order API error', resp.status, text)
-      return res.status(500).json({ error: 'Failed to create order' })
+      console.error('Razorpay order API error:', {
+        status: resp.status,
+        statusText: resp.statusText,
+        body: text,
+        requestBody: { amount, currency }
+      })
+      return res.status(500).json({ 
+        error: 'Failed to create order', 
+        details: `Razorpay API error: ${resp.status} ${resp.statusText}`,
+        razorpayError: text 
+      })
     }
 
     const order = await resp.json()
+    console.log('Razorpay order created successfully:', order.id)
     return res.status(201).json(order)
   } catch (err) {
-    console.error('Razorpay order create failed', err)
-    return res.status(500).json({ error: 'Failed to create order' })
+    console.error('Razorpay order create failed:', err)
+    return res.status(500).json({ 
+      error: 'Failed to create order', 
+      details: err instanceof Error ? err.message : 'Unknown error'
+    })
   }
 }
