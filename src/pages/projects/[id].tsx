@@ -15,6 +15,7 @@ import ProjectHeader from '../../components/project/ProjectHeader'
 import KanbanBoard from '../../components/project/KanbanBoard'
 import { FeatureGate } from '../../components/FeatureGate'
 import { useFeatureAccess } from '../../lib/permissions'
+import { SubscriptionGuard } from '../../components/SubscriptionGuard'
 
 // Lazy load heavy modals and components
 const AdvancedFilterUI = dynamic(() => import('../../components/AdvancedFilterUI'), { ssr: false })

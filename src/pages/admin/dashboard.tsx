@@ -14,9 +14,10 @@ export default function AdminDashboard() {
   const [billingIssues, setBillingIssues] = useState<any>(null)
   const [capacity, setCapacity] = useState<any>(null)
   const [revenue, setRevenue] = useState<any>(null)
+  const [subscriptionHealth, setSubscriptionHealth] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'overview' | 'billing' | 'capacity' | 'revenue'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'billing' | 'capacity' | 'revenue' | 'subscriptions'>('overview')
   const [expandedOrg, setExpandedOrg] = useState<string | null>(null)
   const [deleteModal, setDeleteModal] = useState<{ type: 'user' | 'organization', id: string, name: string, email?: string } | null>(null)
   const [deleting, setDeleting] = useState(false)
@@ -68,11 +69,12 @@ export default function AdminDashboard() {
     setLoading(true)
     setError(null)
     try {
-      const [metricsRes, billingRes, capacityRes, revenueRes] = await Promise.all([
+      const [metricsRes, billingRes, capacityRes, revenueRes, subscriptionHealthRes] = await Promise.all([
         fetch('/api/admin/metrics?type=organizations'),
         fetch('/api/admin/metrics?type=billing'),
         fetch('/api/admin/metrics?type=capacity'),
-        fetch('/api/admin/metrics?type=revenue')
+        fetch('/api/admin/metrics?type=revenue'),
+        fetch('/api/admin/metrics?type=subscription-health')
       ])
 
       if (!metricsRes.ok) {
@@ -82,17 +84,19 @@ export default function AdminDashboard() {
         return
       }
 
-      const [metricsData, billingData, capacityData, revenueData] = await Promise.all([
+      const [metricsData, billingData, capacityData, revenueData, subscriptionHealthData] = await Promise.all([
         metricsRes.json(),
         billingRes.json(),
         capacityRes.json(),
-        revenueRes.json()
+        revenueRes.json(),
+        subscriptionHealthRes.json()
       ])
 
       setMetrics(metricsData)
       setBillingIssues(billingData)
       setCapacity(capacityData)
       setRevenue(revenueData)
+      setSubscriptionHealth(subscriptionHealthData)
     } catch (err) {
       console.error('Failed to load metrics:', err)
       setError('Failed to load dashboard data')
@@ -209,7 +213,7 @@ export default function AdminDashboard() {
           borderBottom: '2px solid #e5e7eb',
           marginBottom: 24
         }}>
-          {(['overview', 'billing', 'capacity', 'revenue'] as const).map(tab => (
+          {(['overview', 'subscriptions', 'billing', 'capacity', 'revenue'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -762,6 +766,318 @@ export default function AdminDashboard() {
         )}
 
         {/* Revenue Tab */}
+        {/* Subscriptions Health Tab */}
+        {activeTab === 'subscriptions' && subscriptionHealth && (
+          <div>
+            {/* Summary Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 20, marginBottom: 32 }}>
+              <StatCard
+                title="At Risk (Past Due + Canceled)"
+                value={subscriptionHealth.summary.totalAtRisk}
+                color="#dc2626"
+                warning={subscriptionHealth.summary.totalAtRisk > 0}
+              />
+              <StatCard
+                title="Expiring Next 7 Days"
+                value={subscriptionHealth.summary.expiringNext7Days}
+                color="#f59e0b"
+                warning={subscriptionHealth.summary.expiringNext7Days > 0}
+              />
+              <StatCard
+                title="Expiring Next 30 Days"
+                value={subscriptionHealth.summary.expiringNext30Days}
+                color="#6366f1"
+              />
+              <StatCard
+                title="At-Risk Revenue"
+                value={formatCurrency(subscriptionHealth.atRiskRevenue)}
+                color="#dc2626"
+                warning={subscriptionHealth.atRiskRevenue > 0}
+              />
+            </div>
+
+            {/* Critical: Past Due */}
+            {subscriptionHealth.pastDue.count > 0 && (
+              <div style={{ marginBottom: 24, background: '#fee2e2', padding: 20, borderRadius: 12, border: '2px solid #dc2626' }}>
+                <h3 style={{ margin: '0 0 16px', color: '#991b1b', fontSize: 18, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span>🚨</span> Past Due Subscriptions ({subscriptionHealth.pastDue.count})
+                </h3>
+                <div className="table-container" style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: 8 }}>
+                    <thead>
+                      <tr style={{ background: '#fef2f2', borderBottom: '2px solid #fca5a5' }}>
+                        <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Organization</th>
+                        <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Plan</th>
+                        <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Seats</th>
+                        <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Days Left</th>
+                        <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Admin Contact</th>
+                        <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {subscriptionHealth.pastDue.organizations.map((org: any) => (
+                        <tr key={org.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                          <td style={{ padding: 12, fontSize: 14 }}>
+                            <div>{org.name}</div>
+                            <div style={{ fontSize: 12, color: '#6b7280' }}>{org.slug}</div>
+                          </td>
+                          <td style={{ padding: 12, fontSize: 14 }}>
+                            <span style={{ 
+                              padding: '4px 8px', 
+                              background: '#fef3c7', 
+                              borderRadius: 4, 
+                              fontSize: 12, 
+                              fontWeight: 600,
+                              color: '#92400e'
+                            }}>
+                              {org.billingInterval === 'monthly' ? 'Monthly' : 'Annual'}
+                            </span>
+                          </td>
+                          <td style={{ padding: 12, fontSize: 14 }}>{org.seatsAllowed}</td>
+                          <td style={{ padding: 12, fontSize: 14, fontWeight: 600, color: '#dc2626' }}>
+                            {org.daysRemaining !== null ? `${org.daysRemaining} days` : 'Unknown'}
+                          </td>
+                          <td style={{ padding: 12, fontSize: 14 }}>
+                            {org.adminContact ? (
+                              <div>
+                                <div>{org.adminContact.name}</div>
+                                <div style={{ fontSize: 12, color: '#6b7280' }}>{org.adminContact.email}</div>
+                              </div>
+                            ) : 'No admin'}
+                          </td>
+                          <td style={{ padding: 12 }}>
+                            <a 
+                              href={`https://www.zyync.com/organizations/${org.id}/billing`} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              style={{ color: '#4f46e5', textDecoration: 'none', fontSize: 13 }}
+                            >
+                              View Billing →
+                            </a>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Warning: Canceled in Grace Period */}
+            {subscriptionHealth.canceledInGracePeriod.count > 0 && (
+              <div style={{ marginBottom: 24, background: '#fef3c7', padding: 20, borderRadius: 12, border: '2px solid #f59e0b' }}>
+                <h3 style={{ margin: '0 0 16px', color: '#92400e', fontSize: 18, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span>⚠️</span> Canceled (Grace Period) ({subscriptionHealth.canceledInGracePeriod.count})
+                </h3>
+                <div className="table-container" style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: 8 }}>
+                    <thead>
+                      <tr style={{ background: '#fffbeb', borderBottom: '2px solid #fde68a' }}>
+                        <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Organization</th>
+                        <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Plan</th>
+                        <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Seats</th>
+                        <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Days Until End</th>
+                        <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Admin Contact</th>
+                        <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {subscriptionHealth.canceledInGracePeriod.organizations.map((org: any) => (
+                        <tr key={org.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                          <td style={{ padding: 12, fontSize: 14 }}>
+                            <div>{org.name}</div>
+                            <div style={{ fontSize: 12, color: '#6b7280' }}>{org.slug}</div>
+                          </td>
+                          <td style={{ padding: 12, fontSize: 14 }}>
+                            <span style={{ 
+                              padding: '4px 8px', 
+                              background: '#fee2e2', 
+                              borderRadius: 4, 
+                              fontSize: 12, 
+                              fontWeight: 600,
+                              color: '#991b1b'
+                            }}>
+                              {org.billingInterval === 'monthly' ? 'Monthly' : 'Annual'}
+                            </span>
+                          </td>
+                          <td style={{ padding: 12, fontSize: 14 }}>{org.seatsAllowed}</td>
+                          <td style={{ padding: 12, fontSize: 14, fontWeight: 600, color: '#d97706' }}>
+                            {org.daysRemaining !== null ? `${org.daysRemaining} days` : 'Unknown'}
+                          </td>
+                          <td style={{ padding: 12, fontSize: 14 }}>
+                            {org.adminContact ? (
+                              <div>
+                                <div>{org.adminContact.name}</div>
+                                <div style={{ fontSize: 12, color: '#6b7280' }}>{org.adminContact.email}</div>
+                              </div>
+                            ) : 'No admin'}
+                          </td>
+                          <td style={{ padding: 12 }}>
+                            <a 
+                              href={`https://www.zyync.com/organizations/${org.id}/billing`} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              style={{ color: '#4f46e5', textDecoration: 'none', fontSize: 13 }}
+                            >
+                              View Billing →
+                            </a>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Expiring in 7 Days */}
+            {subscriptionHealth.expiringIn7Days.count > 0 && (
+              <div style={{ marginBottom: 24, background: 'white', padding: 20, borderRadius: 12, border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                <h3 style={{ margin: '0 0 16px', color: '#111827', fontSize: 18 }}>
+                  Expiring in Next 7 Days ({subscriptionHealth.expiringIn7Days.count})
+                </h3>
+                <div className="table-container" style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ background: '#f9fafb', borderBottom: '2px solid #e5e7eb' }}>
+                        <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Organization</th>
+                        <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Plan</th>
+                        <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Seats</th>
+                        <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Renewal In</th>
+                        <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Admin Contact</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {subscriptionHealth.expiringIn7Days.organizations.map((org: any) => (
+                        <tr key={org.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                          <td style={{ padding: 12, fontSize: 14 }}>
+                            <div>{org.name}</div>
+                            <div style={{ fontSize: 12, color: '#6b7280' }}>{org.slug}</div>
+                          </td>
+                          <td style={{ padding: 12, fontSize: 14 }}>
+                            <span style={{ 
+                              padding: '4px 8px', 
+                              background: '#eef2ff', 
+                              borderRadius: 4, 
+                              fontSize: 12, 
+                              fontWeight: 600,
+                              color: '#4338ca'
+                            }}>
+                              {org.billingInterval === 'monthly' ? 'Monthly' : 'Annual'}
+                            </span>
+                          </td>
+                          <td style={{ padding: 12, fontSize: 14 }}>{org.seatsAllowed}</td>
+                          <td style={{ padding: 12, fontSize: 14, fontWeight: 600, color: '#f59e0b' }}>
+                            {org.daysRemaining !== null ? `${org.daysRemaining} days` : 'Unknown'}
+                          </td>
+                          <td style={{ padding: 12, fontSize: 14 }}>
+                            {org.adminContact ? (
+                              <div>
+                                <div>{org.adminContact.name}</div>
+                                <div style={{ fontSize: 12, color: '#6b7280' }}>{org.adminContact.email}</div>
+                              </div>
+                            ) : 'No admin'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Expiring in 14 Days */}
+            {subscriptionHealth.expiringIn14Days.count > 0 && (
+              <details style={{ marginBottom: 24 }}>
+                <summary style={{ 
+                  padding: 16, 
+                  background: 'white', 
+                  borderRadius: 12, 
+                  border: '1px solid #e5e7eb',
+                  cursor: 'pointer',
+                  fontSize: 16,
+                  fontWeight: 600
+                }}>
+                  Expiring in 8-14 Days ({subscriptionHealth.expiringIn14Days.count})
+                </summary>
+                <div style={{ marginTop: 12, padding: 20, background: 'white', borderRadius: 12, border: '1px solid #e5e7eb' }}>
+                  <div className="table-container" style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ background: '#f9fafb', borderBottom: '2px solid #e5e7eb' }}>
+                          <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Organization</th>
+                          <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Plan</th>
+                          <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Renewal In</th>
+                          <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Admin</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {subscriptionHealth.expiringIn14Days.organizations.map((org: any) => (
+                          <tr key={org.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                            <td style={{ padding: 12, fontSize: 14 }}>{org.name}</td>
+                            <td style={{ padding: 12, fontSize: 14 }}>
+                              <span style={{ padding: '4px 8px', background: '#eef2ff', borderRadius: 4, fontSize: 12 }}>
+                                {org.billingInterval === 'monthly' ? 'Monthly' : 'Annual'}
+                              </span>
+                            </td>
+                            <td style={{ padding: 12, fontSize: 14 }}>{org.daysRemaining} days</td>
+                            <td style={{ padding: 12, fontSize: 14 }}>{org.adminContact?.email || 'No admin'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </details>
+            )}
+
+            {/* Expiring in 30 Days */}
+            {subscriptionHealth.expiringIn30Days.count > 0 && (
+              <details style={{ marginBottom: 24 }}>
+                <summary style={{ 
+                  padding: 16, 
+                  background: 'white', 
+                  borderRadius: 12, 
+                  border: '1px solid #e5e7eb',
+                  cursor: 'pointer',
+                  fontSize: 16,
+                  fontWeight: 600
+                }}>
+                  Expiring in 15-30 Days ({subscriptionHealth.expiringIn30Days.count})
+                </summary>
+                <div style={{ marginTop: 12, padding: 20, background: 'white', borderRadius: 12, border: '1px solid #e5e7eb' }}>
+                  <div className="table-container" style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ background: '#f9fafb', borderBottom: '2px solid #e5e7eb' }}>
+                          <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Organization</th>
+                          <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Plan</th>
+                          <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Renewal In</th>
+                          <th style={{ padding: 12, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Admin</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {subscriptionHealth.expiringIn30Days.organizations.map((org: any) => (
+                          <tr key={org.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                            <td style={{ padding: 12, fontSize: 14 }}>{org.name}</td>
+                            <td style={{ padding: 12, fontSize: 14 }}>
+                              <span style={{ padding: '4px 8px', background: '#eef2ff', borderRadius: 4, fontSize: 12 }}>
+                                {org.billingInterval === 'monthly' ? 'Monthly' : 'Annual'}
+                              </span>
+                            </td>
+                            <td style={{ padding: 12, fontSize: 14 }}>{org.daysRemaining} days</td>
+                            <td style={{ padding: 12, fontSize: 14 }}>{org.adminContact?.email || 'No admin'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </details>
+            )}
+          </div>
+        )}
+
         {activeTab === 'revenue' && revenue && (
           <div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 20 }}>

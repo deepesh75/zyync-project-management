@@ -245,6 +245,156 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         })
       }
 
+      // Subscription health monitoring
+      if (type === 'subscription-health') {
+        const now = new Date()
+        const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+        const in14Days = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000)
+        const in30Days = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+
+        const orgs = await prisma.organization.findMany({
+          where: {
+            AND: [
+              {
+                OR: [
+                  { billingInterval: 'monthly' },
+                  { billingInterval: 'annual' }
+                ]
+              }
+            ]
+          },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            planId: true,
+            billingStatus: true,
+            billingInterval: true,
+            currentPeriodEnd: true,
+            canceledAt: true,
+            cancelAtPeriodEnd: true,
+            seatsAllowed: true,
+            perSeatPriceCents: true,
+            _count: {
+              select: { members: true }
+            },
+            members: {
+              where: { role: 'admin' },
+              take: 1,
+              select: {
+                user: {
+                  select: {
+                    name: true,
+                    email: true
+                  }
+                }
+              }
+            }
+          },
+          orderBy: { currentPeriodEnd: 'asc' }
+        })
+
+        const getDaysRemaining = (endDate: Date | null) => {
+          if (!endDate) return null
+          const diff = endDate.getTime() - now.getTime()
+          return Math.ceil(diff / (1000 * 60 * 60 * 24))
+        }
+
+        const expiringIn7Days = orgs.filter(o => 
+          o.currentPeriodEnd && 
+          o.billingStatus === 'active' &&
+          o.currentPeriodEnd >= now && 
+          o.currentPeriodEnd <= in7Days
+        ).map(o => ({
+          ...o,
+          daysRemaining: getDaysRemaining(o.currentPeriodEnd),
+          adminContact: o.members[0]?.user
+        }))
+
+        const expiringIn14Days = orgs.filter(o => 
+          o.currentPeriodEnd && 
+          o.billingStatus === 'active' &&
+          o.currentPeriodEnd > in7Days && 
+          o.currentPeriodEnd <= in14Days
+        ).map(o => ({
+          ...o,
+          daysRemaining: getDaysRemaining(o.currentPeriodEnd),
+          adminContact: o.members[0]?.user
+        }))
+
+        const expiringIn30Days = orgs.filter(o => 
+          o.currentPeriodEnd && 
+          o.billingStatus === 'active' &&
+          o.currentPeriodEnd > in14Days && 
+          o.currentPeriodEnd <= in30Days
+        ).map(o => ({
+          ...o,
+          daysRemaining: getDaysRemaining(o.currentPeriodEnd),
+          adminContact: o.members[0]?.user
+        }))
+
+        const pastDue = orgs.filter(o => o.billingStatus === 'past_due').map(o => ({
+          ...o,
+          daysRemaining: getDaysRemaining(o.currentPeriodEnd),
+          adminContact: o.members[0]?.user
+        }))
+
+        const canceledInGrace = orgs.filter(o => 
+          o.billingStatus === 'canceled' && 
+          o.cancelAtPeriodEnd && 
+          o.currentPeriodEnd && 
+          o.currentPeriodEnd > now
+        ).map(o => ({
+          ...o,
+          daysRemaining: getDaysRemaining(o.currentPeriodEnd),
+          adminContact: o.members[0]?.user
+        }))
+
+        const defaultPricing: Record<string, number> = {
+          'pro_monthly': 1000,
+          'pro_annual': 10000,
+          'enterprise': 2500
+        }
+
+        const calculateRevenue = (org: any) => {
+          const pricePerSeat = org.perSeatPriceCents || defaultPricing[org.planId] || 1000
+          return org.seatsAllowed * pricePerSeat
+        }
+
+        const atRiskRevenue = [...pastDue, ...canceledInGrace].reduce((sum, o) => {
+          return sum + calculateRevenue(o)
+        }, 0)
+
+        return res.status(200).json({
+          expiringIn7Days: {
+            count: expiringIn7Days.length,
+            organizations: expiringIn7Days
+          },
+          expiringIn14Days: {
+            count: expiringIn14Days.length,
+            organizations: expiringIn14Days
+          },
+          expiringIn30Days: {
+            count: expiringIn30Days.length,
+            organizations: expiringIn30Days
+          },
+          pastDue: {
+            count: pastDue.length,
+            organizations: pastDue
+          },
+          canceledInGracePeriod: {
+            count: canceledInGrace.length,
+            organizations: canceledInGrace
+          },
+          atRiskRevenue: atRiskRevenue,
+          summary: {
+            totalAtRisk: pastDue.length + canceledInGrace.length,
+            expiringNext7Days: expiringIn7Days.length,
+            expiringNext30Days: expiringIn7Days.length + expiringIn14Days.length + expiringIn30Days.length
+          }
+        })
+      }
+
       return res.status(400).json({ error: 'Invalid type parameter' })
     }
 
