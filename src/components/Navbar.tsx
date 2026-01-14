@@ -192,16 +192,30 @@ export default function Navbar({ background }: NavbarProps) {
       borderBottom: theme === 'dark' && !background ? '1px solid var(--border)' : 'none'
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 40 }}>
-        <Link href="/" style={{ 
-          fontSize: 24, 
-          fontWeight: 800, 
-          color: getNavbarStyleForBackground(background, theme).textColor, 
-          textDecoration: 'none', 
-          letterSpacing: '-0.02em',
-          textShadow: theme === 'dark' && !background ? 'none' : '0 2px 4px rgba(0, 0, 0, 0.1)'
-        }}>
-          Zyync
-        </Link>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Link href="/" style={{ 
+            fontSize: 24, 
+            fontWeight: 800, 
+            color: getNavbarStyleForBackground(background, theme).textColor, 
+            textDecoration: 'none', 
+            letterSpacing: '-0.02em',
+            textShadow: theme === 'dark' && !background ? 'none' : '0 2px 4px rgba(0, 0, 0, 0.1)',
+            lineHeight: 1
+          }}>
+            Zyync
+          </Link>
+          <span style={{
+            fontSize: 9,
+            fontWeight: 700,
+            color: getNavbarStyleForBackground(background, theme).textColor,
+            opacity: 0.7,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            marginTop: -2
+          }}>
+            Beta
+          </span>
+        </div>
         <div className="nav-links" style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
           {session && (
             <>
