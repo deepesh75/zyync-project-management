@@ -4056,7 +4056,7 @@ export default function ProjectPage() {
         projectName={project?.name || 'Project'}
         isOpen={showMembersModal}
         onClose={() => setShowMembersModal(false)}
-        isOwner={project?.ownerId === (session?.user as any)?.id || project?.ownerEmail === session?.user?.email}
+        isOwner={project?.ownerId === (session?.user as any)?.id}
       />
     </main>
     </>

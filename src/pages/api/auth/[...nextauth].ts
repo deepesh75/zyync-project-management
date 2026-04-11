@@ -3,6 +3,7 @@ import type { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from '../../../lib/prisma'
 import { compare } from 'bcryptjs'
+import type { JWT } from 'next-auth/jwt'
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -38,6 +39,20 @@ export const authOptions: NextAuthOptions = {
       }
     })
   ],
+  callbacks: {
+    async jwt({ token, user }: { token: JWT; user?: any }) {
+      if (user) {
+        token.id = user.id
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        (session.user as any).id = token.id as string
+      }
+      return session
+    }
+  },
   session: {
     strategy: 'jwt' as const
   },
