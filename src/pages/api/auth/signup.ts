@@ -51,23 +51,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   // Create user
+  // If inviting via invitation, auto-verify email since invite proves email ownership
+  const isInvitedUser = !!(invitationToken && organizationId)
+  
   const user = await prisma.user.create({ 
     data: { 
       email, 
       passwordHash, 
       name,
-      emailVerified: false,
-      emailVerificationToken: verificationToken,
-      emailVerificationExpiry: verificationExpiry
+      emailVerified: isInvitedUser,  // Auto-verify if invited
+      emailVerificationToken: isInvitedUser ? null : verificationToken,
+      emailVerificationExpiry: isInvitedUser ? null : verificationExpiry
     } 
   })
 
-  // Send verification email
-  try {
-    await sendVerificationEmail(email, verificationToken, name)
-  } catch (error) {
-    console.error('Failed to send verification email:', error)
-    // Don't fail signup if email fails, user can request resend
+  // Send verification email (skip for invited users - they're auto-verified)
+  if (!isInvitedUser) {
+    try {
+      await sendVerificationEmail(email, verificationToken, name)
+    } catch (error) {
+      console.error('Failed to send verification email:', error)
+      // Don't fail signup if email fails, user can request resend
+    }
   }
 
   // If invitation, add user to organization and mark invitation as accepted
