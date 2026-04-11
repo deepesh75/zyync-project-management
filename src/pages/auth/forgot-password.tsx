@@ -103,7 +103,7 @@ export default function ForgotPassword() {
           {error && (
             <div style={{
               background: '#fee2e2',
-              border: '1px solid '#fca5a5',
+              border: '1px solid #fca5a5',
               borderRadius: '8px',
               padding: '12px 16px',
               marginBottom: '24px'
