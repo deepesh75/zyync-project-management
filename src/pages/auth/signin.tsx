@@ -82,6 +82,19 @@ export default function SignInPage() {
             onChange={(e) => setPassword(e.target.value)} 
             style={{ padding: 10, borderRadius: 6, border: '1px solid #d1d5db' }}
           />
+          <div style={{ textAlign: 'right', marginTop: 4 }}>
+            <a 
+              href="/auth/forgot-password" 
+              style={{ 
+                color: '#6366f1', 
+                fontSize: 13, 
+                textDecoration: 'none',
+                fontWeight: 500
+              }}
+            >
+              Forgot password?
+            </a>
+          </div>
           <button 
             type="submit"
             disabled={loading}

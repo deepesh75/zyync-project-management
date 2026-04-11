@@ -91,6 +91,8 @@ model User {
   emailVerified Boolean  @default(false)
   emailVerificationToken String? @unique
   emailVerificationExpiry DateTime?
+  passwordResetToken String? @unique
+  passwordResetExpiry DateTime?
   createdAt DateTime @default(now())
   projects  Project[]
   assignedTasks Task[] @relation("UserAssignedTasks")
