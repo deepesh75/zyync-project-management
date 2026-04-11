@@ -68,7 +68,7 @@ export default function ProjectMembersModal({
 
   const fetchWorkspaceUsers = async () => {
     try {
-      const res = await fetch('/api/users')
+      const res = await fetch(`/api/projects/${projectId}/available-members`)
       if (res.ok) {
         const data = await res.json()
         setWorkspaceUsers(data)
