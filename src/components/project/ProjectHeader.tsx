@@ -23,6 +23,7 @@ interface ProjectHeaderProps {
   onEditBackground: () => void
   onShowWorkflows: () => void
   onShowManageTemplates: () => void
+  onShowMembers: () => void
   onEditColumns: () => void
   currentView: 'kanban' | 'calendar' | 'table' | 'timeline'
   onViewChange: (view: 'kanban' | 'calendar' | 'table' | 'timeline') => void
@@ -35,6 +36,7 @@ export default function ProjectHeader({
   onEditBackground,
   onShowWorkflows,
   onShowManageTemplates,
+  onShowMembers,
   onEditColumns,
   currentView,
   onViewChange,
@@ -228,6 +230,39 @@ export default function ProjectHeader({
                     <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
                   </svg>
                   Background
+                </button>
+                
+                <button
+                  onClick={() => {
+                    onShowMembers()
+                    setShowToolsMenu(false)
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    border: 'none',
+                    background: 'transparent',
+                    color: 'var(--text)',
+                    fontSize: 14,
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    borderBottom: '1px solid var(--border)'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                  Team Members
                 </button>
                 
                 <button

@@ -12,6 +12,7 @@ import TimelineView from '../../components/views/TimelineView'
 import { useFilterPresets } from '../../hooks/useFilterPresets'
 import { useWorkflows } from '../../hooks/useWorkflows'
 import ProjectHeader from '../../components/project/ProjectHeader'
+import ProjectMembersModal from '../../components/ProjectMembersModal'
 import KanbanBoard from '../../components/project/KanbanBoard'
 import { FeatureGate } from '../../components/FeatureGate'
 import { useFeatureAccess } from '../../lib/permissions'
@@ -134,6 +135,7 @@ export default function ProjectPage() {
   const [attachments, setAttachments] = useState<Array<any>>([])
   const [uploading, setUploading] = useState(false)
   const [activities, setActivities] = useState<Array<any>>([])
+  const [showMembersModal, setShowMembersModal] = useState(false)
   
   // Template states
   const [showTemplateSelector, setShowTemplateSelector] = useState(false)
@@ -985,6 +987,7 @@ export default function ProjectPage() {
           onEditLabels={() => setShowLabelsModal(true)}
           onEditBackground={() => setShowBackgroundPicker(true)}
           onShowWorkflows={() => setShowWorkflows(true)}
+          onShowMembers={() => setShowMembersModal(true)}
           onShowManageTemplates={() => setShowManageTemplates(true)}
           onEditColumns={() => setEditingColumns(true)}
           currentView={currentView}
@@ -4046,6 +4049,15 @@ export default function ProjectPage() {
           </div>
         </div>
       )}
+
+      {/* Project Members Modal */}
+      <ProjectMembersModal
+        projectId={typeof id === 'string' ? id : ''}
+        projectName={project?.name || 'Project'}
+        isOpen={showMembersModal}
+        onClose={() => setShowMembersModal(false)}
+        isOwner={project?.ownerId === (session?.user as any)?.id || project?.ownerEmail === session?.user?.email}
+      />
     </main>
     </>
   )
