@@ -12,6 +12,12 @@ interface ProjectMember {
   addedAt: string
 }
 
+interface WorkspaceUser {
+  id: string
+  name: string | null
+  email: string
+}
+
 interface ProjectMembersModalProps {
   projectId: string
   projectName: string
@@ -28,16 +34,20 @@ export default function ProjectMembersModal({
   isOwner
 }: ProjectMembersModalProps) {
   const [members, setMembers] = useState<ProjectMember[]>([])
-  const [newMemberEmail, setNewMemberEmail] = useState('')
+  const [workspaceUsers, setWorkspaceUsers] = useState<WorkspaceUser[]>([])
+  const [selectedUser, setSelectedUser] = useState<WorkspaceUser | null>(null)
+  const [searchInput, setSearchInput] = useState('')
+  const [showUserDropdown, setShowUserDropdown] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [isFetching, setIsFetching] = useState(false)
 
-  // Fetch members when modal opens
+  // Fetch members and workspace users when modal opens
   useEffect(() => {
     if (isOpen && isOwner) {
       fetchMembers()
+      fetchWorkspaceUsers()
     }
   }, [isOpen, projectId, isOwner])
 
@@ -56,29 +66,49 @@ export default function ProjectMembersModal({
     }
   }
 
-  const handleAddMember = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const fetchWorkspaceUsers = async () => {
+    try {
+      const res = await fetch('/api/users')
+      if (res.ok) {
+        const data = await res.json()
+        setWorkspaceUsers(data)
+      }
+    } catch (err) {
+      console.error('Failed to fetch workspace users:', err)
+    }
+  }
+
+  // Get members already added to this project
+  const memberIds = members.map(m => m.userId)
+  
+  // Filter available users: exclude those already added
+  const availableUsers = workspaceUsers.filter(u => !memberIds.includes(u.id))
+  
+  // Filter by search input
+  const filteredUsers = availableUsers.filter(u => 
+    (u.name ? u.name.toLowerCase() : '').includes(searchInput.toLowerCase()) ||
+    u.email.toLowerCase().includes(searchInput.toLowerCase())
+  )
+
+  const handleAddMember = async (user: WorkspaceUser) => {
     setError('')
     setSuccess('')
-
-    if (!newMemberEmail.trim()) {
-      setError('Please enter an email address')
-      return
-    }
-
     setIsLoading(true)
+    
     try {
       const res = await fetch(`/api/projects/${projectId}/members`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: newMemberEmail.trim() })
+        body: JSON.stringify({ email: user.email })
       })
 
       const data = await res.json()
 
       if (res.ok) {
-        setSuccess(`✓ ${newMemberEmail} added successfully!`)
-        setNewMemberEmail('')
+        setSuccess(`✓ ${user.name || user.email} added successfully!`)
+        setSelectedUser(null)
+        setSearchInput('')
+        setShowUserDropdown(false)
         fetchMembers()
         setTimeout(() => setSuccess(''), 3000)
       } else {
@@ -193,8 +223,8 @@ export default function ProjectMembersModal({
           padding: '24px'
         }}>
           {/* Add Member Form */}
-          {isOwner && (
-            <form onSubmit={handleAddMember} style={{ marginBottom: 24 }}>
+          {isOwner && availableUsers.length > 0 && (
+            <div style={{ marginBottom: 24 }}>
               <label style={{
                 display: 'block',
                 fontSize: 13,
@@ -204,32 +234,123 @@ export default function ProjectMembersModal({
               }}>
                 Add Team Member
               </label>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <input
-                  type="email"
-                  value={newMemberEmail}
-                  onChange={(e) => setNewMemberEmail(e.target.value)}
-                  placeholder="colleague@example.com"
+              <div style={{ position: 'relative' }}>
+                <div 
+                  onClick={() => setShowUserDropdown(!showUserDropdown)}
                   style={{
-                    flex: 1,
                     padding: '10px 12px',
                     fontSize: 14,
                     border: '1px solid var(--border)',
                     borderRadius: 8,
                     background: 'var(--surface)',
                     color: 'var(--text)',
-                    outline: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
                     transition: 'border-color 0.2s'
                   }}
-                  onFocus={(e) => e.target.style.borderColor = '# 667eea'}
-                  onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
-                  disabled={isLoading}
-                />
+                  onMouseEnter={(e) => e.currentTarget.style.borderColor = '#667eea'}
+                  onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
+                >
+                  <span>{selectedUser ? `${selectedUser.name || selectedUser.email}` : 'Select a colleague...'}</span>
+                  <span style={{ fontSize: 12, opacity: 0.6 }}>▼</span>
+                </div>
+                
+                {/* Dropdown Menu */}
+                {showUserDropdown && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    marginTop: 4,
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 8,
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    zIndex: 1100,
+                    maxHeight: 300,
+                    overflow: 'auto'
+                  }}>
+                    {/* Search Input */}
+                    <div style={{ padding: 8, borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, background: 'var(--surface)' }}>
+                      <input
+                        type="text"
+                        placeholder="Search by name or email..."
+                        value={searchInput}
+                        onChange={(e) => setSearchInput(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '8px 10px',
+                          fontSize: 13,
+                          border: '1px solid var(--border)',
+                          borderRadius: 6,
+                          background: 'var(--bg)',
+                          color: 'var(--text)',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+                    
+                    {filteredUsers.length === 0 ? (
+                      <div style={{
+                        padding: '12px',
+                        textAlign: 'center',
+                        color: 'var(--text-secondary)',
+                        fontSize: 13
+                      }}>
+                        {availableUsers.length === 0 ? 'All workspace members already added' : 'No users found'}
+                      </div>
+                    ) : (
+                      filteredUsers.map((user) => (
+                        <div
+                          key={user.id}
+                          onClick={() => {
+                            setSelectedUser(user)
+                            setShowUserDropdown(false)
+                            setSearchInput('')
+                          }}
+                          style={{
+                            padding: '12px',
+                            borderBottom: '1px solid var(--border)',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            backgroundColor: 'var(--surface)'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                          onMouseLeave={(e) => e.currentTarget.style.background = 'var(--surface)'}
+                        >
+                          <div style={{
+                            fontSize: 13,
+                            fontWeight: 500,
+                            color: 'var(--text)',
+                            marginBottom: 2
+                          }}>
+                            {user.name || 'Unnamed User'}
+                          </div>
+                          <div style={{
+                            fontSize: 12,
+                            color: 'var(--text-secondary)'
+                          }}>
+                            {user.email}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+              
+              {/* Add Button */}
+              {selectedUser && (
                 <button
-                  type="submit"
+                  onClick={() => handleAddMember(selectedUser)}
                   disabled={isLoading}
                   style={{
-                    padding: '10px 20px',
+                    marginTop: 12,
+                    width: '100%',
+                    padding: '10px',
                     background: isLoading ? 'var(--border)' : '#667eea',
                     color: 'white',
                     border: 'none',
@@ -246,10 +367,24 @@ export default function ProjectMembersModal({
                     if (!isLoading) e.currentTarget.style.background = '#667eea'
                   }}
                 >
-                  {isLoading ? 'Adding...' : 'Add'}
+                  {isLoading ? 'Adding...' : 'Add Member'}
                 </button>
-              </div>
-            </form>
+              )}
+            </div>
+          )}
+
+          {availableUsers.length === 0 && isOwner && (
+            <div style={{
+              background: '#dbeafe',
+              border: '1px solid #93c5fd',
+              borderRadius: 8,
+              padding: '12px 16px',
+              marginBottom: 16,
+              fontSize: 13,
+              color: '#1e40af'
+            }}>
+              All workspace members are already added to this project!
+            </div>
           )}
 
           {/* Messages */}
