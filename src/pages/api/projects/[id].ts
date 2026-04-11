@@ -41,6 +41,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     })
     hasAccess = !!membership
   }
+  
+  // Also check if user is a project member
+  if (!hasAccess) {
+    const projectMember = await prisma.projectMember.findUnique({
+      where: {
+        projectId_userId: {
+          projectId: String(id),
+          userId: user.id
+        }
+      }
+    })
+    hasAccess = !!projectMember
+  }
 
   if (!hasAccess) {
     return res.status(403).json({ error: 'You do not have access to this project' })

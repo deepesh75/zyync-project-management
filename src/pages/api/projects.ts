@@ -42,13 +42,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           {
             OR: [
               { ownerId: user.id }, // User owns the project
-              { organizationId: { in: userOrgIds } } // User is in the organization
+              { organizationId: { in: userOrgIds } }, // User is in the organization
+              { members: { some: { userId: user.id } } } // User is a project member
             ]
           }
         ]
       },
       include: { 
-        owner: true, 
+        owner: true,
+        members: {
+          include: { user: { select: { id: true, name: true, email: true } } }
+        },
         tasks: {
           where: { deleted: false }, // Exclude soft-deleted tasks
           include: {
