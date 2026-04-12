@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import crypto from 'crypto'
 import { prisma } from '../../../lib/prisma'
-import { sendSubscriptionRenewedEmail } from '../../../lib/subscription-emails'
+import { sendSubscriptionRenewedEmail, sendSubscriptionCancelledEmail } from '../../../lib/subscription-emails'
 
 export const config = {
   api: {
@@ -224,9 +224,34 @@ async function handleSubscriptionCancelled(subscription: any) {
       ? new Date(subscription.current_end * 1000) 
       : null
     
-    // Find organization by subscription ID and update status
-    await prisma.organization.updateMany({
+    const isImmediate = !subscription.cancel_at_cycle_end
+    const cancelledAt = new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+    
+    // Find organization by subscription ID
+    const org = await prisma.organization.findFirst({
       where: { razorpaySubscriptionId: subscription.id },
+      include: {
+        members: {
+          where: { role: 'admin' },
+          include: { user: true }
+        }
+      }
+    })
+    
+    if (!org) {
+      console.warn('No organization found for subscription:', subscription.id)
+      return
+    }
+    
+    // Update organization status
+    await prisma.organization.update({
+      where: { id: org.id },
       data: { 
         billingStatus: 'canceled',
         canceledAt: new Date(),
@@ -235,7 +260,33 @@ async function handleSubscriptionCancelled(subscription: any) {
       }
     })
     
-    console.log('Subscription cancelled:', subscription.id, 'Cancel at period end:', subscription.cancel_at_cycle_end)
+    // Get plan name for email
+    const planName = org.razorpayPlanId?.includes('pro') ? 'Pro' : org.razorpayPlanId === 'enterprise' ? 'Enterprise' : 'Free'
+    const billingPageUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/organizations/${org.id}/billing`
+    
+    // Send cancellation emails to all organization admins
+    for (const member of org.members) {
+      try {
+        await sendSubscriptionCancelledEmail({
+          toEmail: member.user.email,
+          organizationName: org.name,
+          planName,
+          cancelledAt,
+          currentPeriodEnd: periodEnd?.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }),
+          isImmediate,
+          billingPageUrl
+        })
+      } catch (emailErr) {
+        console.error(`Failed to send cancellation email to ${member.user.email}:`, emailErr)
+        // Don't fail the entire handler if email fails
+      }
+    }
+    
+    console.log('Subscription cancelled:', subscription.id, 'Cancel at period end:', subscription.cancel_at_cycle_end, 'Emails sent to', org.members.length, 'admins')
   } catch (err) {
     console.error('Error handling subscription.cancelled:', err)
   }

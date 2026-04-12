@@ -401,3 +401,106 @@ export async function checkAndSendExpirationEmails() {
 
   return { count: emailsSent.length, emails: emailsSent }
 }
+
+/**
+ * Send subscription cancellation confirmation email
+ */
+export async function sendSubscriptionCancelledEmail(data: {
+  toEmail: string
+  organizationName: string
+  planName: string
+  cancelledAt: string
+  currentPeriodEnd?: string
+  isImmediate: boolean
+  billingPageUrl: string
+}) {
+  const { toEmail, organizationName, planName, cancelledAt, currentPeriodEnd, isImmediate, billingPageUrl } = data
+  
+  const subject = isImmediate 
+    ? `❌ ${organizationName}: Subscription cancelled immediately`
+    : `❌ ${organizationName}: Subscription will cancel at period end`
+  
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">Zyync Project Management</h1>
+        </div>
+        
+        <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px;">
+          <div style="background: #fee2e2; border-left: 4px solid #dc2626; padding: 16px; margin-bottom: 24px; border-radius: 4px;">
+            <h2 style="margin: 0 0 8px 0; color: #7f1d1d; font-size: 18px;">❌ Subscription Cancelled</h2>
+            <p style="margin: 0; color: #7f1d1d; font-size: 14px;">
+              ${isImmediate ? 'Effective immediately' : `Effective on ${currentPeriodEnd || 'the end of your billing period'}`}
+            </p>
+          </div>
+          
+          <h3 style="color: #111827; margin-top: 0;">Hello,</h3>
+          
+          <p style="color: #374151; font-size: 15px;">
+            We're sorry to see you go. Your <strong>${planName}</strong> subscription for <strong>${organizationName}</strong> has been cancelled.
+          </p>
+          
+          <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 24px 0;">
+            <h4 style="margin: 0 0 12px 0; color: #111827;">Cancellation Details:</h4>
+            <ul style="margin: 8px 0; padding-left: 20px;">
+              <li style="color: #374151; margin: 8px 0;">
+                <strong>Cancelled on:</strong> ${cancelledAt}
+              </li>
+              ${currentPeriodEnd && !isImmediate ? `
+                <li style="color: #374151; margin: 8px 0;">
+                  <strong>Access until:</strong> ${currentPeriodEnd}
+                </li>
+              ` : ''}
+              <li style="color: #374151; margin: 8px 0;">
+                <strong>Status:</strong> ${isImmediate ? 'Cancelled immediately' : 'Cancellation scheduled at period end'}
+              </li>
+            </ul>
+          </div>
+          
+          ${!isImmediate && currentPeriodEnd ? `
+            <div style="background: #dbeafe; border-left: 4px solid #0284c7; padding: 16px; border-radius: 4px; margin: 24px 0;">
+              <p style="margin: 0; color: #075985; font-size: 14px;">
+                <strong>ℹ️ Note:</strong> Your team will have access to all features until <strong>${currentPeriodEnd}</strong>. After that, your organization will be downgraded to the Free plan with limited features.
+              </p>
+            </div>
+          ` : ''}
+          
+          <div style="margin: 24px 0;">
+            <p style="color: #374151; font-size: 15px;">
+              If you'd like to reactivate your subscription or have any questions, please visit your billing page:
+            </p>
+            <a href="${billingPageUrl}" style="display: inline-block; background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500; margin: 16px 0;">View Billing Settings</a>
+          </div>
+          
+          <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px;">
+            <p style="color: #6b7280; font-size: 13px; text-align: center;">
+              Have questions? <a href="https://www.zyync.com/support" style="color: #667eea; text-decoration: none;">Contact support</a>
+            </p>
+            <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
+              © ${new Date().getFullYear()} Zyync. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `
+
+  try {
+    await resend.emails.send({
+      from: 'noreply@zyync.com',
+      to: toEmail,
+      subject,
+      html
+    })
+    console.log(`Subscription cancellation email sent to ${toEmail}`)
+  } catch (error) {
+    console.error(`Failed to send cancellation email to ${toEmail}:`, error)
+    throw error
+  }
+}
