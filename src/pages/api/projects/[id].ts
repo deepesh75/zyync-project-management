@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '../../../lib/prisma'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '../auth/[...nextauth]'
-import { getCached, setCached, invalidateCacheKeys, invalidateCache } from '../../../lib/redis'
+import { getCached, setCached, invalidateCacheKeys } from '../../../lib/redis'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query
@@ -150,8 +150,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       })
       
       // Invalidate cache for this project and projects list
-      await invalidateCacheKeys([`project:${id}`])
-      await invalidateCache('projects:list:*')
+      await invalidateCacheKeys([
+        `project:${id}`,
+        `projects:list:${user.id}:false`,
+        `projects:list:${user.id}:true`,
+        `projects:list:${user.id}:active`,
+      ])
       
       return res.status(200).json(updatedProject)
     } catch (err) {
@@ -188,8 +192,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       })
 
       // Invalidate cache for this project and projects list
-      await invalidateCacheKeys([`project:${id}`])
-      await invalidateCache('projects:list:*')
+      await invalidateCacheKeys([
+        `project:${id}`,
+        `projects:list:${user.id}:false`,
+        `projects:list:${user.id}:true`,
+        `projects:list:${user.id}:active`,
+      ])
 
       return res.status(200).json({ message: 'Project deleted successfully' })
     } catch (err) {

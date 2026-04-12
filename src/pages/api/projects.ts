@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '../../lib/prisma'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from './auth/[...nextauth]'
-import { getCached, setCached, invalidateCache } from '../../lib/redis'
+import { getCached, setCached, invalidateCacheKeys } from '../../lib/redis'
 import { checkOrganizationAccess } from '../../lib/access-control'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -112,8 +112,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       } 
     })
     
-    // Invalidate projects list cache
-    await invalidateCache('projects:list:*')
+    // Invalidate projects list cache for this user (exact keys — wildcard scan is unreliable in serverless)
+    await invalidateCacheKeys([
+      `projects:list:${user!.id}:false`,
+      `projects:list:${user!.id}:true`,
+      `projects:list:${user!.id}:active`,
+    ])
     
     return res.status(201).json(project)
   }
