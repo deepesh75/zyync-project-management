@@ -24,7 +24,7 @@ model Organization {
   razorpayPlanId        String?
   
   // Seat management
-  seatsAllowed          Int      @default(1)  // Total seats purchased
+  seatsAllowed          Int      @default(5)  // Total seats purchased (Free plan: 5, Pro: billing-based)
   seatsUsed             Int      @default(0)  // Currently occupied seats (active members + pending invites)
   perSeatPriceCents     Int?                  // Price per additional seat in cents
   

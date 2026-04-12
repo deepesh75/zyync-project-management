@@ -157,7 +157,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         name: organizationName,
         slug,
         planId: 'free', // New organizations start on free plan
-        seatsAllowed: 1, // Free plan starts with 1 seat
+        seatsAllowed: 5, // Free plan allows 5 seats
         seatsUsed: 1, // Creator uses 1 seat
         billingStatus: 'active',
         members: {
