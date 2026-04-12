@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useSession, signIn } from 'next-auth/react'
+import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Navbar from '../components/Navbar'
 import { useProjects, useOrganizations } from '../hooks/useProjects'
@@ -21,6 +22,7 @@ type Organization = {
 
 export default function Home() {
   const { data: session, status } = useSession()
+  const router = useRouter()
   const [name, setName] = useState('')
   const [selectedOrgId, setSelectedOrgId] = useState<string>('')
   const [showArchived, setShowArchived] = useState(false)
@@ -43,10 +45,6 @@ export default function Home() {
       body.organizationId = selectedOrgId
     }
     
-    // Optimistic update
-    const tempProject = { id: 'temp', name, archived: false, tasks: [] }
-    mutateProjects(projects ? [tempProject, ...projects] : [tempProject], false)
-    
     const res = await fetch('/api/projects', { 
       method: 'POST', 
       headers: { 'Content-Type': 'application/json' }, 
@@ -55,8 +53,11 @@ export default function Home() {
     const project = await res.json()
     setName('')
     
-    // Revalidate
+    // Revalidate and navigate to the real project
     mutateProjects()
+    if (project?.id) {
+      router.push(`/projects/${project.id}`)
+    }
   }
 
   async function toggleArchive(projectId: string, currentlyArchived: boolean, e: React.MouseEvent) {
