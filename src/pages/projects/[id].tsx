@@ -3543,7 +3543,7 @@ export default function ProjectPage() {
                             onMouseEnter={(e) => {
                               e.currentTarget.style.opacity = '1'
                               e.currentTarget.style.color = 'var(--danger)'
-                              e.currentTarget.style.background = '#fee2e2'
+                              e.currentTarget.style.background = 'var(--danger-light)'
                             }}
                             onMouseLeave={(e) => {
                               e.currentTarget.style.opacity = '0.6'
@@ -3637,7 +3637,7 @@ export default function ProjectPage() {
                             }
                           }}
                           style={{
-                              border: selected ? '2px solid #111827' : '1px solid #d1d5db',
+                              border: selected ? `2px solid var(--primary)` : '1px solid var(--border)',
                               background: l.color || '#6b7280',
                               color: '#fff',
                               padding: '3px 10px',
@@ -3671,25 +3671,25 @@ export default function ProjectPage() {
                       } catch (err) {
                         console.error('Failed to create label', err)
                       }
-                    }} style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 8, padding: 8, background: '#f9fafb', borderRadius: 6, border: '1px solid #e5e7eb' }}>
+                    }} style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 8, padding: 8, background: 'var(--bg-secondary)', borderRadius: 6, border: '1px solid var(--border)' }}>
                       <input 
                         placeholder="New label" 
                         value={newLabelName} 
                         onChange={(e) => setNewLabelName(e.target.value)} 
-                        style={{ flex: 1, padding: '6px 8px', borderRadius: 4, border: '1px solid #d1d5db', fontSize: 12 }} 
+                        style={{ flex: 1, padding: '6px 8px', borderRadius: 4, border: '1px solid var(--border)', fontSize: 12, background: 'var(--surface)', color: 'var(--text)' }} 
                       />
                       <input 
                         type="color" 
                         value={newLabelColor} 
                         onChange={(e) => setNewLabelColor(e.target.value)} 
                         title="Color" 
-                        style={{ width: 36, height: 30, border: '1px solid #d1d5db', borderRadius: 4, cursor: 'pointer' }} 
+                        style={{ width: 36, height: 30, border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer', background: 'var(--surface)' }} 
                       />
                       <button 
                         type="submit" 
                         style={{ 
                           padding: '6px 12px', 
-                          background: '#10b981', 
+                          background: 'var(--primary)', 
                           color: 'white', 
                           borderRadius: 4, 
                           fontSize: 12, 
