@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import { prisma } from '../../../lib/prisma'
 import { sendSubscriptionRenewedEmail, sendSubscriptionCancelledEmail, sendPaymentFailureEmail } from '../../../lib/subscription-emails'
 import { createInvoice } from '../../../lib/invoices'
+import { restoreOrganizationAccess } from '../../../lib/access-restriction'
 
 export const config = {
   api: {
@@ -207,6 +208,17 @@ async function handleSubscriptionCharged(subscription: any, payment: any) {
         cancelAtPeriodEnd: false
       }
     })
+    
+    // Restore access if was previously restricted
+    try {
+      if (org.billingStatus === 'access_restricted') {
+        await restoreOrganizationAccess(org.id)
+        console.log(`Access restored for organization ${org.id} upon subscription renewal`)
+      }
+    } catch (error) {
+      console.error(`Failed to restore access for org ${org.id}:`, error)
+      // Non-fatal - don't fail the entire renewal process
+    }
     
     // Create payment record for this renewal
     let paymentRecord: any = null
