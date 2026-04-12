@@ -15,31 +15,26 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials) return null
-        const user = await prisma.user.findUnique({ 
-          where: { email: credentials.email },
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            passwordHash: true,
-            emailVerified: true,
-            createdAt: true
-          }
-        })
-        if (!user || !user.passwordHash) return null
-        
-        // Email verification is only enforced for accounts created after the
-        // feature was introduced (2026-01-01). Legacy users are treated as verified.
-        const verificationFeatureDate = new Date('2026-01-01T00:00:00Z')
-        const isLegacyUser = user.createdAt < verificationFeatureDate
-        if (!user.emailVerified && !isLegacyUser) {
-          throw new Error('Please verify your email before signing in. Check your inbox for the verification link.')
+        try {
+          const user = await prisma.user.findUnique({ 
+            where: { email: credentials.email },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              passwordHash: true
+            }
+          })
+          if (!user || !user.passwordHash) return null
+          
+          const valid = await compare(credentials.password, user.passwordHash)
+          if (!valid) return null
+
+          return { id: user.id, name: user.name, email: user.email }
+        } catch (err) {
+          console.error('[NextAuth] authorize error:', err)
+          return null
         }
-        
-        const valid = await compare(credentials.password, user.passwordHash)
-        if (!valid) return null
-        // Return user object for session
-        return { id: user.id, name: user.name, email: user.email }
       }
     })
   ],
