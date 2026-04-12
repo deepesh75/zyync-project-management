@@ -504,3 +504,118 @@ export async function sendSubscriptionCancelledEmail(data: {
     throw error
   }
 }
+
+/**
+ * Send payment failure notification email
+ */
+export async function sendPaymentFailureEmail(data: {
+  toEmail: string
+  organizationName: string
+  planName: string
+  amount: number
+  currency: string
+  failureReason?: string
+  daysUntilSuspension?: number
+  billingPageUrl: string
+}) {
+  const { toEmail, organizationName, planName, amount, currency, failureReason, daysUntilSuspension = 3, billingPageUrl } = data
+  
+  const formattedAmount = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currency || 'USD'
+  }).format(amount / 100)
+  
+  const subject = `⚠️ ${organizationName}: Payment failed - Action required`
+  
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">Zyync Project Management</h1>
+        </div>
+        
+        <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px;">
+          <div style="background: #fee2e2; border-left: 4px solid #dc2626; padding: 16px; margin-bottom: 24px; border-radius: 4px;">
+            <h2 style="margin: 0 0 8px 0; color: #7f1d1d; font-size: 18px;">⚠️ Payment Failed</h2>
+            <p style="margin: 0; color: #7f1d1d; font-size: 14px;">
+              We were unable to process your payment. Please update your payment method.
+            </p>
+          </div>
+          
+          <h3 style="color: #111827; margin-top: 0;">Hello,</h3>
+          
+          <p style="color: #374151; font-size: 15px;">
+            We attempted to charge your ${planName} subscription for <strong>${organizationName}</strong>, but the payment failed.
+          </p>
+          
+          <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 24px 0;">
+            <h4 style="margin: 0 0 12px 0; color: #111827;">Failed Payment Details:</h4>
+            <ul style="margin: 8px 0; padding-left: 20px;">
+              <li style="color: #374151; margin: 8px 0;">
+                <strong>Amount:</strong> ${formattedAmount}
+              </li>
+              <li style="color: #374151; margin: 8px 0;">
+                <strong>Plan:</strong> ${planName}
+              </li>
+              ${failureReason ? `
+                <li style="color: #374151; margin: 8px 0;">
+                  <strong>Reason:</strong> ${failureReason}
+                </li>
+              ` : ''}
+              <li style="color: #374151; margin: 8px 0;">
+                <strong>Failed on:</strong> ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+              </li>
+            </ul>
+          </div>
+          
+          <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 4px; margin: 24px 0;">
+            <p style="margin: 0; color: #92400e; font-size: 14px;">
+              <strong>⏰ Important:</strong> If payment is not resolved within ${daysUntilSuspension} days, your ${planName} subscription will be suspended and your team will lose access to Zyync.
+            </p>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <p style="color: #374151; font-size: 15px; margin-top: 0;">
+              Please update your payment method or add an alternative payment option to reactivate your subscription:
+            </p>
+            <a href="${billingPageUrl}" style="display: inline-block; background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500; margin: 16px 0;">Update Payment Method</a>
+          </div>
+          
+          <div style="background: #eff6ff; border-left: 4px solid #0284c7; padding: 16px; border-radius: 4px; margin: 24px 0;">
+            <h4 style="margin: 0 0 8px 0; color: #075985; font-size: 14px;">Why did this fail?</h4>
+            <p style="margin: 8px 0 0 0; color: #075985; font-size: 13px;">
+              Payments can fail due to: card expiry, insufficient funds, fraud checks, or bank declines. Please verify your payment method and try again.
+            </p>
+          </div>
+          
+          <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px;">
+            <p style="color: #6b7280; font-size: 13px; text-align: center;">
+              Need help? <a href="https://www.zyync.com/support" style="color: #667eea; text-decoration: none;">Contact support</a>
+            </p>
+            <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
+              © ${new Date().getFullYear()} Zyync. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `
+
+  try {
+    await resend.emails.send({
+      from: 'noreply@zyync.com',
+      to: toEmail,
+      subject,
+      html
+    })
+    console.log(`Payment failure email sent to ${toEmail}`)
+  } catch (error) {
+    console.error(`Failed to send payment failure email to ${toEmail}:`, error)
+    throw error
+  }
+}

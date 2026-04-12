@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import crypto from 'crypto'
 import { prisma } from '../../../lib/prisma'
-import { sendSubscriptionRenewedEmail, sendSubscriptionCancelledEmail } from '../../../lib/subscription-emails'
+import { sendSubscriptionRenewedEmail, sendSubscriptionCancelledEmail, sendPaymentFailureEmail } from '../../../lib/subscription-emails'
 
 export const config = {
   api: {
@@ -92,19 +92,55 @@ async function handlePaymentFailed(payment: any) {
       data: { status: 'failed' }
     })
     
-    // Update organization billing status
+    // Find the payment record to get organization details
     const paymentRecord = await prisma.payment.findFirst({
       where: { razorpayPaymentId: payment.id }
     })
     
-    if (paymentRecord?.organizationId) {
-      await prisma.organization.update({
-        where: { id: paymentRecord.organizationId },
-        data: { billingStatus: 'past_due' }
-      })
+    if (!paymentRecord?.organizationId) {
+      console.log('No organization found for failed payment:', payment.id)
+      return
     }
     
-    console.log('Payment failed:', payment.id)
+    // Update organization billing status to past_due
+    const org = await prisma.organization.update({
+      where: { id: paymentRecord.organizationId },
+      data: { billingStatus: 'past_due' },
+      include: {
+        members: {
+          where: { role: 'admin' },
+          include: { user: true }
+        }
+      }
+    })
+    
+    // Get plan name for email
+    const planName = org.razorpayPlanId?.includes('pro') ? 'Pro' : org.razorpayPlanId === 'enterprise' ? 'Enterprise' : 'Free'
+    const billingPageUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/organizations/${org.id}/billing`
+    
+    // Extract failure reason from Razorpay response if available
+    const failureReason = payment.description || payment.error_description || 'Payment processor declined the transaction'
+    
+    // Send payment failure emails to all organization admins
+    for (const member of org.members) {
+      try {
+        await sendPaymentFailureEmail({
+          toEmail: member.user.email,
+          organizationName: org.name,
+          planName,
+          amount: payment.amount || paymentRecord.amount,
+          currency: payment.currency || paymentRecord.currency || 'INR',
+          failureReason,
+          daysUntilSuspension: 3, // Configurable grace period
+          billingPageUrl
+        })
+      } catch (emailErr) {
+        console.error(`Failed to send payment failure email to ${member.user.email}:`, emailErr)
+        // Don't fail the entire handler if email fails
+      }
+    }
+    
+    console.log('Payment failed:', payment.id, 'Organization:', org.id, 'Emails sent to', org.members.length, 'admins')
   } catch (err) {
     console.error('Error handling payment.failed:', err)
   }
