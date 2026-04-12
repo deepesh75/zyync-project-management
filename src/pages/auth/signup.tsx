@@ -14,20 +14,27 @@ export default function SignUpPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    setLoading(true)
     
-    const res = await fetch('/api/auth/signup', { 
-      method: 'POST', 
-      headers: { 'Content-Type': 'application/json' }, 
-      body: JSON.stringify({ email, password, name, organizationName }) 
-    })
-    
-    const data = await res.json()
-    
-    if (res.ok) {
-      setSuccess(true)
-      // Don't redirect automatically - show success message
-    } else {
-      setError(data.error || 'Signup failed')
+    try {
+      const res = await fetch('/api/auth/signup', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ email, password, name, organizationName }) 
+      })
+      
+      const data = await res.json()
+      
+      if (res.ok) {
+        setSuccess(true)
+      } else {
+        setError(data.error || 'Signup failed')
+      }
+    } catch (err: any) {
+      setError('Something went wrong. Please try again.')
+      console.error('Signup error:', err)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -141,9 +148,10 @@ export default function SignUpPage() {
           </p>
           <button 
             type="submit" 
-            style={{ padding: 10, background: '#6366f1', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}
+            disabled={loading}
+            style={{ padding: 10, background: loading ? '#a5b4fc' : '#6366f1', color: 'white', border: 'none', borderRadius: 6, cursor: loading ? 'not-allowed' : 'pointer', fontWeight: 600 }}
           >
-            Create account & workspace
+            {loading ? 'Creating account...' : 'Create account & workspace'}
           </button>
           {error && <div style={{ color: '#ef4444', fontSize: 14 }}>{error}</div>}
         </form>
