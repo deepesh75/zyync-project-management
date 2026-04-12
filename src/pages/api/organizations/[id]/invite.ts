@@ -5,6 +5,7 @@ import { authOptions } from '../../auth/[...nextauth]'
 import crypto from 'crypto'
 import { sendInvitationEmail } from '../../../../lib/email'
 import { checkSeatAvailability, incrementSeatsUsed } from '../../../../lib/seats'
+import { canAddUser } from '../../../../lib/access-control'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions)
@@ -75,7 +76,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'An invitation has already been sent to this email' })
     }
 
-    // Check seat availability
+    // Check subscription status AND seat availability using unified check
+    // canAddUser() handles both subscription expiration and seat limits
+    const accessCheck = await canAddUser(id)
+    if (!accessCheck.allowed) {
+      return res.status(403).json({
+        error: accessCheck.message || 'Cannot invite members at this time',
+        reason: accessCheck.reason,
+        upgradeRequired: true
+      })
+    }
+
+    // Seat availability is already checked above via canAddUser()
+    // But keep checkSeatAvailability for sync purposes and detailed metrics
     const seatCheck = await checkSeatAvailability(id)
     if (!seatCheck.allowed) {
       return res.status(403).json({
