@@ -271,13 +271,13 @@ export default function OrganizationSettings() {
         <section style={{ marginTop: 32 }}>
           <h2 style={{ fontSize: 20, marginBottom: 16 }}>Team Members ({organization.members.length})</h2>
           
-          <div style={{ background: 'white', borderRadius: 8, border: '1px solid #e5e7eb' }}>
+          <div style={{ background: 'var(--surface)', borderRadius: 8, border: '1px solid var(--border)' }}>
             {organization.members.map((member: any) => {
               const isCurrentUser = member.user.email === session?.user?.email
               const isAdmin = userMembership?.role === 'admin'
               
               return (
-                <div key={member.id} className="member-item" style={{ padding: 16, borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
+                <div key={member.id} className="member-item" style={{ padding: 16, borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600 }}>
                       {member.user.name || member.user.email}
@@ -305,20 +305,20 @@ export default function OrganizationSettings() {
                           onClick={() => setShowMemberOptions(prev => ({ ...prev, [member.id]: !prev[member.id] }))}
                           style={{
                             padding: '6px 12px',
-                            background: '#f3f4f6',
-                            border: '1px solid #d1d5db',
+                            background: 'var(--bg)',
+                            border: '1px solid var(--border)',
                             borderRadius: 6,
                             cursor: 'pointer',
                             fontSize: 12,
                             fontWeight: 600,
-                            color: '#374151',
+                            color: 'var(--text)',
                             transition: 'all 0.2s'
                           }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.background = '#e5e7eb'
+                            e.currentTarget.style.background = 'var(--surface)'
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.background = '#f3f4f6'
+                            e.currentTarget.style.background = 'var(--bg)'
                           }}
                         >
                           ⋮ Manage
@@ -330,8 +330,8 @@ export default function OrganizationSettings() {
                             top: '100%',
                             right: 0,
                             marginTop: 8,
-                            background: 'white',
-                            border: '1px solid #e5e7eb',
+                            background: 'var(--surface)',
+                            border: '1px solid var(--border)',
                             borderRadius: 6,
                             boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                             zIndex: 10,
@@ -349,12 +349,12 @@ export default function OrganizationSettings() {
                                   textAlign: 'left',
                                   cursor: changingRole[member.id] ? 'not-allowed' : 'pointer',
                                   fontSize: 14,
-                                  color: '#374151',
+                                  color: 'var(--text)',
                                   opacity: changingRole[member.id] ? 0.6 : 1,
                                   transition: 'background 0.2s'
                                 }}
                                 onMouseEnter={(e) => {
-                                  e.currentTarget.style.background = '#f3f4f6'
+                                  e.currentTarget.style.background = 'var(--bg)'
                                 }}
                                 onMouseLeave={(e) => {
                                   e.currentTarget.style.background = 'transparent'
@@ -374,12 +374,12 @@ export default function OrganizationSettings() {
                                   textAlign: 'left',
                                   cursor: changingRole[member.id] ? 'not-allowed' : 'pointer',
                                   fontSize: 14,
-                                  color: '#374151',
+                                  color: 'var(--text)',
                                   opacity: changingRole[member.id] ? 0.6 : 1,
                                   transition: 'background 0.2s'
                                 }}
                                 onMouseEnter={(e) => {
-                                  e.currentTarget.style.background = '#f3f4f6'
+                                  e.currentTarget.style.background = 'var(--bg)'
                                 }}
                                 onMouseLeave={(e) => {
                                   e.currentTarget.style.background = 'transparent'
@@ -388,7 +388,7 @@ export default function OrganizationSettings() {
                                 👤 Demote to Member
                               </button>
                             )}
-                            <div style={{ borderTop: '1px solid #e5e7eb' }} />
+                            <div style={{ borderTop: '1px solid var(--border)' }} />
                             <button
                               onClick={() => handleRemoveMember(member.id, member.user.name || member.user.email)}
                               disabled={removingMember[member.id]}
@@ -429,12 +429,12 @@ export default function OrganizationSettings() {
           <section style={{ marginTop: 32 }}>
             <h2 style={{ fontSize: 20, marginBottom: 16 }}>Pending Invitations ({organization.invitations.length})</h2>
             
-            <div style={{ background: 'white', borderRadius: 8, border: '1px solid #e5e7eb' }}>
+            <div style={{ background: 'var(--surface)', borderRadius: 8, border: '1px solid var(--border)' }}>
               {organization.invitations.map((inv: any) => (
-                <div key={inv.id} style={{ padding: 16, borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div key={inv.id} style={{ padding: 16, borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600 }}>{inv.email}</div>
-                    <div style={{ fontSize: 14, color: '#6b7280' }}>
+                    <div style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
                       Invited {new Date(inv.createdAt).toLocaleDateString()} • Expires {new Date(inv.expiresAt).toLocaleDateString()}
                     </div>
                   </div>
@@ -489,7 +489,7 @@ export default function OrganizationSettings() {
           <section style={{ marginTop: 32 }}>
             <h2 style={{ fontSize: 20, marginBottom: 16 }}>Invite Team Member</h2>
             
-            <form onSubmit={handleInvite} style={{ background: 'white', padding: 24, borderRadius: 8, border: '1px solid #e5e7eb' }}>
+            <form onSubmit={handleInvite} style={{ background: 'var(--surface)', padding: 24, borderRadius: 8, border: '1px solid var(--border)' }}>
               <div className="invite-form" style={{ display: 'grid', gridTemplateColumns: '1fr 150px auto', gap: 12, alignItems: 'end' }}>
                 <div>
                   <label style={{ display: 'block', marginBottom: 6, fontWeight: 600 }}>Email</label>
@@ -499,7 +499,7 @@ export default function OrganizationSettings() {
                     onChange={(e) => setInviteEmail(e.target.value)}
                     placeholder="colleague@company.com"
                     required
-                    style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid #d1d5db' }}
+                    style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid var(--border)' }}
                   />
                 </div>
                 
@@ -508,7 +508,7 @@ export default function OrganizationSettings() {
                   <select
                     value={inviteRole}
                     onChange={(e) => setInviteRole(e.target.value)}
-                    style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid #d1d5db' }}
+                    style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid var(--border)' }}
                   >
                     <option value="member">Member</option>
                     <option value="admin">Admin</option>
@@ -551,7 +551,7 @@ export default function OrganizationSettings() {
                     value={inviteLink}
                     readOnly
                     onClick={(e) => e.currentTarget.select()}
-                    style={{ width: '100%', padding: 8, marginTop: 8, borderRadius: 4, border: '1px solid #86efac', background: 'white', fontSize: 12 }}
+                    style={{ width: '100%', padding: 8, marginTop: 8, borderRadius: 4, border: '1px solid #86efac', background: 'var(--surface)', fontSize: 12 }}
                   />
                   <button
                     onClick={() => {
@@ -579,9 +579,9 @@ export default function OrganizationSettings() {
                 href={`/projects/${project.id}`}
                 style={{
                   padding: 16,
-                  background: 'white',
+                  background: 'var(--surface)',
                   borderRadius: 8,
-                  border: '1px solid #e5e7eb',
+                  border: '1px solid var(--border)',
                   textDecoration: 'none',
                   color: 'inherit',
                   transition: 'all 0.2s'
@@ -591,12 +591,12 @@ export default function OrganizationSettings() {
                   e.currentTarget.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.1)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#e5e7eb'
+                  e.currentTarget.style.borderColor = 'var(--border)'
                   e.currentTarget.style.boxShadow = 'none'
                 }}
               >
                 <div style={{ fontWeight: 600, marginBottom: 4 }}>{project.name}</div>
-                <div style={{ fontSize: 14, color: '#6b7280' }}>
+                <div style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
                   Owner: {project.owner?.name || project.owner?.email}
                 </div>
               </a>
