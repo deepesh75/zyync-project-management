@@ -109,6 +109,7 @@ export default function ProPricing() {
               ...response,
               organizationId,
               planType,
+              userCount,
               amount: amountINR
             })
           })

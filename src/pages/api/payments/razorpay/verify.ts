@@ -18,6 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     razorpay_signature,
     organizationId,
     planType,
+    userCount,
     amount
   } = req.body
   
@@ -51,9 +52,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     const paymentData = await paymentResponse.json()
     
-    // Determine billing interval from planType
+    // Determine billing interval from planType and calculate seatsAllowed from userCount
     let billingInterval = 'monthly'
-    let seatsAllowed = 1
+    let seatsAllowed = userCount || 1  // Use purchased userCount, fallback to 1 if not provided
     
     if (planType) {
       if (planType.includes('annual')) billingInterval = 'annual'
