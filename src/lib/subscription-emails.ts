@@ -202,6 +202,131 @@ export async function sendSubscriptionExpiredEmail(data: Omit<SubscriptionEmailD
 }
 
 /**
+ * Send subscription renewal confirmation email
+ */
+export async function sendSubscriptionRenewedEmail(data: {
+  toEmail: string
+  organizationName: string
+  planName: string
+  seatsAllowed: number
+  amount: number
+  currency: string
+  renewalDate: string
+  nextRenewalDate: string
+  billingPageUrl: string
+}) {
+  const { toEmail, organizationName, planName, seatsAllowed, amount, currency, renewalDate, nextRenewalDate, billingPageUrl } = data
+  
+  const subject = `✅ ${organizationName}: Subscription Renewed Successfully`
+  
+  const amountFormatted = (amount / 100).toFixed(2)
+  
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">Zyync Project Management</h1>
+        </div>
+        
+        <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px;">
+          <div style="background: #d1fae5; border-left: 4px solid #10b981; padding: 16px; margin-bottom: 24px; border-radius: 4px;">
+            <h2 style="margin: 0 0 8px 0; color: #065f46; font-size: 18px;">✅ Subscription Renewed Successfully</h2>
+            <p style="margin: 0; color: #065f46; font-size: 14px;">
+              Your payment has been processed and your subscription is active
+            </p>
+          </div>
+          
+          <h3 style="color: #111827; margin-top: 0;">Hello,</h3>
+          
+          <p style="color: #374151; font-size: 15px;">
+            Thank you! Your <strong>${planName}</strong> subscription for <strong>${organizationName}</strong> has been renewed successfully.
+          </p>
+          
+          <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 24px 0;">
+            <h4 style="margin: 0 0 16px 0; color: #111827;">Renewal Receipt:</h4>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px 0; color: #6b7280; font-size: 14px;">Organization:</td>
+                <td style="padding: 12px 0; color: #111827; font-weight: 600; text-align: right;">${organizationName}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px 0; color: #6b7280; font-size: 14px;">Plan:</td>
+                <td style="padding: 12px 0; color: #111827; font-weight: 600; text-align: right;">${planName}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px 0; color: #6b7280; font-size: 14px;">Team Members:</td>
+                <td style="padding: 12px 0; color: #111827; font-weight: 600; text-align: right;">${seatsAllowed} seats</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px 0; color: #6b7280; font-size: 14px;">Renewal Date:</td>
+                <td style="padding: 12px 0; color: #111827; font-weight: 600; text-align: right;">${renewalDate}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px 0; color: #6b7280; font-size: 14px;">Next Renewal:</td>
+                <td style="padding: 12px 0; color: #111827; font-weight: 600; text-align: right;">${nextRenewalDate}</td>
+              </tr>
+              <tr style="background: #f0fdf4;">
+                <td style="padding: 12px 0; color: #111827; font-size: 15px; font-weight: 700;">Amount Charged:</td>
+                <td style="padding: 12px 0; color: #10b981; font-weight: 700; text-align: right; font-size: 16px;">${currency} ${amountFormatted}</td>
+              </tr>
+            </table>
+          </div>
+          
+          <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 16px; margin: 24px 0; border-radius: 4px;">
+            <h4 style="margin: 0 0 8px 0; color: #1e40af; font-size: 14px; font-weight: 600;">ℹ️ What's Included:</h4>
+            <ul style="margin: 0; padding-left: 20px; color: #1e40af; font-size: 14px; line-height: 1.8;">
+              <li>${seatsAllowed} team member seats</li>
+              <li>Full access to all projects and tasks</li>
+              <li>24/7 support</li>
+              <li>Auto-renewal until cancelled</li>
+            </ul>
+          </div>
+          
+          <div style="text-align: center; margin: 32px 0;">
+            <a href="${billingPageUrl}" style="background: #10b981; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; font-size: 16px;">
+              View Billing Details
+            </a>
+          </div>
+          
+          <p style="color: #6b7280; font-size: 13px; margin-top: 32px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            If you did not authorize this charge or have questions about your subscription, please contact our support team at <a href="mailto:support@zyync.com" style="color: #4f46e5;">support@zyync.com</a>
+          </p>
+          
+          <p style="color: #6b7280; font-size: 13px; margin-top: 12px;">
+            You can manage your subscription and update your billing settings anytime from your account dashboard.
+          </p>
+        </div>
+        
+        <div style="text-align: center; padding: 20px; color: #9ca3af; font-size: 12px;">
+          <p style="margin: 0;">© 2026 Zyync. All rights reserved.</p>
+          <p style="margin: 8px 0 0 0;">
+            <a href="https://www.zyync.com" style="color: #9ca3af; text-decoration: none;">www.zyync.com</a>
+          </p>
+        </div>
+      </body>
+    </html>
+  `
+  
+  try {
+    await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL || 'do-not-reply@zyync.com',
+      to: toEmail,
+      subject,
+      html
+    })
+    console.log(`Sent renewal confirmation email to ${toEmail} for ${organizationName}`)
+  } catch (error) {
+    console.error('Failed to send subscription renewal email:', error)
+    throw error
+  }
+}
+
+/**
  * Check all organizations and send expiration emails where needed
  */
 export async function checkAndSendExpirationEmails() {

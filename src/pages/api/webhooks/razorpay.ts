@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import crypto from 'crypto'
 import { prisma } from '../../../lib/prisma'
+import { sendSubscriptionRenewedEmail } from '../../../lib/subscription-emails'
 
 export const config = {
   api: {
@@ -124,9 +125,15 @@ async function handleSubscriptionCharged(subscription: any, payment: any) {
       ? new Date(subscription.current_end * 1000) 
       : null
 
-    // Find organization
+    // Find organization with admin members
     const org = await prisma.organization.findFirst({
-      where: { razorpaySubscriptionId: subscription.id }
+      where: { razorpaySubscriptionId: subscription.id },
+      include: {
+        members: {
+          where: { role: 'admin' },
+          include: { user: true }
+        }
+      }
     })
 
     if (!org) {
@@ -134,13 +141,31 @@ async function handleSubscriptionCharged(subscription: any, payment: any) {
       return
     }
     
+    // Determine plan name from subscription
+    const planName = subscription.plan_id?.includes('pro') ? 'Pro' : 
+                     subscription.plan_id === 'enterprise' ? 'Enterprise' : 'Free'
+    
+    // Format dates for email
+    const renewalDate = periodStart.toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric' 
+    })
+    const nextRenewalDate = periodEnd?.toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric' 
+    }) || 'N/A'
+    
     // Update organization with new period dates
+    // If billingCycleAnchor is not set, set it to periodStart (first renewal)
     await prisma.organization.update({
       where: { id: org.id },
       data: {
         billingStatus: 'active',
         currentPeriodStart: periodStart,
         currentPeriodEnd: periodEnd,
+        billingCycleAnchor: org.billingCycleAnchor || periodStart, // Set anchor on first renewal
         canceledAt: null,
         cancelAtPeriodEnd: false
       }
@@ -165,7 +190,29 @@ async function handleSubscriptionCharged(subscription: any, payment: any) {
       })
     }
     
-    console.log('Subscription renewed:', subscription.id, 'Period:', periodStart, '-', periodEnd)
+    // Send renewal confirmation emails to all organization admins
+    const billingPageUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/organizations/${org.id}/billing`
+    
+    for (const member of org.members) {
+      try {
+        await sendSubscriptionRenewedEmail({
+          toEmail: member.user.email,
+          organizationName: org.name,
+          planName,
+          seatsAllowed: org.seatsAllowed,
+          amount: payment?.amount || 0,
+          currency: payment?.currency || 'INR',
+          renewalDate,
+          nextRenewalDate,
+          billingPageUrl
+        })
+      } catch (emailErr) {
+        console.error(`Failed to send renewal email to ${member.user.email}:`, emailErr)
+        // Don't fail the entire handler if email fails
+      }
+    }
+    
+    console.log('Subscription renewed:', subscription.id, 'Period:', periodStart, '-', periodEnd, 'Emails sent to', org.members.length, 'admins')
   } catch (err) {
     console.error('Error handling subscription.charged:', err)
   }
