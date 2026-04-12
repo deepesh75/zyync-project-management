@@ -92,7 +92,7 @@ export default function AcceptInvite() {
         <Navbar />
         <div style={{ padding: 24, maxWidth: 500, margin: '0 auto' }}>
           <h1>Invalid Invitation</h1>
-          <p style={{ color: '#ef4444' }}>{error}</p>
+          <p style={{ color: 'var(--error)' }}>{error}</p>
           <a href="/auth/signin" style={{ color: '#6366f1' }}>Go to Sign In</a>
         </div>
       </>
@@ -114,7 +114,7 @@ export default function AcceptInvite() {
               type="email"
               value={invitation?.email || ''}
               disabled
-              style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid #d1d5db', background: '#f3f4f6' }}
+              style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)' }}
             />
           </div>
 
@@ -125,7 +125,7 @@ export default function AcceptInvite() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
-              style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid #d1d5db' }}
+              style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
             />
           </div>
 
@@ -137,12 +137,12 @@ export default function AcceptInvite() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Create a password"
               required
-              style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid #d1d5db' }}
+              style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
             />
           </div>
 
           {error && (
-            <p style={{ color: '#ef4444', margin: 0 }}>{error}</p>
+            <p style={{ color: 'var(--error)', margin: 0 }}>{error}</p>
           )}
 
           <button
@@ -164,7 +164,7 @@ export default function AcceptInvite() {
           </button>
         </form>
 
-        <p style={{ marginTop: 24, fontSize: 14, color: '#6b7280' }}>
+        <p style={{ marginTop: 24, fontSize: 14, color: 'var(--text-secondary)' }}>
           Already have an account? <a href="/auth/signin" style={{ color: '#6366f1' }}>Sign in</a>
         </p>
       </div>
