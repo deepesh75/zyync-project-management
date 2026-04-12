@@ -29,7 +29,7 @@ export default function Home() {
 
   // Use SWR hooks for caching - only when authenticated
   const shouldFetch = status === 'authenticated'
-  const { projects, mutate: mutateProjects } = useProjects(showArchived, shouldFetch)
+  const { projects, isLoading: projectsLoading, isError: projectsError, mutate: mutateProjects } = useProjects(showArchived, shouldFetch)
   const { organizations, mutate: mutateOrgs } = useOrganizations(shouldFetch)
 
   useEffect(() => {
@@ -656,7 +656,25 @@ export default function Home() {
         </div>
         
         {/* Empty State */}
-        {projects.length === 0 && (
+        {projectsError && (
+          <div style={{
+            textAlign: 'center',
+            padding: '60px 40px',
+            background: '#fef2f2',
+            borderRadius: 18,
+            border: '2px dashed #fca5a5',
+            marginTop: 40
+          }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>⚠️</div>
+            <h3 style={{ margin: 0, marginBottom: 8, fontSize: 18, fontWeight: 700, color: '#991b1b' }}>Failed to load projects</h3>
+            <p style={{ margin: 0, fontSize: 14, color: '#b91c1c', marginBottom: 16 }}>{projectsError.message || 'Unknown error'}</p>
+            <button onClick={() => mutateProjects()} style={{ padding: '8px 20px', background: '#dc2626', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}>Retry</button>
+          </div>
+        )}
+        {!projectsError && projectsLoading && (
+          <div style={{ textAlign: 'center', padding: '60px 40px', color: 'var(--text-secondary)', fontSize: 15 }}>Loading projects...</div>
+        )}
+        {!projectsError && !projectsLoading && projects.length === 0 && (
           <div style={{
             textAlign: 'center',
             padding: '80px 40px',

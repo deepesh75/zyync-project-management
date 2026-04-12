@@ -1,6 +1,13 @@
 import { useEffect, useState, useRef } from 'react'
 
-const fetcher = (url: string) => fetch(url).then(r => r.json())
+const fetcher = async (url: string) => {
+  const r = await fetch(url)
+  if (!r.ok) {
+    const body = await r.json().catch(() => ({}))
+    throw new Error(body.error || `HTTP ${r.status}`)
+  }
+  return r.json()
+}
 
 export function useProjects(showArchived = false, shouldFetch = true) {
   const [projects, setProjects] = useState<any[]>([])
@@ -20,12 +27,13 @@ export function useProjects(showArchived = false, shouldFetch = true) {
     fetcher(`/api/projects?showArchived=${showArchived}`)
       .then(data => {
         if (cancelled) return
-        setProjects(data || [])
+        setProjects(Array.isArray(data) ? data : [])
         setIsError(null)
       })
       .catch(err => {
         if (cancelled) return
         setIsError(err)
+        setProjects([])
       })
       .finally(() => { if (!cancelled) setIsLoading(false) })
 
@@ -40,10 +48,11 @@ export function useProjects(showArchived = false, shouldFetch = true) {
     if (!shouldFetch) return Promise.resolve(projects)
     try {
       const data = await fetcher(`/api/projects?showArchived=${showArchived}`)
-      if (mounted.current) setProjects(data || [])
+      if (mounted.current) setProjects(Array.isArray(data) ? data : [])
       return data
     } catch (err) {
       setIsError(err)
+      setProjects([])
       throw err
     }
   }
