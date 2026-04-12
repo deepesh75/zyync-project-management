@@ -110,8 +110,26 @@ export default function OrganizationBilling() {
 
   const calculateProratedCost = () => {
     if (!seatInfo) return 0
-    // Simplified: charge for full month per additional seat
-    return additionalSeats * seatInfo.perSeatPriceCents
+
+    const periodEnd = organization.currentPeriodEnd ? new Date(organization.currentPeriodEnd) : null
+    const periodStart = organization.currentPeriodStart
+      ? new Date(organization.currentPeriodStart)
+      : (organization.billingCycleAnchor ? new Date(organization.billingCycleAnchor) : null)
+
+    if (!periodEnd || !periodStart) {
+      // Fallback: charge for full billing period
+      return additionalSeats * seatInfo.perSeatPriceCents
+    }
+
+    const now = new Date()
+    const totalDays = Math.round((periodEnd.getTime() - periodStart.getTime()) / (1000 * 60 * 60 * 24))
+    const daysRemaining = Math.max(0, Math.ceil((periodEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
+
+    if (totalDays <= 0) {
+      return additionalSeats * seatInfo.perSeatPriceCents
+    }
+
+    return Math.round((daysRemaining / totalDays) * additionalSeats * seatInfo.perSeatPriceCents)
   }
 
   async function handleAddSeats() {
@@ -120,9 +138,12 @@ export default function OrganizationBilling() {
       return
     }
 
+    const proratedCost = calculateProratedCost()
     const confirmed = window.confirm(
-      `You are about to add ${additionalSeats} seat(s) for ${formatCurrency(calculateProratedCost())}/month.\n\n` +
-      `This will increase your monthly bill. Continue?`
+      `You are about to add ${additionalSeats} seat(s).\n\n` +
+      `Prorated charge for the remainder of this billing period: ${formatCurrency(proratedCost)}\n` +
+      `(${formatCurrency(seatInfo?.perSeatPriceCents || 0)}/seat × ${additionalSeats} seat${additionalSeats > 1 ? 's' : ''}, prorated to your billing cycle)\n\n` +
+      `Continue?`
     )
 
     if (!confirmed) return
@@ -407,10 +428,11 @@ export default function OrganizationBilling() {
               </div>
 
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 6 }}>Monthly increase</div>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 6 }}>Prorated charge</div>
                 <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text)' }}>
                   +{formatCurrency(calculateProratedCost())}
                 </div>
+                <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>for remainder of period</div>
               </div>
 
               <button 
@@ -441,7 +463,7 @@ export default function OrganizationBilling() {
               fontSize: 13,
               color: '#1e40af'
             }}>
-              💡 In production, this will redirect to PayPal to update your subscription quantity. Changes are prorated to your billing cycle.
+              💡 You will only be charged for the remaining days in your current billing period, then the full per-seat price on each renewal.
             </div>
           </section>
         )}

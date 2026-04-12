@@ -159,7 +159,7 @@ async function handleSubscriptionCharged(subscription: any, payment: any) {
     const periodStart = subscription.current_start 
       ? new Date(subscription.current_start * 1000) 
       : new Date()
-    const periodEnd = subscription.current_end 
+    const razorpayPeriodEnd = subscription.current_end 
       ? new Date(subscription.current_end * 1000) 
       : null
 
@@ -177,6 +177,21 @@ async function handleSubscriptionCharged(subscription: any, payment: any) {
     if (!org) {
       console.warn('Organization not found for subscription:', subscription.id)
       return
+    }
+
+    // Determine period end: prefer Razorpay's value, fall back to calculating from billingInterval
+    let periodEnd: Date | null = razorpayPeriodEnd
+    if (!periodEnd) {
+      const interval = org.billingInterval || 
+        (subscription.billing_frequency === 'monthly' ? 'monthly' : 'annual')
+      periodEnd = new Date(periodStart)
+      if (interval === 'annual') {
+        periodEnd.setFullYear(periodEnd.getFullYear() + 1)
+      } else {
+        // Default to monthly
+        periodEnd.setMonth(periodEnd.getMonth() + 1)
+      }
+      console.log(`Calculated periodEnd from billingInterval (${interval}):`, periodEnd)
     }
     
     // Determine plan name from subscription
