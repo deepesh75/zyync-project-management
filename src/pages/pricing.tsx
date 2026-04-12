@@ -166,261 +166,164 @@ export default function Pricing() {
         {/* Pricing Cards */}
         <section className="pricing-cards" style={{ 
           padding: '80px 24px', 
-          maxWidth: 1200, 
+          maxWidth: 1300, 
           margin: '0 auto'
         }}>
-          {/* Main Plans */}
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-            gap: 32,
+            gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))', 
+            gap: 28,
             alignItems: 'start',
-            marginBottom: 60
           }}>
-            {plans.filter(plan => plan.id !== 'pro_lifetime').map((plan) => (
-              <div
-                key={plan.name}
-                className="pricing-card"
-                style={{
-                  background: 'var(--surface)',
-                  border: plan.highlight ? '3px solid var(--primary)' : '1px solid var(--border)',
-                  borderRadius: 16,
-                  padding: 40,
-                  boxShadow: plan.highlight ? 'var(--shadow-xl)' : 'var(--shadow-lg)',
-                  position: 'relative',
-                  transform: plan.highlight ? 'scale(1.05)' : 'scale(1)',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  if (!plan.highlight) {
-                    e.currentTarget.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.12)'
-                    e.currentTarget.style.transform = 'translateY(-4px)'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!plan.highlight) {
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)'
-                    e.currentTarget.style.transform = 'translateY(0)'
-                  }
-                }}
-              >
-                {plan.highlight && (
-                  <div style={{
-                    position: 'absolute',
-                    top: -12,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    background: 'var(--primary)',
-                    color: 'white',
-                    padding: '6px 16px',
-                    borderRadius: 20,
-                    fontSize: 12,
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
-                  }}>
-                    Most Popular
-                  </div>
-                )}
-
-                <h2 style={{ fontSize: 28, fontWeight: 700, margin: 0, marginBottom: 8, color: 'var(--text)' }}>
-                  {plan.name}
-                </h2>
-                <p style={{ color: 'var(--text-secondary)', margin: 0, marginBottom: 24, fontSize: 14 }}>
-                  {plan.description}
-                </p>
-
-                <div style={{ marginBottom: 32 }}>
-                  <div className="price" style={{ fontSize: 48, fontWeight: 800, color: 'var(--text)', margin: 0 }}>
-                    {plan.price}
-                  </div>
-                  <div style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>
-                    {plan.period}
-                  </div>
-                  {plan.pricing && (
-                    <div style={{ marginTop: 16, padding: 16, background: 'var(--bg-secondary)', borderRadius: 8, border: '1px solid var(--border)' }}>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 8 }}>Pricing Options:</div>
-                      <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                        <div>• {plan.pricing.monthly}</div>
-                        <div>• {plan.pricing.annual}</div>
-                        <div style={{ marginTop: 8, fontSize: 12, color: 'var(--muted)' }}>
-                          Minimum {plan.pricing.minUsers} user{plan.pricing.minUsers > 1 ? 's' : ''}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <button
-                  onClick={() => handleSelectPlan(plan)}
+            {plans.map((plan) => {
+              const isLifetime = plan.id === 'pro_lifetime'
+              const accentColor = isLifetime ? '#f59e0b' : undefined
+              return (
+                <div
+                  key={plan.name}
+                  className="pricing-card"
                   style={{
-                    width: '100%',
-                    padding: '14px 24px',
-                    background: plan.highlight ? 'var(--primary)' : 'var(--bg-secondary)',
-                    color: plan.highlight ? 'white' : 'var(--text)',
-                    border: 'none',
-                    borderRadius: 10,
-                    fontSize: 14,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    marginBottom: 32
+                    background: 'var(--surface)',
+                    border: isLifetime
+                      ? '3px solid #f59e0b'
+                      : plan.highlight
+                      ? '3px solid var(--primary)'
+                      : '1px solid var(--border)',
+                    borderRadius: 16,
+                    padding: 36,
+                    boxShadow: isLifetime
+                      ? '0 20px 40px rgba(245, 158, 11, 0.15)'
+                      : plan.highlight
+                      ? 'var(--shadow-xl)'
+                      : 'var(--shadow-lg)',
+                    position: 'relative',
+                    transform: plan.highlight || isLifetime ? 'scale(1.03)' : 'scale(1)',
+                    transition: 'all 0.3s ease'
                   }}
                   onMouseEnter={(e) => {
-                    if (plan.highlight) {
-                      e.currentTarget.style.background = getComputedStyle(document.documentElement).getPropertyValue('--primary-hover').trim()
-                    } else {
-                      e.currentTarget.style.background = getComputedStyle(document.documentElement).getPropertyValue('--hover-bg').trim()
+                    if (!plan.highlight && !isLifetime) {
+                      e.currentTarget.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.12)'
+                      e.currentTarget.style.transform = 'translateY(-4px)'
+                    } else if (isLifetime) {
+                      e.currentTarget.style.boxShadow = '0 25px 50px rgba(245, 158, 11, 0.25)'
+                      e.currentTarget.style.transform = 'scale(1.05)'
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (plan.highlight) {
-                      e.currentTarget.style.background = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()
-                    } else {
-                      e.currentTarget.style.background = getComputedStyle(document.documentElement).getPropertyValue('--bg-secondary').trim()
+                    if (!plan.highlight && !isLifetime) {
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)'
+                      e.currentTarget.style.transform = 'translateY(0)'
+                    } else if (isLifetime) {
+                      e.currentTarget.style.boxShadow = '0 20px 40px rgba(245, 158, 11, 0.15)'
+                      e.currentTarget.style.transform = 'scale(1.03)'
                     }
                   }}
                 >
-                  {plan.cta}
-                </button>
+                  {/* Badge */}
+                  {(plan.highlight || isLifetime) && (
+                    <div style={{
+                      position: 'absolute',
+                      top: -13,
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      background: isLifetime ? '#f59e0b' : 'var(--primary)',
+                      color: 'white',
+                      padding: '6px 16px',
+                      borderRadius: 20,
+                      fontSize: 12,
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {isLifetime ? '🔥 Best Value' : 'Most Popular'}
+                    </div>
+                  )}
 
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                  {plan.features.map((feature, idx) => (
-                    <li
-                      key={idx}
-                      style={{
-                        padding: '12px 0',
-                        borderBottom: idx < plan.features.length - 1 ? '1px solid var(--border)' : 'none',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 12,
-                        fontSize: 14,
-                        color: 'var(--text)'
-                      }}
-                    >
-                      <span style={{
-                        color: 'var(--success)',
-                        fontSize: 18,
-                        lineHeight: 1
-                      }}>✓</span>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+                  <h2 style={{ fontSize: 26, fontWeight: 700, margin: 0, marginBottom: 8, color: 'var(--text)', textAlign: isLifetime ? 'center' : undefined }}>
+                    {plan.name}
+                  </h2>
+                  <p style={{ color: 'var(--text-secondary)', margin: 0, marginBottom: 20, fontSize: 14, textAlign: isLifetime ? 'center' : undefined }}>
+                    {plan.description}
+                  </p>
 
-          {/* Pro Lifetime Plan - Centered */}
-          {plans.filter(plan => plan.id === 'pro_lifetime').map((plan) => (
-            <div
-              key={plan.name}
-              style={{
-                background: 'var(--surface)',
-                border: '3px solid var(--warning)', // Orange/gold border for lifetime deal
-                borderRadius: 16,
-                padding: 40,
-                boxShadow: 'var(--shadow-xl)',
-                position: 'relative',
-                maxWidth: 400,
-                margin: '0 auto',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = '0 25px 50px rgba(245, 158, 11, 0.2)'
-                e.currentTarget.style.transform = 'translateY(-4px)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '0 20px 40px rgba(245, 158, 11, 0.15)'
-                e.currentTarget.style.transform = 'translateY(0)'
-              }}
-            >
-              {/* Special Badge */}
-              <div style={{
-                position: 'absolute',
-                top: -12,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                background: 'var(--warning)',
-                color: 'white',
-                padding: '6px 16px',
-                borderRadius: 20,
-                fontSize: 12,
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px'
-              }}>
-                🔥 Limited Time
-              </div>
+                  <div style={{ marginBottom: 28, textAlign: isLifetime ? 'center' : undefined }}>
+                    <div className="price" style={{ fontSize: 42, fontWeight: 800, color: isLifetime ? '#f59e0b' : 'var(--text)', margin: 0, lineHeight: 1 }}>
+                      {plan.price}
+                    </div>
+                    <div style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>
+                      {plan.period}
+                    </div>
+                    {plan.pricing && (
+                      <div style={{ marginTop: 16, padding: 14, background: 'var(--bg-secondary)', borderRadius: 8, border: '1px solid var(--border)' }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>Pricing Options:</div>
+                        <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                          <div>• {plan.pricing.monthly}</div>
+                          <div>• {plan.pricing.annual}</div>
+                          <div style={{ marginTop: 6, fontSize: 12, color: 'var(--muted)' }}>
+                            Minimum {plan.pricing.minUsers} user{plan.pricing.minUsers > 1 ? 's' : ''}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
-              <h2 style={{ fontSize: 28, fontWeight: 700, margin: 0, marginBottom: 8, color: 'var(--text)', textAlign: 'center' }}>
-                {plan.name}
-              </h2>
-              <p style={{ color: 'var(--text-secondary)', margin: 0, marginBottom: 24, fontSize: 14, textAlign: 'center' }}>
-                {plan.description}
-              </p>
-
-              <div style={{ marginBottom: 32, textAlign: 'center' }}>
-                <div style={{ fontSize: 48, fontWeight: 800, color: 'var(--text)', margin: 0 }}>
-                  {plan.price}
-                </div>
-                <div style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>
-                  {plan.period}
-                </div>
-              </div>
-
-              <button
-                onClick={() => handleSelectPlan(plan)}
-                style={{
-                  width: '100%',
-                  padding: '14px 24px',
-                  background: 'var(--warning)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 10,
-                  fontSize: 14,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  marginBottom: 32
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = getComputedStyle(document.documentElement).getPropertyValue('--warning').trim()
-                  e.currentTarget.style.opacity = '0.9'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = getComputedStyle(document.documentElement).getPropertyValue('--warning').trim()
-                  e.currentTarget.style.opacity = '1'
-                }}
-              >
-                {plan.cta}
-              </button>
-
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                {plan.features.map((feature, idx) => (
-                  <li
-                    key={idx}
+                  <button
+                    onClick={() => handleSelectPlan(plan)}
                     style={{
-                      padding: '12px 0',
-                      borderBottom: idx < plan.features.length - 1 ? '1px solid var(--border)' : 'none',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
+                      width: '100%',
+                      padding: '14px 24px',
+                      background: isLifetime ? '#f59e0b' : plan.highlight ? 'var(--primary)' : 'var(--bg-secondary)',
+                      color: isLifetime || plan.highlight ? 'white' : 'var(--text)',
+                      border: 'none',
+                      borderRadius: 10,
                       fontSize: 14,
-                      color: 'var(--text)'
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      marginBottom: 28,
+                      boxShadow: isLifetime ? '0 4px 12px rgba(245,158,11,0.35)' : undefined
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.opacity = '0.88'
+                      e.currentTarget.style.transform = 'translateY(-1px)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.opacity = '1'
+                      e.currentTarget.style.transform = 'translateY(0)'
                     }}
                   >
-                    <span style={{
-                      color: 'var(--success)',
-                      fontSize: 18,
-                      lineHeight: 1
-                    }}>✓</span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+                    {plan.cta}
+                  </button>
+
+                  <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                    {plan.features.map((feature, idx) => (
+                      <li
+                        key={idx}
+                        style={{
+                          padding: '10px 0',
+                          borderBottom: idx < plan.features.length - 1 ? '1px solid var(--border)' : 'none',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 12,
+                          fontSize: 14,
+                          color: 'var(--text)'
+                        }}
+                      >
+                        <span style={{
+                          color: isLifetime ? '#f59e0b' : 'var(--success)',
+                          fontSize: 18,
+                          lineHeight: 1,
+                          flexShrink: 0
+                        }}>✓</span>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )
+            })}
+          </div>
         </section>
 
         {/* FAQ Section */}
