@@ -3,6 +3,7 @@ import { prisma } from '../../../../../lib/prisma'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '../../../auth/[...nextauth]'
 import { invalidateCache } from '../../../../../lib/redis'
+import { decrementSeatsUsed, syncSeatsUsed } from '../../../../../lib/seats'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions)
@@ -44,9 +45,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if (req.method === 'DELETE') {
+    // Check if invitation is not already accepted
+    if (invitation.acceptedAt) {
+      return res.status(400).json({ error: 'Cannot cancel an already accepted invitation' })
+    }
+
     await prisma.invitation.delete({
       where: { id: invitationId }
     })
+
+    // Decrement seats used since we're removing a pending invite
+    try {
+      await decrementSeatsUsed(id)
+    } catch (err) {
+      console.warn('Failed to decrement seats on invitation cancellation (non-fatal)', err)
+    }
+
+    // Sync seats to ensure accuracy
+    try {
+      await syncSeatsUsed(id)
+    } catch (err) {
+      console.warn('Failed to sync seats on invitation cancellation (non-fatal)', err)
+    }
 
     // Invalidate cache
     await invalidateCache(`organization:${id}`)

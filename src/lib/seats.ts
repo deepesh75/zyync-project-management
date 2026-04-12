@@ -13,6 +13,11 @@ export interface SeatCheckResult {
 export async function checkSeatAvailability(
   organizationId: string
 ): Promise<SeatCheckResult> {
+  // Background cleanup of expired invitations (non-blocking)
+  cleanupExpiredInvitations(organizationId).catch(err => 
+    console.warn('Background cleanup of expired invitations failed (non-fatal):', err)
+  )
+
   const org = await prisma.organization.findUnique({
     where: { id: organizationId },
     select: {
@@ -201,4 +206,50 @@ export function calculateProratedCost(
   )
 
   return proratedCost
+}
+
+/**
+ * Clean up expired invitations and adjust seats accordingly
+ * Returns the number of expired invitations removed
+ */
+export async function cleanupExpiredInvitations(organizationId?: string): Promise<number> {
+  const now = new Date()
+  
+  // Find all expired invitations that haven't been accepted
+  const expiredInvitations = await prisma.invitation.findMany({
+    where: {
+      acceptedAt: null,
+      expiresAt: { lt: now },
+      ...(organizationId && { organizationId })
+    },
+    select: { organizationId: true }
+  })
+
+  if (expiredInvitations.length === 0) {
+    return 0
+  }
+
+  // Get unique organizations affected
+  const orgIds = Array.from(new Set(expiredInvitations.map(inv => inv.organizationId)))
+
+  // Delete expired invitations
+  await prisma.invitation.deleteMany({
+    where: {
+      acceptedAt: null,
+      expiresAt: { lt: now },
+      ...(organizationId && { organizationId })
+    }
+  })
+
+  // Re-sync seats for each affected organization
+  for (const orgId of orgIds) {
+    try {
+      await syncSeatsUsed(orgId)
+    } catch (err) {
+      console.warn(`Failed to sync seats for organization ${orgId} after cleanup (non-fatal):`, err)
+    }
+  }
+
+  console.log(`Cleaned up ${expiredInvitations.length} expired invitations across ${orgIds.length} organizations`)
+  return expiredInvitations.length
 }
