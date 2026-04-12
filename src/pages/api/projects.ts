@@ -7,69 +7,74 @@ import { checkOrganizationAccess } from '../../lib/access-control'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
-    // Require authentication
-    const session = await getServerSession(req, res, authOptions)
-    if (!session || !session.user?.email) {
-      return res.status(401).json({ error: 'Unauthorized' })
-    }
+    try {
+      // Require authentication
+      const session = await getServerSession(req, res, authOptions)
+      if (!session || !session.user?.email) {
+        return res.status(401).json({ error: 'Unauthorized' })
+      }
 
-    const { showArchived } = req.query
-    
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
-    })
-    if (!user) return res.status(404).json({ error: 'User not found' })
+      const { showArchived } = req.query
+      
+      const user = await prisma.user.findUnique({
+        where: { email: session.user.email }
+      })
+      if (!user) return res.status(404).json({ error: 'User not found' })
 
-    // Get projects owned by user or where user is in organization
-    const userOrgIds = await prisma.organizationMember.findMany({
-      where: { userId: user.id },
-      select: { organizationId: true }
-    }).then(mems => mems.map(m => m.organizationId))
+      // Get projects owned by user or where user is in organization
+      const userOrgIds = await prisma.organizationMember.findMany({
+        where: { userId: user.id },
+        select: { organizationId: true }
+      }).then(mems => mems.map(m => m.organizationId))
 
-    const cacheKey = `projects:list:${user.id}:${showArchived || 'active'}`
-    
-    // Try to get from cache
-    const cached = await getCached(cacheKey)
-    if (cached) {
-      return res.status(200).json(cached)
-    }
-    
-    const projects = await prisma.project.findMany({ 
-      where: {
-        AND: [
-          { deleted: false }, // Exclude soft-deleted projects
-          showArchived === 'true' ? {} : { archived: false },
-          {
-            OR: [
-              { ownerId: user.id }, // User owns the project
-              { organizationId: { in: userOrgIds } }, // User is in the organization
-              { members: { some: { userId: user.id } } } // User is a project member
-            ]
-          }
-        ]
-      },
-      include: { 
-        owner: true,
-        members: {
-          include: { user: { select: { id: true, name: true, email: true } } }
+      const cacheKey = `projects:list:${user.id}:${showArchived || 'active'}`
+      
+      // Try to get from cache
+      const cached = await getCached(cacheKey)
+      if (cached) {
+        return res.status(200).json(cached)
+      }
+      
+      const projects = await prisma.project.findMany({ 
+        where: {
+          AND: [
+            { deleted: false },
+            showArchived === 'true' ? {} : { archived: false },
+            {
+              OR: [
+                { ownerId: user.id },
+                { organizationId: { in: userOrgIds } },
+                { members: { some: { userId: user.id } } }
+              ]
+            }
+          ]
         },
-        tasks: {
-          where: { deleted: false }, // Exclude soft-deleted tasks
-          include: {
-            members: {
-              include: {
-                user: true
+        include: { 
+          owner: true,
+          members: {
+            include: { user: { select: { id: true, name: true, email: true } } }
+          },
+          tasks: {
+            where: { deleted: false },
+            include: {
+              members: {
+                include: {
+                  user: true
+                }
               }
             }
           }
-        }
-      },
-      orderBy: { createdAt: 'desc' }
-    })
-    
-    // Cache for 30 seconds
-    await setCached(cacheKey, projects, 30)
-    return res.status(200).json(projects)
+        },
+        orderBy: { createdAt: 'desc' }
+      })
+      
+      // Cache for 30 seconds
+      await setCached(cacheKey, projects, 30)
+      return res.status(200).json(projects)
+    } catch (err: any) {
+      console.error('GET /api/projects error:', err)
+      return res.status(500).json({ error: err?.message || 'Internal server error' })
+    }
   }
 
   if (req.method === 'POST') {
