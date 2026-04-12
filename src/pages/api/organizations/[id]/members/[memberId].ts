@@ -74,6 +74,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       where: { id: memberId }
     })
 
+    // Invalidate the removed user's session by incrementing their token version
+    await prisma.user.update({
+      where: { id: memberToManage.userId },
+      data: { tokenVersion: { increment: 1 } }
+    })
+
     // Sync seats after member removal
     try {
       await syncSeatsUsed(id)
@@ -83,6 +89,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Invalidate cache
     await invalidateCache(`organization:${id}`)
+    await invalidateCache(`user:${memberToManage.userId}:projects`)
 
     return res.status(200).json({
       success: true,

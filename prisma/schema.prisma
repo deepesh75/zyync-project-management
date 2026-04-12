@@ -93,6 +93,7 @@ model User {
   emailVerificationExpiry DateTime?
   passwordResetToken String? @unique
   passwordResetExpiry DateTime?
+  tokenVersion Int  @default(0)  // Increment this to invalidate all sessions
   createdAt DateTime @default(now())
   projects  Project[]
   assignedTasks Task[] @relation("UserAssignedTasks")
