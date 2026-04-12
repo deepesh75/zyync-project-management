@@ -49,6 +49,7 @@ model Organization {
   projects  Project[]
   invitations Invitation[]
   payments  Payment[]
+  invoices  Invoice[]
 }
 
 model OrganizationMember {
@@ -417,8 +418,53 @@ model Payment {
   createdAt             DateTime @default(now())
   capturedAt            DateTime?
   
+  // Invoice relation
+  invoice               Invoice?
+  
   @@index([organizationId])
   @@index([razorpayOrderId])
+  @@index([status])
+}
+
+// Invoice records for billing records and compliance
+model Invoice {
+  id                    String   @id @default(cuid())
+  organizationId        String
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  paymentId             String   @unique
+  payment               Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  
+  // Invoice details
+  invoiceNumber         String   @unique // e.g., INV-2026-001
+  amount                Int      // Amount in paise
+  currency              String   @default("INR")
+  
+  // Subscription details
+  planName              String   // "Pro", "Enterprise", etc.
+  billingPeriodStart    DateTime // Start of billing period
+  billingPeriodEnd      DateTime // End of billing period
+  
+  // Status tracking
+  status                String   @default("issued") // "issued", "paid", "overdue", "canceled"
+  pdfUrl                String?  // URL to stored PDF
+  
+  // Tax & Additional
+  subtotal              Int?     // Amount before tax
+  taxAmount             Int?     // Tax amount in paise
+  taxPercentage         Float?   // Tax percentage (e.g., 18 for 18%)
+  
+  // Metadata
+  notes                 String?  // Additional notes
+  issuedAt              DateTime @default(now())
+  dueAt                 DateTime?
+  paidAt                DateTime?
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  @@index([organizationId])
+  @@index([invoiceNumber])
   @@index([status])
 }
 

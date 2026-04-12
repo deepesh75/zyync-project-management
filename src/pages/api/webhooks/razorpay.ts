@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import crypto from 'crypto'
 import { prisma } from '../../../lib/prisma'
 import { sendSubscriptionRenewedEmail, sendSubscriptionCancelledEmail, sendPaymentFailureEmail } from '../../../lib/subscription-emails'
+import { createInvoice } from '../../../lib/invoices'
 
 export const config = {
   api: {
@@ -208,8 +209,9 @@ async function handleSubscriptionCharged(subscription: any, payment: any) {
     })
     
     // Create payment record for this renewal
+    let paymentRecord: any = null
     if (payment) {
-      await prisma.payment.create({
+      paymentRecord = await prisma.payment.create({
         data: {
           organizationId: org.id,
           razorpayOrderId: payment.order_id || `ord_${Date.now()}`,
@@ -224,6 +226,23 @@ async function handleSubscriptionCharged(subscription: any, payment: any) {
           capturedAt: new Date()
         }
       })
+      
+      // Generate invoice for this payment
+      try {
+        await createInvoice({
+          organizationId: org.id,
+          paymentId: paymentRecord.id,
+          amount: payment.amount,
+          currency: payment.currency || 'INR',
+          planName,
+          billingPeriodStart: periodStart,
+          billingPeriodEnd: periodEnd || new Date(),
+          notes: `Subscription renewal for ${org.name}`
+        })
+      } catch (invoiceErr) {
+        console.error('Failed to create invoice:', invoiceErr)
+        // Don't fail the entire handler if invoice creation fails
+      }
     }
     
     // Send renewal confirmation emails to all organization admins
