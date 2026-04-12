@@ -190,124 +190,171 @@ export default function Home() {
     )
   }
 
+  // Color palette for project cards
+  const cardAccents = [
+    'linear-gradient(135deg, #6366f1, #8b5cf6)',
+    'linear-gradient(135deg, #06b6d4, #3b82f6)',
+    'linear-gradient(135deg, #10b981, #059669)',
+    'linear-gradient(135deg, #f59e0b, #ef4444)',
+    'linear-gradient(135deg, #ec4899, #8b5cf6)',
+    'linear-gradient(135deg, #14b8a6, #06b6d4)',
+  ]
+
+  const firstName = session?.user?.name?.split(' ')[0] || session?.user?.email?.split('@')[0] || 'there'
+
   return (
     <>
       <Navbar />
       <style jsx>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(16px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .home-page {
+          min-height: calc(100vh - 60px);
+          background: var(--bg-primary);
+          background-image: radial-gradient(circle at 20% 20%, rgba(99,102,241,0.07) 0%, transparent 50%),
+                            radial-gradient(circle at 80% 80%, rgba(139,92,246,0.06) 0%, transparent 50%);
+        }
+        .hero-banner {
+          background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #6d28d9 100%);
+          padding: 40px 32px;
+          position: relative;
+          overflow: hidden;
+        }
+        .hero-banner::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .hero-content { position: relative; z-index: 1; }
+        .page-content {
+          max-width: 1400px;
+          margin: 0 auto;
+          padding: 32px 32px;
+          animation: fadeUp 0.4s ease;
+        }
+        .section-label {
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--text-secondary);
+          margin-bottom: 14px;
+        }
+        .project-card-accent {
+          height: 4px;
+          border-radius: 4px 4px 0 0;
+          position: absolute;
+          top: 0; left: 0; right: 0;
+        }
         @media (max-width: 768px) {
-          .home-main {
-            padding: 20px 16px !important;
-          }
-          .home-title {
-            font-size: 20px !important;
-          }
-          .org-grid {
-            grid-template-columns: 1fr !important;
-          }
-          .project-grid {
-            grid-template-columns: 1fr !important;
-          }
-          .create-form {
-            flex-direction: column !important;
-            gap: 12px !important;
-          }
+          .hero-banner { padding: 28px 20px !important; }
+          .page-content { padding: 20px 16px !important; }
+          .org-grid { grid-template-columns: 1fr !important; }
+          .project-grid { grid-template-columns: 1fr !important; }
+          .create-form { flex-direction: column !important; gap: 10px !important; }
           .create-form input,
           .create-form select,
-          .create-form button {
-            width: 100% !important;
-            max-width: none !important;
-          }
+          .create-form button { width: 100% !important; max-width: none !important; }
         }
       `}</style>
-      <main className="home-main" style={{ 
-        padding: '32px 24px', 
-        fontFamily: 'inherit', 
-        maxWidth: 1400, 
-        margin: '0 auto',
-        minHeight: 'calc(100vh - 100px)'
-      }}>
-        
+
+      <div className="home-page">
+        {/* Hero Greeting Banner */}
+        <div className="hero-banner">
+          <div className="hero-content" style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+            <div>
+              <p style={{ margin: 0, color: 'rgba(255,255,255,0.7)', fontSize: 14, marginBottom: 6, fontWeight: 500 }}>Welcome back</p>
+              <h1 style={{ margin: 0, fontSize: 32, fontWeight: 800, color: 'white', letterSpacing: '-0.03em' }}>
+                Hey, {firstName} 👋
+              </h1>
+              <p style={{ margin: '8px 0 0', color: 'rgba(255,255,255,0.65)', fontSize: 15 }}>
+                {projects.length > 0
+                  ? `You have ${projects.length} active project${projects.length !== 1 ? 's' : ''}`
+                  : 'Ready to build something great?'}
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <div style={{ background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 12, padding: '14px 20px', textAlign: 'center', minWidth: 80 }}>
+                <div style={{ fontSize: 26, fontWeight: 800, color: 'white', lineHeight: 1 }}>{projects.length}</div>
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 4, fontWeight: 500 }}>Projects</div>
+              </div>
+              <div style={{ background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 12, padding: '14px 20px', textAlign: 'center', minWidth: 80 }}>
+                <div style={{ fontSize: 26, fontWeight: 800, color: 'white', lineHeight: 1 }}>{organizations?.length || 0}</div>
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 4, fontWeight: 500 }}>Orgs</div>
+              </div>
+              <div style={{ background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 12, padding: '14px 20px', textAlign: 'center', minWidth: 80 }}>
+                <div style={{ fontSize: 26, fontWeight: 800, color: 'white', lineHeight: 1 }}>{projects.reduce((acc: number, p: any) => acc + (p.tasks?.filter((t: any) => t.status !== 'done').length || 0), 0)}</div>
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 4, fontWeight: 500 }}>Open Tasks</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="page-content">
+
         {/* Organizations Section */}
         {organizations && organizations.length > 0 && (
           <section style={{ marginBottom: 40 }}>
-            <h2 className="home-title" style={{ 
-              margin: 0, 
-              marginBottom: 20, 
-              fontSize: 22, 
-              fontWeight: 700, 
-              color: 'var(--text)',
-              letterSpacing: '-0.02em'
-            }}>Your Organizations</h2>
-            <div className="org-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
+            <p className="section-label">Your Organizations</p>
+            <div className="org-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 14 }}>
               {organizations.map((org: any) => (
                 <div key={org.id} style={{ 
                   background: 'var(--surface)', 
-                  border: '2px solid var(--border)', 
-                  borderRadius: 12, 
-                  padding: '20px',
+                  border: '1.5px solid var(--border)', 
+                  borderRadius: 14, 
+                  padding: '18px 20px',
                   boxShadow: 'var(--shadow-sm)',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                  transition: 'all 0.25s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 12
                 }} onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)'
-                  e.currentTarget.style.boxShadow = 'var(--shadow-lg)'
+                  e.currentTarget.style.transform = 'translateY(-3px)'
+                  e.currentTarget.style.boxShadow = 'var(--shadow-md)'
                   e.currentTarget.style.borderColor = 'var(--primary)'
                 }} onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)'
                   e.currentTarget.style.boxShadow = 'var(--shadow-sm)'
                   e.currentTarget.style.borderColor = 'var(--border)'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                    <div style={{ flex: 1 }}>
-                      <h3 style={{ margin: 0, fontWeight: 700, fontSize: 16, color: 'var(--text)' }}>{org.name}</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+                      background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 16, fontWeight: 700, color: 'white'
+                    }}>{org.name.charAt(0).toUpperCase()}</div>
+                    <div style={{ minWidth: 0 }}>
+                      <h3 style={{ margin: 0, fontWeight: 700, fontSize: 15, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{org.name}</h3>
+                      <span style={{
+                        fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px',
+                        color: org.role === 'admin' ? '#f59e0b' : 'var(--text-secondary)'
+                      }}>{org.role}</span>
                     </div>
-                    <span style={{
-                      padding: '6px 12px',
-                      borderRadius: 8,
-                      fontSize: 11,
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                      background: org.role === 'admin' ? 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)' : 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
-                      color: org.role === 'admin' ? '#92400e' : '#1e40af'
-                    }}>
-                      {org.role}
-                    </span>
                   </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
+                  <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                     <a href={`/organizations/${org.id}/settings`} style={{ 
-                      flex: 1,
-                      padding: '10px 12px', 
-                      background: '#f3f4f6', 
-                      color: '#1f2937', 
+                      padding: '8px 14px', 
+                      background: 'var(--bg-secondary)', 
+                      color: 'var(--text)', 
                       borderRadius: 8, 
                       textDecoration: 'none', 
-                      fontSize: 13,
-                      fontWeight: 600,
-                      textAlign: 'center',
-                      border: '1px solid #e5e7eb',
+                      fontSize: 13, fontWeight: 600,
+                      border: '1.5px solid var(--border)',
                       transition: 'all 0.2s'
-                    }} onMouseEnter={(e) => {
-                      e.currentTarget.style.background = '#e5e7eb'
-                    }} onMouseLeave={(e) => {
-                      e.currentTarget.style.background = '#f3f4f6'
-                    }}>⚙️ Settings</a>
+                    }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--primary)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)' }}>Settings</a>
                     {org.role === 'admin' && (
                       <a href={`/organizations/${org.id}/billing`} style={{ 
-                        flex: 1,
-                        padding: '10px 12px', 
-                        background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                        color: 'white', 
-                        borderRadius: 8, 
-                        textDecoration: 'none', 
-                        fontSize: 13,
-                        fontWeight: 600,
-                        textAlign: 'center',
-                        transition: 'all 0.2s'
-                      }} onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'scale(1.05)'
-                      }} onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'scale(1)'
-                      }}>💳 Billing</a>
+                        padding: '8px 14px', 
+                        background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+                        color: 'white', borderRadius: 8, textDecoration: 'none', 
+                        fontSize: 13, fontWeight: 600, transition: 'all 0.2s'
+                      }}>Billing</a>
                     )}
                   </div>
                 </div>
@@ -316,47 +363,33 @@ export default function Home() {
           </section>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <h1 className="home-title" style={{ 
-            margin: 0, 
-            fontSize: 24, 
-            fontWeight: 700, 
-            color: 'var(--text)',
-            letterSpacing: '-0.02em'
-          }}>My Projects</h1>
+        {/* My Projects Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <div>
+            <p className="section-label" style={{ marginBottom: 4 }}>My Projects</p>
+            <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.02em' }}>
+              {showArchived ? 'All Projects' : 'Active Projects'}
+            </h2>
+          </div>
           <label style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 8, 
-            cursor: 'pointer', 
-            fontSize: 13, 
-            color: 'var(--text-secondary)',
-            fontWeight: 500
+            display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
+            fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500,
+            background: 'var(--surface)', border: '1.5px solid var(--border)',
+            borderRadius: 8, padding: '7px 12px'
           }}>
-            <input 
-              type="checkbox" 
-              checked={showArchived} 
-              onChange={(e) => setShowArchived(e.target.checked)}
-              style={{ 
-                cursor: 'pointer',
-                width: 16,
-                height: 16,
-                accentColor: 'var(--primary)'
-              }}
-            />
+            <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)}
+              style={{ cursor: 'pointer', width: 14, height: 14, accentColor: 'var(--primary)' }} />
             Show archived
           </label>
         </div>
-        
+
+        {/* Create Project Form */}
         <div className="create-form" style={{ 
-          marginBottom: 32, 
-          display: 'flex', 
-          gap: 12, 
-          alignItems: 'center',
+          marginBottom: 28, display: 'flex', gap: 10, alignItems: 'center',
           background: 'var(--surface)',
-          padding: '18px',
-          borderRadius: 12,
-          border: '2px solid var(--border)',
+          padding: '14px 16px',
+          borderRadius: 14,
+          border: '1.5px solid var(--border)',
           boxShadow: 'var(--shadow-sm)'
         }}>
           {organizations && organizations.length > 0 && (
@@ -420,8 +453,9 @@ export default function Home() {
             ✨ Create Project
           </button>
         </div>
-        <div className="project-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
-          {projects && projects.map((p: any) => {
+        <div className="project-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(270px, 1fr))', gap: 18 }}>
+          {projects && projects.map((p: any, index: number) => {
+            const accentGradient = cardAccents[index % cardAccents.length]
             // Get unique users from project tasks
             const projectUsers = new Map()
             p.tasks?.forEach((task: any) => {
@@ -443,23 +477,23 @@ export default function Home() {
                 href={`/projects/${p.id}`}
                 prefetch={true}
                 style={{ 
-                  padding: 20, 
+                  padding: 0,
+                  paddingTop: 4,
                   background: 'var(--surface)', 
-                  border: '2px solid var(--border)', 
+                  border: '1.5px solid var(--border)', 
                   borderRadius: 14,
                   textDecoration: 'none',
                   color: 'var(--text)',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: 14,
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                   boxShadow: 'var(--shadow-sm)',
                   position: 'relative',
                   overflow: 'hidden'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-4px)'
-                  e.currentTarget.style.boxShadow = 'var(--shadow-xl)'
+                  e.currentTarget.style.boxShadow = '0 16px 32px rgba(0,0,0,0.15)'
                   e.currentTarget.style.borderColor = 'var(--primary)'
                 }}
                 onMouseLeave={(e) => {
@@ -468,6 +502,10 @@ export default function Home() {
                   e.currentTarget.style.borderColor = 'var(--border)'
                 }}
               >
+                {/* Color accent bar */}
+                <div style={{ height: 4, background: accentGradient, borderRadius: '14px 14px 0 0' }} />
+
+                <div style={{ padding: '18px 18px 16px', display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
                   <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, flex: 1, letterSpacing: '-0.01em' }}>
                     {p.name}
@@ -650,6 +688,25 @@ export default function Home() {
                     </div>
                   </div>
                 )}
+
+                {/* Task count strip */}
+                {(() => {
+                  const total = p.tasks?.length || 0
+                  const done = p.tasks?.filter((t: any) => t.status === 'done').length || 0
+                  const pct = total > 0 ? Math.round((done / total) * 100) : 0
+                  return total > 0 ? (
+                    <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12, marginTop: 2 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                        <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 500 }}>{done}/{total} tasks done</span>
+                        <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>{pct}%</span>
+                      </div>
+                      <div style={{ height: 4, background: 'var(--border)', borderRadius: 4, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${pct}%`, background: accentGradient, borderRadius: 4, transition: 'width 0.4s ease' }} />
+                      </div>
+                    </div>
+                  ) : null
+                })()}
+                </div>
               </Link>
             )
           })}
@@ -705,7 +762,8 @@ export default function Home() {
             </p>
           </div>
         )}
-      </main>
+        </div>{/* end page-content */}
+      </div>{/* end home-page */}
     </>
   )
 }
