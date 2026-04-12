@@ -9,6 +9,7 @@ export default function SignUpPage() {
   const [organizationName, setOrganizationName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
 
   async function submit(e: React.FormEvent) {
