@@ -22,13 +22,17 @@ export const authOptions: NextAuthOptions = {
             name: true,
             email: true,
             passwordHash: true,
-            emailVerified: true
+            emailVerified: true,
+            createdAt: true
           }
         })
         if (!user || !user.passwordHash) return null
         
-        // Check if email is verified
-        if (!user.emailVerified) {
+        // Email verification is only enforced for accounts created after the
+        // feature was introduced (2026-01-01). Legacy users are treated as verified.
+        const verificationFeatureDate = new Date('2026-01-01T00:00:00Z')
+        const isLegacyUser = user.createdAt < verificationFeatureDate
+        if (!user.emailVerified && !isLegacyUser) {
           throw new Error('Please verify your email before signing in. Check your inbox for the verification link.')
         }
         
