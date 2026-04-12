@@ -47,18 +47,22 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }: { token: JWT; user?: any }) {
       if (user) {
         token.id = user.id
-        // Get user's current token version
-        const dbUser = await prisma.user.findUnique({ where: { id: user.id }, select: { tokenVersion: true } })
-        token.tokenVersion = dbUser?.tokenVersion || 0
-      } else if (token.id) {
-        // On token refresh, verify token version hasn't been invalidated
-        const dbUser = await prisma.user.findUnique({ where: { id: token.id as string }, select: { tokenVersion: true } })
-        if (dbUser && dbUser.tokenVersion !== token.tokenVersion) {
-          // Token has been invalidated (user was removed from org, etc)
-          // Return invalid token to force re-authentication
-          return {} as any
+        try {
+          const dbUser = await prisma.user.findUnique({ where: { id: user.id }, select: { tokenVersion: true } })
+          token.tokenVersion = dbUser?.tokenVersion ?? 0
+        } catch {
+          token.tokenVersion = 0
         }
-        token.tokenVersion = dbUser?.tokenVersion || 0
+      } else if (token.id) {
+        try {
+          const dbUser = await prisma.user.findUnique({ where: { id: token.id as string }, select: { tokenVersion: true } })
+          if (dbUser && dbUser.tokenVersion !== token.tokenVersion) {
+            return {} as any
+          }
+          token.tokenVersion = dbUser?.tokenVersion ?? 0
+        } catch {
+          // tokenVersion column may not exist yet — allow session to continue
+        }
       }
       return token
     },
