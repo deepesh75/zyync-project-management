@@ -11,9 +11,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'email and password required' })
   }
 
-  const exists = await prisma.user.findUnique({ where: { email } })
-  if (exists) return res.status(409).json({ error: 'User exists' })
-
   const passwordHash = await hash(password, 10)
 
   // Generate email verification token
@@ -24,6 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Check if there's an invitation token
   let organizationId: string | undefined
   let role = 'member'
+  let isInvitedUser = false
 
   if (invitationToken) {
     const invitation = await prisma.invitation.findUnique({
@@ -48,22 +46,50 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     organizationId = invitation.organizationId
     role = invitation.role
+    isInvitedUser = true
   }
 
-  // Create user
-  // If inviting via invitation, auto-verify email since invite proves email ownership
-  const isInvitedUser = !!(invitationToken && organizationId)
+  // If not invited, check if user already exists
+  const existingUser = await prisma.user.findUnique({ where: { email } })
+  if (existingUser && !isInvitedUser) {
+    return res.status(409).json({ error: 'User exists' })
+  }
+
+  // If invited user already exists in system, update password and add to org
+  // If invited user doesn't exist, create new account
+  let user = existingUser
   
-  const user = await prisma.user.create({ 
-    data: { 
-      email, 
-      passwordHash, 
-      name,
-      emailVerified: isInvitedUser,  // Auto-verify if invited
-      emailVerificationToken: isInvitedUser ? null : verificationToken,
-      emailVerificationExpiry: isInvitedUser ? null : verificationExpiry
-    } 
-  })
+  if (existingUser && isInvitedUser) {
+    // Update password for existing user being re-invited
+    user = await prisma.user.update({
+      where: { id: existingUser.id },
+      data: {
+        passwordHash,
+        name: name || existingUser.name,
+        emailVerified: true,  // Mark as verified since invite proves email ownership
+        tokenVersion: 0  // Reset token version so they can log in with new password
+      }
+    })
+  } else if (!existingUser) {
+    // Create new user if this is the first time
+    user = await prisma.user.create({ 
+      data: { 
+        email, 
+        passwordHash, 
+        name,
+        emailVerified: isInvitedUser,  // Auto-verify if invited
+        emailVerificationToken: isInvitedUser ? null : verificationToken,
+        emailVerificationExpiry: isInvitedUser ? null : verificationExpiry
+      } 
+    })
+  } else {
+    // Should never reach here - caught earlier at line 55
+    return res.status(400).json({ error: 'User already exists' })
+  }
+
+  if (!user) {
+    return res.status(500).json({ error: 'Failed to create or update user' })
+  }
 
   // Send verification email (skip for invited users - they're auto-verified)
   if (!isInvitedUser) {
@@ -77,19 +103,45 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // If invitation, add user to organization and mark invitation as accepted
   if (invitationToken && organizationId) {
-    await prisma.$transaction([
-      prisma.organizationMember.create({
+    // Check if user is already a member of this organization
+    const existingMembership = await prisma.organizationMember.findUnique({
+      where: {
+        organizationId_userId: {
+          organizationId,
+          userId: user.id
+        }
+      }
+    })
+
+    if (!existingMembership) {
+      // Add user to organization
+      await prisma.organizationMember.create({
         data: {
           organizationId,
           userId: user.id,
           role
         }
-      }),
-      prisma.invitation.update({
-        where: { token: invitationToken },
-        data: { acceptedAt: new Date() }
       })
-    ])
+    } else {
+      // User was previously a member, update their role if different
+      if (existingMembership.role !== role) {
+        await prisma.organizationMember.update({
+          where: {
+            organizationId_userId: {
+              organizationId,
+              userId: user.id
+            }
+          },
+          data: { role }
+        })
+      }
+    }
+
+    // Mark invitation as accepted
+    await prisma.invitation.update({
+      where: { token: invitationToken },
+      data: { acceptedAt: new Date() }
+    })
   } else if (organizationName) {
     // Create new organization if provided
     let slug = organizationName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
