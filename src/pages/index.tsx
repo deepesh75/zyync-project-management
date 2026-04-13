@@ -26,6 +26,16 @@ export default function Home() {
   const [name, setName] = useState('')
   const [selectedOrgId, setSelectedOrgId] = useState<string>('')
   const [showArchived, setShowArchived] = useState(false)
+  const [paymentSuccess, setPaymentSuccess] = useState(false)
+
+  useEffect(() => {
+    if (router.query.payment === 'success') {
+      setPaymentSuccess(true)
+      router.replace('/', undefined, { shallow: true })
+      const t = setTimeout(() => setPaymentSuccess(false), 6000)
+      return () => clearTimeout(t)
+    }
+  }, [router.query.payment])
 
   // Use SWR hooks for caching - only when authenticated
   const shouldFetch = status === 'authenticated'
@@ -205,6 +215,16 @@ export default function Home() {
   return (
     <>
       <Navbar />
+      {paymentSuccess && (
+        <div style={{
+          position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)',
+          background: '#22c55e', color: '#fff', padding: '12px 24px',
+          borderRadius: 10, zIndex: 9999, fontWeight: 600, fontSize: 15,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: 10
+        }}>
+          <span>✓</span> Payment successful — welcome to your plan!
+        </div>
+      )}
       <style jsx>{`
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(16px); }

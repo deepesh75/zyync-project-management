@@ -66,7 +66,7 @@ export default function ProPricing() {
 
       if (!organizationId) {
         alert('Please create an organization first')
-        router.push('/dashboard')
+        router.push('/')
         return
       }
 
@@ -115,8 +115,7 @@ export default function ProPricing() {
           })
           const result = await verifyRes.json()
           if (result && result.ok) {
-            alert('Payment successful — thank you!')
-            router.push('/dashboard?payment=success')
+            router.push('/?payment=success')
           } else {
             alert('Payment verification failed. Please contact support.')
           }
