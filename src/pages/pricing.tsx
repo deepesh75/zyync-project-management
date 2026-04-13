@@ -109,7 +109,7 @@ export default function Pricing() {
         break
       case 'enterprise':
         // Open contact form or redirect to contact page
-        window.open('mailto:sales@zyync.com?subject=Enterprise%20Inquiry', '_blank')
+        window.open('mailto:info@zyync.com?subject=Enterprise%20Inquiry', '_blank')
         break
       case 'pro_lifetime':
         // Redirect to lifetime deal checkout
