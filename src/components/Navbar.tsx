@@ -320,18 +320,21 @@ export default function Navbar({ background }: NavbarProps) {
             <button
               onClick={() => setShowNotifications(!showNotifications)}
               style={{
-                padding: '10px 14px',
+                width: 42, height: 42,
+                padding: 0,
                 background: theme === 'dark' && !background ? 'var(--bg-primary)' : (background ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)'),
                 color: getNavbarStyleForBackground(background, theme).textColor,
                 border: theme === 'dark' && !background ? '1px solid var(--border)' : `1.5px solid ${background ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`,
                 borderRadius: 10,
                 cursor: 'pointer',
-                fontSize: 18,
                 backdropFilter: 'blur(12px)',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                lineHeight: 1,
                 position: 'relative',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = background ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.35)'
@@ -496,7 +499,8 @@ export default function Navbar({ background }: NavbarProps) {
           <button 
             onClick={toggleTheme}
             style={{
-              padding: '10px 14px',
+              width: 42, height: 42,
+              padding: 0,
               background: theme === 'dark' && !background ? 'var(--bg-primary)' : (background ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)'),
               color: getNavbarStyleForBackground(background, theme).textColor,
               border: theme === 'dark' && !background ? '1px solid var(--border)' : `1.5px solid ${background ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`,
@@ -504,11 +508,11 @@ export default function Navbar({ background }: NavbarProps) {
               cursor: 'pointer',
               backdropFilter: 'blur(12px)',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              lineHeight: 1,
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              flexShrink: 0
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = theme === 'dark' && !background ? 'var(--hover-bg)' : (background ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.35)')
