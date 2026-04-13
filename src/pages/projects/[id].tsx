@@ -993,6 +993,13 @@ export default function ProjectPage() {
           currentView={currentView}
           onViewChange={setCurrentView}
           workflows={workflows}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          showFilters={showFilters}
+          onToggleFilters={() => setShowFilters(!showFilters)}
+          activeFilterCount={[assigneeFilter, priorityFilter, labelFilter, quickFilter].filter(Boolean).length}
+          canUseAdvancedFilters={canUseAdvancedFilters}
+          onShowAdvancedFilter={() => setShowAdvancedFilter(true)}
         />
 
         {/* Filters Dropdown */}
@@ -1165,159 +1172,6 @@ export default function ProjectPage() {
             </div>
           </div>
         )}
-
-        {/* Toolbar */}
-        <div className="toolbar" style={{ 
-          marginBottom: 16, 
-          flexShrink: 0,
-          display: 'flex',
-          gap: 12,
-          alignItems: 'center',
-          flexWrap: 'wrap'
-        }}>
-          {/* Search Bar */}
-          <div style={{ position: 'relative', flex: 1, maxWidth: 300 }}>
-            <input
-              type="text"
-              placeholder="Search tasks..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '10px 16px',
-                paddingLeft: 40,
-                borderRadius: 8,
-                border: '1px solid var(--border)',
-                background: 'var(--surface)',
-                color: 'var(--text)',
-                fontSize: 14,
-                outline: 'none',
-                transition: 'all 0.2s'
-              }}
-              onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
-              onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
-            />
-            <svg 
-              width="16" 
-              height="16" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-              style={{
-                position: 'absolute',
-                left: 12,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: 'var(--text-secondary)',
-                pointerEvents: 'none'
-              }}
-            >
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.35-4.35"></path>
-            </svg>
-          </div>
-
-          {/* Filters Toggle */}
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            style={{
-              padding: '10px 16px',
-              borderRadius: 8,
-              border: '1px solid var(--border)',
-              background: showFilters ? 'var(--primary-light)' : 'var(--surface)',
-              color: showFilters ? 'var(--primary)' : 'var(--text)',
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = showFilters ? 'var(--primary-light)' : 'var(--bg-secondary)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = showFilters ? 'var(--primary-light)' : 'var(--surface)'
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-            </svg>
-            Filters
-            {(assigneeFilter || priorityFilter || labelFilter || quickFilter) && (
-              <span style={{ background: 'var(--primary)', color: 'white', borderRadius: 4, padding: '2px 6px', fontSize: 11, fontWeight: 700 }}>
-                {[assigneeFilter, priorityFilter, labelFilter, quickFilter].filter(Boolean).length}
-              </span>
-            )}
-          </button>
-
-          {/* Advanced Filters Button */}
-          {canUseAdvancedFilters ? (
-            <button
-              onClick={() => setShowAdvancedFilter(true)}
-              style={{
-                padding: '10px 16px',
-                borderRadius: 8,
-                border: '1px solid var(--border)',
-                background: 'var(--surface)',
-                color: 'var(--text)',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--bg-secondary)'
-                e.currentTarget.style.borderColor = 'var(--primary)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'var(--surface)'
-                e.currentTarget.style.borderColor = 'var(--border)'
-              }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 6h18"></path>
-                <path d="M7 12h10"></path>
-                <path d="M11 18h2"></path>
-              </svg>
-              Advanced
-            </button>
-          ) : (
-            <button
-              disabled
-              title="Available on Pro"
-              style={{
-                padding: '10px 16px',
-                borderRadius: 8,
-                border: '1px solid var(--border)',
-                background: 'var(--surface)',
-                color: 'var(--text-secondary)',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'default',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                opacity: 0.9
-              }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 6h18"></path>
-                <path d="M7 12h10"></path>
-                <path d="M11 18h2"></path>
-              </svg>
-              Advanced 🔒
-            </button>
-          )}
-        </div>
 
         {/* Background Picker Modal */}
         {showBackgroundPicker && (

@@ -28,6 +28,13 @@ interface ProjectHeaderProps {
   currentView: 'kanban' | 'calendar' | 'table' | 'timeline'
   onViewChange: (view: 'kanban' | 'calendar' | 'table' | 'timeline') => void
   workflows: any[]
+  searchTerm: string
+  onSearchChange: (v: string) => void
+  showFilters: boolean
+  onToggleFilters: () => void
+  activeFilterCount: number
+  canUseAdvancedFilters: boolean
+  onShowAdvancedFilter: () => void
 }
 
 export default function ProjectHeader({
@@ -40,7 +47,14 @@ export default function ProjectHeader({
   onEditColumns,
   currentView,
   onViewChange,
-  workflows
+  workflows,
+  searchTerm,
+  onSearchChange,
+  showFilters,
+  onToggleFilters,
+  activeFilterCount,
+  canUseAdvancedFilters,
+  onShowAdvancedFilter
 }: ProjectHeaderProps) {
   const [showToolsMenu, setShowToolsMenu] = useState(false)
   const headerColors = getHeaderColorForBackground(project.background || 'gradient-purple')
@@ -106,7 +120,103 @@ export default function ProjectHeader({
         </h1>
       </div>
       
-      <div className="header-actions" style={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+      <div className="header-actions" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+        {/* Search bar */}
+        <div style={{ position: 'relative' }}>
+          <input
+            type="text"
+            placeholder="Search tasks..."
+            value={searchTerm}
+            onChange={(e) => onSearchChange(e.target.value)}
+            style={{
+              width: 200,
+              padding: '8px 12px 8px 34px',
+              borderRadius: 8,
+              border: '1px solid rgba(255,255,255,0.2)',
+              background: 'rgba(0,0,0,0.2)',
+              color: headerColors.text,
+              fontSize: 13,
+              outline: 'none',
+              transition: 'all 0.2s'
+            }}
+            onFocus={(e) => { e.currentTarget.style.width = '240px'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)' }}
+            onBlur={(e) => { e.currentTarget.style.width = '200px'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)' }}
+          />
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: headerColors.text, opacity: 0.6, pointerEvents: 'none' }}>
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+        </div>
+
+        {/* Filters toggle */}
+        <button
+          onClick={onToggleFilters}
+          style={{
+            padding: '8px 12px',
+            borderRadius: 8,
+            border: `1px solid ${showFilters ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.2)'}`,
+            background: showFilters ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)',
+            color: headerColors.text,
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.25)' }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = showFilters ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)' }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+          </svg>
+          Filters
+          {activeFilterCount > 0 && (
+            <span style={{ background: 'rgba(255,255,255,0.9)', color: '#4f46e5', borderRadius: 4, padding: '1px 5px', fontSize: 11, fontWeight: 700 }}>
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
+
+        {/* Advanced filters */}
+        {canUseAdvancedFilters ? (
+          <button
+            onClick={onShowAdvancedFilter}
+            style={{
+              padding: '8px 12px',
+              borderRadius: 8,
+              border: '1px solid rgba(255,255,255,0.2)',
+              background: 'rgba(0,0,0,0.2)',
+              color: headerColors.text,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.25)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(0,0,0,0.2)' }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 6h18"/><path d="M7 12h10"/><path d="M11 18h2"/>
+            </svg>
+            Advanced
+          </button>
+        ) : (
+          <button disabled title="Available on Pro"
+            style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(0,0,0,0.15)', color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: 600, cursor: 'default', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 6h18"/><path d="M7 12h10"/><path d="M11 18h2"/>
+            </svg>
+            Advanced 🔒
+          </button>
+        )}
+
+        {/* Divider */}
+        <div style={{ width: 1, height: 24, background: 'rgba(255,255,255,0.2)', margin: '0 4px' }} />
         {/* Tools Dropdown Menu */}
         <div style={{ position: 'relative' }}>
           <button
