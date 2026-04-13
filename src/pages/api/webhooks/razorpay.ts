@@ -215,6 +215,7 @@ async function handleSubscriptionCharged(subscription: any, payment: any) {
     await prisma.organization.update({
       where: { id: org.id },
       data: {
+        planId: planName === 'Enterprise' ? 'enterprise' : 'pro',
         billingStatus: 'active',
         currentPeriodStart: periodStart,
         currentPeriodEnd: periodEnd,
