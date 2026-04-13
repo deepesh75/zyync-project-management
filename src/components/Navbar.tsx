@@ -68,7 +68,9 @@ export default function Navbar({ background }: NavbarProps) {
   const { theme, toggleTheme } = useTheme()
   const [showNotifications, setShowNotifications] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [showUserMenu, setShowUserMenu] = useState(false)
   const notifRef = useRef<HTMLDivElement>(null)
+  const userMenuRef = useRef<HTMLDivElement>(null)
 
   // Use SWR hook for notifications with auto-polling - only when authenticated
   const { notifications, unreadCount, mutate } = useNotifications(!!session)
@@ -96,6 +98,9 @@ export default function Navbar({ background }: NavbarProps) {
     const handleClickOutside = (event: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
         setShowNotifications(false)
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false)
       }
     }
 
@@ -284,18 +289,7 @@ export default function Navbar({ background }: NavbarProps) {
       </button>
 
       {session && (
-        <div className="desktop-user-info" style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          <span style={{ 
-            fontSize: 14, 
-            color: getNavbarStyleForBackground(background, theme).textColor, 
-            opacity: 0.9, 
-            fontWeight: 500,
-            background: theme === 'dark' && !background ? 'var(--bg-primary)' : (background ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.15)'),
-            padding: '8px 16px',
-            borderRadius: 10,
-            backdropFilter: 'blur(8px)',
-            border: theme === 'dark' && !background ? '1px solid var(--border)' : 'none'
-          }}>{session.user?.email}</span>
+        <div className="desktop-user-info" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           
           {/* Plan Badge */}
           {planDisplay && (
@@ -496,6 +490,7 @@ export default function Navbar({ background }: NavbarProps) {
             )}
           </div>
           
+          {/* Theme toggle */}
           <button 
             onClick={toggleTheme}
             style={{
@@ -543,42 +538,108 @@ export default function Navbar({ background }: NavbarProps) {
               </svg>
             )}
           </button>
-          <button 
-            onClick={() => signOut({ callbackUrl: '/' })}
-            style={{
-              padding: '10px 20px',
-              background: theme === 'dark' && !background ? 'var(--bg-primary)' : (background ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)'),
-              color: getNavbarStyleForBackground(background, theme).textColor,
-              border: theme === 'dark' && !background ? '1px solid var(--border)' : `1.5px solid ${background ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`,
-              borderRadius: 10,
-              cursor: 'pointer',
-              fontSize: 14,
-              fontWeight: 600,
-              backdropFilter: 'blur(12px)',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = theme === 'dark' && !background ? 'var(--hover-bg)' : (background ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.35)')
-              e.currentTarget.style.transform = 'translateY(-2px)'
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = theme === 'dark' && !background ? 'var(--bg-primary)' : (background ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)')
-              e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)'
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <polyline points="16 17 21 12 16 7"></polyline>
-              <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
-            Sign out
-          </button>
+
+          {/* Avatar + dropdown (replaces email text + sign out button) */}
+          <div ref={userMenuRef} style={{ position: 'relative' }}>
+            {(() => {
+              const nameOrEmail = session.user?.name || session.user?.email || '?'
+              const initials = nameOrEmail
+                .split(/[\s@]/)
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((s: string) => s[0].toUpperCase())
+                .join('')
+              return (
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  title={session.user?.email || ''}
+                  style={{
+                    width: 40, height: 40,
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                    color: 'white',
+                    border: '2.5px solid rgba(255,255,255,0.4)',
+                    cursor: 'pointer',
+                    fontSize: 14,
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 2px 8px rgba(99,102,241,0.4)',
+                    transition: 'all 0.2s',
+                    flexShrink: 0
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.08)'
+                    e.currentTarget.style.boxShadow = '0 4px 14px rgba(99,102,241,0.55)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)'
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(99,102,241,0.4)'
+                  }}
+                >
+                  {initials}
+                </button>
+              )
+            })()}
+
+            {showUserMenu && (
+              <div style={{
+                position: 'absolute',
+                top: 'calc(100% + 10px)',
+                right: 0,
+                minWidth: 220,
+                background: 'var(--surface)',
+                border: '1.5px solid var(--border)',
+                borderRadius: 12,
+                boxShadow: '0 16px 40px rgba(0,0,0,0.2)',
+                overflow: 'hidden',
+                zIndex: 1000
+              }}>
+                {/* User info header */}
+                <div style={{
+                  padding: '14px 16px',
+                  borderBottom: '1px solid var(--border)',
+                  background: 'var(--bg-secondary)'
+                }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', marginBottom: 2 }}>
+                    {session.user?.name || 'Account'}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {session.user?.email}
+                  </div>
+                </div>
+                {/* Sign out */}
+                <button
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    background: 'transparent',
+                    color: 'var(--text)',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    textAlign: 'left',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    transition: 'background 0.15s'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-secondary)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                  </svg>
+                  Sign out
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
