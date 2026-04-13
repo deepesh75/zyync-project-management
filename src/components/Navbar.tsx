@@ -151,8 +151,8 @@ export default function Navbar({ background }: NavbarProps) {
     <style jsx>{`
       .navbar {
         max-width: 100vw;
-        overflow-x: hidden;
         box-sizing: border-box;
+        overflow: visible;
       }
       @media (max-width: 768px) {
         .navbar {
@@ -189,7 +189,7 @@ export default function Navbar({ background }: NavbarProps) {
       alignItems: 'center',
       position: 'sticky',
       top: 0,
-      zIndex: 100,
+      zIndex: 200,
       backdropFilter: 'blur(12px)',
       width: '100%',
       maxWidth: '100vw',
