@@ -295,18 +295,20 @@ export default function Navbar({ background }: NavbarProps) {
           {planDisplay && (
             <span style={{
               fontSize: 13,
-              color: planDisplay.color,
+              color: getNavbarStyleForBackground(background, theme).textColor,
               fontWeight: 600,
-              background: planDisplay.bgColor,
-              padding: '6px 12px',
-              borderRadius: 8,
-              backdropFilter: 'blur(8px)',
-              border: '1.5px solid rgba(255, 255, 255, 0.2)',
+              background: theme === 'dark' && !background ? 'var(--bg-primary)' : (background ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)'),
+              padding: '10px 14px',
+              borderRadius: 10,
+              backdropFilter: 'blur(12px)',
+              border: theme === 'dark' && !background ? '1px solid var(--border)' : `1.5px solid ${background ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`,
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
               display: 'flex',
               alignItems: 'center',
-              gap: 4
+              gap: 6,
+              lineHeight: 1
             }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}>
                 <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
               </svg>
               {planDisplay.name}
@@ -554,28 +556,28 @@ export default function Navbar({ background }: NavbarProps) {
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   title={session.user?.email || ''}
                   style={{
-                    width: 40, height: 40,
-                    borderRadius: '50%',
+                    width: 42, height: 42,
+                    borderRadius: 10,
                     background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
                     color: 'white',
-                    border: '2.5px solid rgba(255,255,255,0.4)',
+                    border: '1.5px solid rgba(99,102,241,0.5)',
                     cursor: 'pointer',
                     fontSize: 14,
                     fontWeight: 700,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 2px 8px rgba(99,102,241,0.4)',
+                    boxShadow: '0 2px 8px rgba(99,102,241,0.35)',
                     transition: 'all 0.2s',
                     flexShrink: 0
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'scale(1.08)'
-                    e.currentTarget.style.boxShadow = '0 4px 14px rgba(99,102,241,0.55)'
+                    e.currentTarget.style.boxShadow = '0 4px 14px rgba(99,102,241,0.5)'
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = 'scale(1)'
-                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(99,102,241,0.4)'
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(99,102,241,0.35)'
                   }}
                 >
                   {initials}
