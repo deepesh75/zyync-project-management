@@ -216,19 +216,7 @@ export default function Home() {
           background-image: radial-gradient(circle at 20% 20%, rgba(99,102,241,0.07) 0%, transparent 50%),
                             radial-gradient(circle at 80% 80%, rgba(139,92,246,0.06) 0%, transparent 50%);
         }
-        .hero-banner {
-          background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #6d28d9 100%);
-          padding: 40px 32px;
-          position: relative;
-          overflow: hidden;
-        }
-        .hero-banner::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        }
-        .hero-content { position: relative; z-index: 1; }
+
         .page-content {
           max-width: 1400px;
           margin: 0 auto;
@@ -250,7 +238,7 @@ export default function Home() {
           top: 0; left: 0; right: 0;
         }
         @media (max-width: 768px) {
-          .hero-banner { padding: 28px 20px !important; }
+
           .page-content { padding: 20px 16px !important; }
           .org-grid { grid-template-columns: 1fr !important; }
           .project-grid { grid-template-columns: 1fr !important; }
@@ -262,37 +250,6 @@ export default function Home() {
       `}</style>
 
       <div className="home-page">
-        {/* Hero Greeting Banner */}
-        <div className="hero-banner">
-          <div className="hero-content" style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
-            <div>
-              <p style={{ margin: 0, color: 'rgba(255,255,255,0.7)', fontSize: 14, marginBottom: 6, fontWeight: 500 }}>Welcome back</p>
-              <h1 style={{ margin: 0, fontSize: 32, fontWeight: 800, color: 'white', letterSpacing: '-0.03em' }}>
-                Hey, {firstName} 👋
-              </h1>
-              <p style={{ margin: '8px 0 0', color: 'rgba(255,255,255,0.65)', fontSize: 15 }}>
-                {projects.length > 0
-                  ? `You have ${projects.length} active project${projects.length !== 1 ? 's' : ''}`
-                  : 'Ready to build something great?'}
-              </p>
-            </div>
-            <div style={{ display: 'flex', gap: 12 }}>
-              <div style={{ background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 12, padding: '14px 20px', textAlign: 'center', minWidth: 80 }}>
-                <div style={{ fontSize: 26, fontWeight: 800, color: 'white', lineHeight: 1 }}>{projects.length}</div>
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 4, fontWeight: 500 }}>Projects</div>
-              </div>
-              <div style={{ background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 12, padding: '14px 20px', textAlign: 'center', minWidth: 80 }}>
-                <div style={{ fontSize: 26, fontWeight: 800, color: 'white', lineHeight: 1 }}>{organizations?.length || 0}</div>
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 4, fontWeight: 500 }}>Orgs</div>
-              </div>
-              <div style={{ background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 12, padding: '14px 20px', textAlign: 'center', minWidth: 80 }}>
-                <div style={{ fontSize: 26, fontWeight: 800, color: 'white', lineHeight: 1 }}>{projects.reduce((acc: number, p: any) => acc + (p.tasks?.filter((t: any) => t.status !== 'done').length || 0), 0)}</div>
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 4, fontWeight: 500 }}>Open Tasks</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div className="page-content">
 
         {/* Organizations Section */}
